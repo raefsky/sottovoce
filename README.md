@@ -2,7 +2,7 @@
 
 **Rifinitura della voce e mix con la musica per podcast, direttamente nel browser.**
 
-👉 **[Apri l'app](https://raefsky.github.io/sottovoce/)**, niente da installare, niente account.
+👉 **[Apri l'app](https://raefsky.github.io/sottovoce/)**: niente da installare, niente account.
 
 *Fai sentire la tua voce, e le tue idee.*
 
@@ -26,7 +26,7 @@
 - **Stili pronti per la voce:** Narrazione, Voce calda, Parlato chiaro, Podcast, Radiofonica
 - **Rifiniture mirate:** de-esser per le "s", attenuazione di p e b esplosive, anti-ronzio, respiri e click di bocca
 - **Registrazione e montaggio:** registri direttamente nell'app, tagli, crei silenzi, accorci le pause troppo lunghe
-- **Volume costante** in LUFS, lo standard delle piattaforme di podcast
+- **Volume costante**, misurato in LUFS come richiedono le piattaforme di podcast
 - **Ducking automatico:** la musica si abbassa quando parli e risale nelle pause
 - **Esporta** in MP3 o WAV, con titolo, autore e copertina già inseriti nel file
 
