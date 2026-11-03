@@ -4,6 +4,22 @@
 
 👉 **[Apri l'app](https://raefsky.github.io/sottovoce/)**, niente da installare, niente account.
 
+*Fai sentire la tua voce, e le tue idee.*
+
+![Sottovoce: registrazione e importazione della voce](screenshots/01-voce.png)
+
+## In tre passaggi
+
+**1. La voce.** Registri o importi la tua voce.
+
+**2. Migliora.** Un clic con la Modalità Podcast, oppure scegli uno stile e rifinisci a mano.
+
+![Sottovoce: miglioramento della voce](screenshots/02-migliora.png)
+
+**3. La musica.** Aggiungi il tappeto: scende da solo quando parli e risale nelle pause.
+
+![Sottovoce: musica e ducking](screenshots/03-musica.png)
+
 ## Cosa fa
 
 - **Pulisce la voce** con RNNoise, un modello di intelligenza artificiale che toglie il rumore di fondo
@@ -14,12 +30,6 @@
 - **Ducking automatico:** la musica si abbassa quando parli e risale nelle pause
 - **Esporta** in MP3 o WAV, con titolo, autore e copertina già inseriti nel file
 
-## Come si usa
-
-1. Apri l'app e carica la tua voce, oppure registrala direttamente
-2. Scegli uno stile per la voce e premi **Applica**
-3. Aggiungi il tappeto musicale: il ducking fa il resto
-4. Ascolta, ritocca se serve ed esporta
 
 ## I tuoi file restano tuoi
 
@@ -39,7 +49,9 @@ Così, a un certo punto, mi sono chiesto: perché non costruirla io, con l'aiuto
 
 Roberto Lanza. Insegno scienze, racconto storie in un podcast e mi diverto a costruire gli strumenti per farlo.
 
-© 2026 Roberto Lanza, tutti i diritti riservati.
+## Licenza
+
+© 2026 Roberto Lanza. Sottovoce è distribuita con licenza [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/): puoi usarla, studiarla e modificarla liberamente per uso personale, didattico e comunque non commerciale. Non è consentito venderla o usarla a scopo di lucro.
 
 ## Componenti di terze parti
 
