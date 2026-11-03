@@ -2,7 +2,7 @@
 
 **Rifinitura della voce e mix con la musica per podcast, direttamente nel browser.**
 
-👉 **[Apri l'app](https://raefsky.github.io/sottovoce/)**, niente da installare, niente account.
+👉 **[Apri l'app](https://raefsky.github.io/sottovoce/)**: niente da installare, niente account.
 
 *Fai sentire la tua voce, e le tue idee.*
 
@@ -26,10 +26,9 @@
 - **Stili pronti per la voce:** Narrazione, Voce calda, Parlato chiaro, Podcast, Radiofonica
 - **Rifiniture mirate:** de-esser per le "s", attenuazione di p e b esplosive, anti-ronzio, respiri e click di bocca
 - **Registrazione e montaggio:** registri direttamente nell'app, tagli, crei silenzi, accorci le pause troppo lunghe
-- **Volume costante** in LUFS, lo standard delle piattaforme di podcast
+- **Volume costante**, misurato in LUFS come richiedono le piattaforme di podcast
 - **Ducking automatico:** la musica si abbassa quando parli e risale nelle pause
 - **Esporta** in MP3 o WAV, con titolo, autore e copertina già inseriti nel file
-
 
 ## I tuoi file restano tuoi
 
@@ -51,7 +50,8 @@ Roberto Lanza. Insegno scienze, racconto storie in un podcast e mi diverto a cos
 
 ## Licenza
 
-© 2026 Roberto Lanza. Sottovoce è distribuita con licenza [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0): puoi usarla, studiarla e modificarla liberamente per uso personale, didattico e comunque non commerciale. Non è consentito venderla o usarla a scopo di lucro. Il testo completo è nel file [LICENSE.md](LICENSE.md).
+© 2026 Roberto Lanza. Sottovoce è distribuita con licenza [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0): puoi usarla, studiarla e modificarla liberamente per uso personale, didattico e comunque non commerciale. Non è consentito venderla o usarla a scopo di lucro. Il testo completo è nel file [LICENSE](LICENSE).
+
 ## Componenti di terze parti
 
 Sottovoce include, senza modifiche e con le rispettive licenze: RNNoise (BSD-3-Clause), @jitsi/rnnoise-wasm (Apache-2.0) e lamejs (LGPL-3.0). I dettagli sono nella sezione "Informazioni e licenze" dell'app.
