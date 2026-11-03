@@ -30,7 +30,6 @@
 - **Ducking automatico:** la musica si abbassa quando parli e risale nelle pause
 - **Esporta** in MP3 o WAV, con titolo, autore e copertina già inseriti nel file
 
-
 ## I tuoi file restano tuoi
 
 Tutto il lavoro avviene nel tuo browser. I file audio non vengono caricati su nessun server e non lasciano mai il tuo computer.
@@ -51,7 +50,8 @@ Roberto Lanza. Insegno scienze, racconto storie in un podcast e mi diverto a cos
 
 ## Licenza
 
-© 2026 Roberto Lanza. Sottovoce è distribuita con licenza [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0): puoi usarla, studiarla e modificarla liberamente per uso personale, didattico e comunque non commerciale. Non è consentito venderla o usarla a scopo di lucro. Il testo completo è nel file [LICENSE.md](LICENSE.md).
+© 2026 Roberto Lanza. Sottovoce è distribuita con licenza [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0): puoi usarla, studiarla e modificarla liberamente per uso personale, didattico e comunque non commerciale. Non è consentito venderla o usarla a scopo di lucro. Il testo completo è nel file [LICENSE](LICENSE).
+
 ## Componenti di terze parti
 
 Sottovoce include, senza modifiche e con le rispettive licenze: RNNoise (BSD-3-Clause), @jitsi/rnnoise-wasm (Apache-2.0) e lamejs (LGPL-3.0). I dettagli sono nella sezione "Informazioni e licenze" dell'app.
