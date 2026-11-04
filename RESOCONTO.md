@@ -34,7 +34,12 @@ Apri **[trascrizione.html](https://raw.githack.com/raefsky/sottovoce/v2/prototip
 5. Poi prova **Whisper small** sullo stesso pezzo e, se il computer regge, un episodio intero.
 6. Ogni volta premi **Copia i risultati** e incollali nella chat.
 
-Il link passa da raw.githack.com, un servizio che mostra come pagine web i file di un repository pubblico. In alternativa si scaricano i file da GitHub e si aprono con un doppio clic: l'ho provato e funziona. Per `pulizia.html` serve anche la cartella `lib/`.
+Il link passa da raw.githack.com, un servizio che mostra come pagine web i file di un repository pubblico. Da qui non sono riuscito ad aprirlo per controllarlo, perché la rete di questo ambiente non lo raggiunge.
+
+**Se il link non si apre**, c'è la strada del doppio clic, che ho provato:
+1. Su GitHub apri il repository e scegli il branch **v2** nel menu dei branch.
+2. Premi **Code → Download ZIP** ed estrai il file.
+3. Nella cartella `prototipi` apri `pulizia.html` o `trascrizione.html` con un doppio clic, in Chrome o Edge.
 
 ## Cosa ho verificato
 
