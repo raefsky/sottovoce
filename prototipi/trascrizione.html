@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sottovoce v2 · Prova della trascrizione</title>
+<style>
+:root{--bg:#16120E;--panel:#1D1813;--panel2:#241E18;--line:#2E2620;--line2:#3A3029;--text:#F3EBE1;--muted:#B8AA99;--dim:#9C8F80;--accent:#E8A23A;--onaccent:#1A140E;--teal:#5CC2AC;--red:#E5534B;--fill:#3A2C17;--fillText:#F0B04A}
+@media (prefers-color-scheme: light){:root{--bg:#FAF6F0;--panel:#FFFFFF;--panel2:#F3ECE2;--line:#E6DCCF;--line2:#D8CBBB;--text:#1F1A15;--muted:#5E5348;--dim:#6E6257;--accent:#B8741A;--onaccent:#FFFFFF;--teal:#1F7F6C;--red:#C0392B;--fill:#FBE7C6;--fillText:#7A4A08}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:28px;margin:0 0 4px}
+h2{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:21px;margin:0 0 10px}
+p{margin:0 0 10px}
+.sub{color:var(--muted);margin-bottom:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+.drop{border:1.5px dashed var(--line2);border-radius:14px;padding:22px;text-align:center}
+.drop.over{border-color:var(--accent)}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;min-height:42px;padding:0 16px;border-radius:999px;border:1px solid var(--line2);background:transparent}
+button.main{background:var(--accent);color:var(--onaccent);border:0;font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select{min-height:42px;padding:0 10px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);max-width:100%}
+textarea{width:100%;min-height:110px;padding:10px 12px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);resize:vertical}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.muted{color:var(--muted)} .dim{color:var(--dim);font-size:13px}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:8px}
+.bar>span{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:6px 0 4px}
+.stat{background:var(--panel2);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font-size:18px}
+.stat span{font-size:12.5px;color:var(--muted)}
+#text{font-family:Georgia,"Times New Roman",serif;font-size:19px;line-height:1.8;max-width:70ch}
+#text button{all:unset;cursor:pointer;border-radius:4px;padding:0 2px}
+#text button:focus-visible{outline:2px solid var(--accent)}
+#text button.on{background:var(--accent);color:var(--onaccent)}
+#text button.filler{background:var(--fill);color:var(--fillText)}
+#text button.low{text-decoration:underline dotted var(--dim);text-underline-offset:4px}
+audio{width:100%;margin:8px 0 12px}
+.err{color:var(--red)}
+.ok{color:var(--teal)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Prova della trascrizione</h1>
+  <p class="sub">Prototipo per Sottovoce v2. Trascrive una registrazione nel browser, parola per parola, e misura quanto è precisa e quanto è veloce sul tuo computer. L'audio non lascia il tuo computer: da internet arrivano solo il programma e il modello, la prima volta.</p>
+
+  <section class="card" aria-labelledby="h1s">
+    <h2 id="h1s">1. Scegli il modello</h2>
+    <div class="row">
+      <label for="model">Modello</label>
+      <select id="model">
+        <option value="Xenova/whisper-tiny">Whisper tiny: velocissimo, poco preciso (circa 40 MB)</option>
+        <option value="Xenova/whisper-base" selected>Whisper base: equilibrato (circa 80 MB)</option>
+        <option value="Xenova/whisper-small">Whisper small: più preciso, più lento (circa 250 MB)</option>
+        <option value="onnx-community/whisper-large-v3-turbo">Whisper large v3 turbo: il più preciso, solo con scheda grafica (molto pesante)</option>
+      </select>
+    </div>
+    <p class="dim" id="gpuInfo" style="margin-top:8px"></p>
+    <p class="dim">Il modello si scarica una volta sola, poi il browser lo tiene in memoria. Il peso esatto compare qui sotto durante lo scaricamento.</p>
+  </section>
+
+  <section class="card" aria-labelledby="h2s">
+    <h2 id="h2s">2. Carica la registrazione</h2>
+    <div class="drop" id="drop">
+      <p><b>Trascina qui un file audio</b></p>
+      <p class="dim">WAV, MP3, M4A o FLAC. Per misurare i tempi va benissimo un episodio intero.</p>
+      <label class="row" style="justify-content:center"><input type="file" id="file" accept="audio/*,.wav,.mp3,.m4a,.flac"></label>
+    </div>
+    <label for="ref" style="display:block;margin-top:14px;font-weight:600">Testo di riferimento, se ce l'hai</label>
+    <p class="dim">Se incolli qui il copione di quello che hai detto, alla fine la pagina calcola quante parole ha sbagliato.</p>
+    <textarea id="ref" placeholder="Facoltativo: incolla il testo che hai letto o detto."></textarea>
+    <div class="row" style="margin-top:12px">
+      <button type="button" class="main" id="go" disabled>Trascrivi</button>
+      <button type="button" id="stop" hidden>Ferma</button>
+    </div>
+    <p id="status" class="muted" role="status" style="margin-top:10px"></p>
+    <div class="bar" aria-hidden="true"><span id="prog"></span></div>
+  </section>
+
+  <section class="card" aria-labelledby="h3s" id="out" hidden>
+    <h2 id="h3s">3. Il risultato</h2>
+    <div class="stats" id="stats"></div>
+    <audio id="player" controls></audio>
+    <p class="dim">Clicca una parola per ascoltare da lì. In evidenza i riempitivi (ehm, eh, uhm…). Le parole sottolineate a puntini sono quelle su cui il modello era meno sicuro dei tempi.</p>
+    <div id="text"></div>
+    <div class="row" style="margin-top:16px">
+      <button type="button" id="srt">Scarica i sottotitoli (SRT)</button>
+      <button type="button" id="txt">Scarica il testo</button>
+      <button type="button" id="copy">Copia i risultati</button>
+      <span class="dim" id="copyStatus" role="status"></span>
+    </div>
+    <p class="dim" style="margin-top:8px">"Copia i risultati" prepara un riepilogo da incollare nella chat con Claude.</p>
+  </section>
+</main>
+
+<script type="module">
+const TF_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1';
+const SR = 16000;              // Whisper lavora a 16 kHz
+const CHUNK = 28, SEARCH = 4;  // pezzi da circa 28 s, tagliati nella pausa più silenziosa degli ultimi 4 s
+const FILLERS = new Set(['ehm', 'eh', 'ehh', 'ehmm', 'uhm', 'um', 'mm', 'mmm', 'hmm', 'ah', 'uh', 'em']);
+
+const $ = s => document.querySelector(s);
+const yieldUI = () => new Promise(r => setTimeout(r, 0));
+const fmt = t => { const m = Math.floor(t / 60), s = Math.floor(t % 60); return m + ':' + String(s).padStart(2, '0'); };
+const num = (x, d = 1) => x.toFixed(d).replace('.', ',');
+const mb = b => num(b / 1048576, b > 1e8 ? 0 : 1) + ' MB';
+
+let file = null, audio16 = null, words = [], run = null, stopAsked = false;
+
+/* ---------- scheda grafica ---------- */
+let hasGPU = false;
+(async () => {
+  try { hasGPU = !!(navigator.gpu && await navigator.gpu.requestAdapter()); } catch (e) { hasGPU = false; }
+  $('#gpuInfo').textContent = hasGPU
+    ? 'Questo browser può usare la scheda grafica (WebGPU): la trascrizione sarà più veloce.'
+    : 'Questo browser non offre la scheda grafica (WebGPU): la trascrizione userà solo il processore, più lenta. Chrome o Edge aggiornati di solito la offrono.';
+})();
+
+/* ---------- audio: mono a 16 kHz ---------- */
+async function decode16(f) {
+  const ac = new (window.AudioContext || window.webkitAudioContext)();
+  const ab = await ac.decodeAudioData(await f.arrayBuffer()); ac.close();
+  const len = Math.ceil(ab.duration * SR);
+  const off = new OfflineAudioContext(1, len, SR);
+  const s = off.createBufferSource(); s.buffer = ab; s.connect(off.destination); s.start();
+  return (await off.startRendering()).getChannelData(0).slice();
+}
+// confini dei pezzi: ogni taglio cade nel tratto di 100 ms più silenzioso degli ultimi SEARCH secondi del pezzo
+function chunkBounds(x) {
+  const out = []; let s = 0; const W = SR / 10;
+  while (s < x.length) {
+    let e = s + CHUNK * SR;
+    if (e >= x.length) { out.push([s, x.length]); break; }
+    let best = e, bv = Infinity;
+    for (let c = e - SEARCH * SR; c + W <= e; c += W / 2) { let v = 0; for (let i = c; i < c + W; i++) v += x[i] * x[i]; if (v < bv) { bv = v; best = c + W / 2; } }
+    out.push([s, best]); s = best;
+  }
+  return out;
+}
+
+/* ---------- modello ---------- */
+let TF = null, asr = null, asrKey = '', dlBytes = 0, device = '';
+async function loadModel(id, onStatus) {
+  if (!TF) { onStatus('Scarico il programma di trascrizione…', 0); TF = await import(TF_URL); TF.env.allowLocalModels = false; }
+  if (asr && asrKey === id) return asr;
+  const files = {};
+  const progress_callback = d => {
+    if (d.status === 'progress' && d.total) { files[d.file] = [d.loaded, d.total]; }
+    const v = Object.values(files), lo = v.reduce((a, b) => a + b[0], 0), to = v.reduce((a, b) => a + b[1], 0);
+    dlBytes = to;
+    if (to) onStatus('Scarico il modello: ' + mb(lo) + ' di ' + mb(to) + '…', lo / to);
+  };
+  // prova le combinazioni dalla più veloce alla più compatibile: se una non esiste, passa alla successiva
+  const tries = [];
+  if (hasGPU) tries.push({ device: 'webgpu', dtype: { encoder_model: 'fp32', decoder_model_merged: 'q4' } }, { device: 'webgpu', dtype: 'fp32' });
+  tries.push({ device: 'wasm', dtype: 'q8' }, { device: 'wasm', dtype: 'fp32' });
+  let lastErr = null;
+  for (const t of tries) {
+    try {
+      asr = await TF.pipeline('automatic-speech-recognition', id, { ...t, progress_callback });
+      asrKey = id; device = t.device === 'webgpu' ? 'scheda grafica (WebGPU)' : 'processore (WebAssembly)';
+      return asr;
+    } catch (e) { lastErr = e; console.warn('Combinazione non riuscita', t, e); }
+  }
+  throw lastErr || new Error('modello non disponibile');
+}
+
+/* ---------- trascrizione ---------- */
+let wordLevel = true;
+async function transcribeChunk(pipe, x) {
+  const opts = { language: 'italian', task: 'transcribe' };
+  if (wordLevel) {
+    try {
+      const r = await pipe(x, { ...opts, return_timestamps: 'word' });
+      return (r.chunks || []).map(c => ({ text: c.text, a: c.timestamp[0], b: c.timestamp[1] ?? c.timestamp[0], exact: true }));
+    } catch (e) { console.warn('Tempi per parola non disponibili con questo modello, uso i tempi per frase', e); wordLevel = false; }
+  }
+  // tempi per frase: le parole si distribuiscono nella frase in proporzione alla loro lunghezza
+  const r = await pipe(x, { ...opts, return_timestamps: true });
+  const out = [];
+  (r.chunks || [{ text: r.text, timestamp: [0, x.length / SR] }]).forEach(c => {
+    const ws = c.text.trim().split(/\s+/).filter(Boolean), a = c.timestamp[0], b = c.timestamp[1] ?? x.length / SR;
+    const tot = ws.reduce((s, w) => s + w.length + 1, 0); let acc = 0;
+    ws.forEach(w => { const wa = a + (b - a) * acc / tot; acc += w.length + 1; out.push({ text: ' ' + w, a: wa, b: a + (b - a) * acc / tot, exact: false }); });
+  });
+  return out;
+}
+async function go() {
+  if (!file) return;
+  stopAsked = false; $('#go').disabled = true; $('#stop').hidden = false; $('#out').hidden = true;
+  const st = (m, p) => { $('#status').textContent = m; if (p != null) $('#prog').style.width = Math.round(p * 100) + '%'; };
+  try {
+    st('Leggo il file…', 0);
+    audio16 = await decode16(file);
+    const dur = audio16.length / SR, id = $('#model').value;
+    const tLoad = performance.now();
+    const pipe = await loadModel(id, st);
+    const loadS = (performance.now() - tLoad) / 1000;
+    wordLevel = true; words = [];
+    const bounds = chunkBounds(audio16);
+    const t0 = performance.now();
+    for (let k = 0; k < bounds.length; k++) {
+      if (stopAsked) break;
+      const [a, b] = bounds[k], off = a / SR;
+      const el = (performance.now() - t0) / 1000, done = a / SR;
+      const eta = done > 0 ? (el / done) * (dur - done) : null;
+      st('Trascrivo: ' + fmt(done) + ' di ' + fmt(dur) + (eta != null ? ', mancano circa ' + fmt(eta) : '') + '…', done / dur);
+      await yieldUI();
+      const ws = await transcribeChunk(pipe, audio16.subarray(a, b));
+      ws.forEach(w => { w.a += off; w.b += off; words.push(w); });
+    }
+    const procS = (performance.now() - t0) / 1000, doneDur = stopAsked && words.length ? Math.min(dur, words[words.length - 1].b) : dur;
+    run = { id, device, dur, doneDur, procS, loadS, bytes: dlBytes, wordLevel, stopped: stopAsked };
+    st(stopAsked ? 'Fermato. Ecco la parte trascritta.' : 'Fatto.', 1);
+    show();
+  } catch (e) {
+    console.error(e);
+    st('Non riuscito: ' + (e && e.message ? e.message : e) + '. La prima volta serve internet per scaricare programma e modello.', null);
+    $('#status').className = 'err';
+  } finally { $('#go').disabled = false; $('#stop').hidden = true; }
+}
+
+/* ---------- precisione: parole sbagliate rispetto al testo di riferimento ---------- */
+const norm = s => s.toLowerCase().normalize('NFC').replace(/[’']/g, ' ').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(Boolean);
+function wer(ref, hyp) {
+  const r = norm(ref), h = norm(hyp); if (!r.length) return null;
+  let prev = Array.from({ length: h.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= r.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= h.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (r[i - 1] === h[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return { errors: prev[h.length], n: r.length, rate: prev[h.length] / r.length };
+}
+const isFiller = w => FILLERS.has(norm(w)[0] || '') && norm(w).length === 1;
+
+/* ---------- risultato ---------- */
+function show() {
+  const text = words.map(w => w.text).join('').trim();
+  const fillers = words.filter(w => isFiller(w.text)).length;
+  const speed = run.doneDur / run.procS;
+  const w = wer($('#ref').value, text);
+  run.fillers = fillers; run.speed = speed; run.wer = w; run.words = words.length;
+  const stats = [
+    [fmt(run.doneDur), run.stopped ? 'trascritti (fermato prima)' : 'di audio'],
+    [fmt(run.procS), 'per trascrivere'],
+    [num(speed, speed >= 10 ? 0 : 1) + '×', 'il tempo reale'],
+    [run.bytes ? mb(run.bytes) : 'già in memoria', 'modello scaricato'],
+    [w ? num(w.rate * 100) + ' %' : '—', w ? 'parole sbagliate (' + w.errors + ' su ' + w.n + ')' : 'parole sbagliate: serve il testo di riferimento'],
+    [String(fillers), 'riempitivi trovati']
+  ];
+  $('#stats').innerHTML = '';
+  stats.forEach(([b, s]) => { const d = document.createElement('div'); d.className = 'stat'; const bb = document.createElement('b'); bb.textContent = b; const ss = document.createElement('span'); ss.textContent = s; d.append(bb, ss); $('#stats').appendChild(d); });
+  const note = document.createElement('p'); note.className = 'dim'; note.style.gridColumn = '1 / -1'; note.style.margin = '0';
+  note.textContent = 'Modello ' + run.id.split('/')[1] + ' sul ' + run.device + '. Tempi ' + (run.wordLevel ? 'per parola.' : 'per frase: questo modello non dà i tempi delle singole parole, che sono stimati.');
+  $('#stats').appendChild(note);
+  const box = $('#text'); box.innerHTML = '';
+  words.forEach((wd, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = wd.text.trim(); b.dataset.i = i;
+    if (isFiller(wd.text)) b.className = 'filler'; else if (!wd.exact) b.className = 'low';
+    b.onclick = () => { const p = $('#player'); p.currentTime = wd.a; p.play().catch(() => {}); };
+    box.append(b, ' ');
+  });
+  const p = $('#player'); if (p.dataset.src !== file.name) { if (p.src) URL.revokeObjectURL(p.src); p.src = URL.createObjectURL(file); p.dataset.src = file.name; }
+  $('#out').hidden = false;
+}
+let lastOn = -1;
+$('#player').ontimeupdate = () => {
+  const t = $('#player').currentTime; let k = -1;
+  for (let i = 0; i < words.length; i++) { if (words[i].a <= t) k = i; else break; }
+  if (k === lastOn) return;
+  const btns = $('#text').children;
+  if (lastOn >= 0 && btns[lastOn]) btns[lastOn].classList.remove('on');
+  if (k >= 0 && btns[k]) btns[k].classList.add('on');
+  lastOn = k;
+};
+
+/* ---------- sottotitoli e testo ---------- */
+function srt() {
+  const ts = t => { const ms = Math.round(t * 1000), h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60; return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + ',' + String(ms % 1000).padStart(3, '0'); };
+  const cues = []; let cur = null;
+  words.filter(w => !isFiller(w.text)).forEach(w => {
+    const t = w.text.trim();
+    if (!cur || (cur.text + ' ' + t).length > 84 || w.b - cur.a > 6 || /[.?!]$/.test(cur.text)) { cur = { a: w.a, b: w.b, text: t }; cues.push(cur); }
+    else { cur.text += ' ' + t; cur.b = w.b; }
+  });
+  return cues.map((c, i) => {
+    let line = c.text; if (line.length > 42) { const mid = line.lastIndexOf(' ', Math.ceil(line.length / 2) + 6); if (mid > 0) line = line.slice(0, mid) + '\n' + line.slice(mid + 1); }
+    return (i + 1) + '\n' + ts(c.a) + ' --> ' + ts(Math.max(c.b, c.a + 0.8)) + '\n' + line + '\n';
+  }).join('\n');
+}
+function download(text, name, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+const base = () => file.name.replace(/\.[^.]+$/, '');
+$('#srt').onclick = () => download(srt(), base() + '.srt', 'application/x-subrip');
+$('#txt').onclick = () => download(words.map(w => w.text).join('').trim() + '\n', base() + '.txt', 'text/plain');
+$('#copy').onclick = async () => {
+  const r = run, lines = ['Prova della trascrizione, Sottovoce v2',
+    'File: ' + file.name + ', ' + fmt(r.dur) + (r.stopped ? ' (trascritti ' + fmt(r.doneDur) + ')' : ''),
+    'Modello: ' + r.id + ' su ' + r.device + ', tempi ' + (r.wordLevel ? 'per parola' : 'per frase'),
+    'Tempo: ' + fmt(r.procS) + ' (' + num(r.speed) + '× il tempo reale); caricamento del modello ' + num(r.loadS) + ' s; scaricati ' + (r.bytes ? mb(r.bytes) : 'niente, era in memoria'),
+    'Parole sbagliate: ' + (r.wer ? num(r.wer.rate * 100) + ' % (' + r.wer.errors + ' su ' + r.wer.n + ')' : 'non misurate'),
+    'Riempitivi trovati: ' + r.fillers,
+    'Browser: ' + navigator.userAgent, '', 'Inizio del testo:', words.map(w => w.text).join('').trim().slice(0, 600)];
+  try { await navigator.clipboard.writeText(lines.join('\n')); $('#copyStatus').textContent = ' Copiati.'; }
+  catch (e) { $('#copyStatus').textContent = ' Non riesco a copiare.'; }
+};
+
+/* ---------- caricamento ---------- */
+function setFile(f) { if (!f) return; file = f; $('#go').disabled = false; $('#status').className = 'muted'; $('#status').textContent = 'Pronto: ' + f.name + '. Premi Trascrivi.'; }
+$('#file').onchange = e => setFile(e.target.files[0]);
+const drop = $('#drop');
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => setFile(e.dataTransfer.files[0]));
+$('#go').onclick = go;
+$('#stop').onclick = () => { stopAsked = true; $('#status').textContent = 'Mi fermo alla fine del pezzo in corso…'; };
+
+// per il banco di prova automatico
+window.SV = { chunkBounds, wer, norm, isFiller, srt, get words() { return words; }, get run() { return run; } };
+</script>
+</body>
+</html>
