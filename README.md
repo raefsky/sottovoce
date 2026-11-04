@@ -30,6 +30,10 @@
 - **Ducking automatico:** la musica si abbassa quando parli e risale nelle pause
 - **Esporta** in MP3 o WAV, con titolo, autore e copertina già inseriti nel file
 
+## Guida
+
+La guida completa, con le domande frequenti e un glossario dei termini, è nel **[wiki](https://github.com/raefsky/sottovoce/wiki)**.
+
 ## I tuoi file restano tuoi
 
 Tutto il lavoro avviene nel tuo browser. I file audio non vengono caricati su nessun server e non lasciano mai il tuo computer.
