@@ -762,6 +762,21 @@ dialog.voice-ask{width:min(440px,92vw)}
         <p class="status" id="musicStatus"></p>
         <div class="btnrow"><button class="btn" id="btnMusicRemove" disabled>Togli la musica</button></div>
       </article>
+      <article class="panel sigla" id="pSigla"><h2 data-info="La sigla suona all’inizio e la voce parte dopo; la chiusura suona alla fine, dopo la coda della musica, e si sposta da sola se la voce cambia lunghezza. Il volume si regola da solo al livello della voce.">Sigla e chiusura</h2>
+        <p class="desc">Suonano prima e dopo l’episodio, sempre al loro posto.</p>
+        <label class="slot" id="slotSig" style="--c:var(--fx3)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileSig">
+          <span class="slot-title">Sigla</span>
+          <span class="slot-name" id="nameSig">Trascina qui un file o clicca per sceglierlo</span>
+        </label>
+        <label class="slot" id="slotEnd" style="--c:var(--fx3)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileEnd">
+          <span class="slot-title">Chiusura</span>
+          <span class="slot-name" id="nameEnd">Trascina qui un file o clicca per sceglierlo</span>
+        </label>
+        <p class="status" id="siglaStatus"></p>
+        <div class="btnrow"><button class="btn" id="btnSigRemove" disabled>Togli la sigla</button><button class="btn" id="btnEndRemove" disabled>Togli la chiusura</button></div>
+      </article>
       <article class="panel duck" id="pDuck"><h2 data-info="Funziona come in Sottovoce: la musica si abbassa da sola quando parli e risale nelle pause. La soglia che riconosce la voce si regola da sola.">Ducking automatico</h2>
         <p class="desc">La musica scende quando parli e risale nelle pause.</p>
         <figure class="duckviz"><svg id="duckViz" viewBox="0 0 380 124" role="img" aria-label="Schema: la linea del volume della musica scende durante le due frasi della voce e risale nella pausa"></svg>
@@ -3833,7 +3848,7 @@ function applyOp(st, op) {
     case 'fix': { const a = cl(op.a), b = cl(op.b); if (b > a) fadeRange(segs, a, b, 'fix', { sens: op.sens }); break; }
     case 'multi': for (const o of op.ops) applyOp(st, o); return;
     case 'fxadd': { const e = { id: op.id, src: op.src, at: op.at, gainDb: op.gainDb || 0 }; fxApplySet(e, op); st.fx.push(e); break; }   // con i campi facoltativi, se ci sono
-    case 'fxmove': { const e = st.fx.find(x => x.id === op.id); if (e) e.at = op.at; break; }
+    case 'fxmove': { const e = st.fx.find(x => x.id === op.id); if (e && !e.anchor) e.at = op.at; break; }
     case 'fxgain': { const e = st.fx.find(x => x.id === op.id); if (e) e.gainDb = op.gainDb; break; }
     case 'fxdel': st.fx = st.fx.filter(x => x.id !== op.id); break;
     case 'fxedit': { const e = st.fx.find(x => x.id === op.id); if (e) fxApplySet(e, op.set); break; }
@@ -3868,12 +3883,21 @@ function redo() { if (!S.redo.length) return; const op = S.redo.pop(); S.ops.pus
 
 /* ---------- disposizione del mix ---------- */
 // Con la musica, la voce entra dopo l'intro e la musica continua per la coda.
+// Linea del tempo: [sigla] [intro musicale] voce [coda musicale] [chiusura].
+// Sigla e chiusura sono effetti ancorati (anchor 'start' e 'end'): la posizione la decide questa funzione, così
+// la voce parte dopo la sigla e la chiusura segue la fine anche quando la voce cambia lunghezza.
+// La musica di sottofondo suona da mStart (fine della sigla) a mEnd (inizio della chiusura, o fine del mix).
 function layout() {
-  const intro = S.musicId && S.vlen ? Math.round(P.intro * SR) : 0, tail = S.musicId && S.vlen ? Math.round(P.tail * SR) : 0;
+  let sig = 0, hasEnd = false;
+  for (const e of S.fx) { if (e.anchor === 'start') { e.at = 0; sig = Math.max(sig, fxSpan(e)); } else if (e.anchor === 'end') hasEnd = true; }
+  const mi = S.musicId && S.vlen ? Math.round(P.intro * SR) : 0, tail = S.musicId && S.vlen ? Math.round(P.tail * SR) : 0;
+  const intro = sig + mi;
   let total = S.vlen ? intro + S.vlen + tail : 0;
-  if (!S.vlen && S.musicId) total = S.sources.get(S.musicId).len;
+  if (!S.vlen && S.musicId) total = sig + S.sources.get(S.musicId).len;
+  const endAt = S.vlen || S.musicId ? total : sig;
+  if (hasEnd) for (const e of S.fx) if (e.anchor === 'end') e.at = endAt;
   for (const e of S.fx) total = Math.max(total, e.at + fxSpan(e));
-  return { intro, tail, total };
+  return { intro, tail, total, sig, mStart: sig, mEnd: hasEnd ? endAt : total };
 }
 
 /* ---------- lettura della traccia della voce ---------- */
@@ -4084,8 +4108,8 @@ function renderMix(t0, n, which, curves, only) {
     const m = S.sources.get(S.musicId), mc = musicChs(), C = curves || musicCurves(which), off = Math.round(P.musicOffset * SR);
     const ml = mc[0], mr = mc[1] || mc[0], len = m.len;
     for (let i = 0; i < n; i++) {
-      const t = t0 + i; if (t < 0 || t >= lay.total) continue;
-      let p = t + off; if (P.loop) p %= len; else if (p >= len) continue;
+      const t = t0 + i; if (t < lay.mStart || t >= lay.mEnd) continue;
+      let p = t - lay.mStart + off; if (P.loop) p %= len; else if (p >= len) continue;
       const q = t / 480, k = Math.min(C.gain.length - 2, Math.floor(q)), f = q - k, gg = C.gain[k] + (C.gain[k + 1] - C.gain[k]) * f;
       Lo[i] += ml[p] * gg; Ro[i] += mr[p] * gg;
     }
@@ -4457,18 +4481,20 @@ function drawBase() {
     const m = S.sources.get(S.musicId), C = musicCurves(which), off = Math.round(P.musicOffset * SR), my = gm.my + gm.mh / 2, mhalf = gm.mh / 2 - 6;
     const mk = 0.9 / Math.max(1e-6, peaksOfMusic(m)), base = dbToGain(P.musicDb || 0);
     drawBars(g, W, my, mhalf, cssv('--music'), (xa, xb) => {
-      const ta = v0 + xa * spp, tb = v0 + xb * spp; if (ta >= lay.total || tb <= 0) return 0;
-      let a = ta + off, b = tb + off;
+      const ta = v0 + xa * spp, tb = v0 + xb * spp; if (ta >= lay.mEnd || tb <= lay.mStart) return 0;
+      let a = Math.max(0, ta - lay.mStart) + off, b = Math.max(0, tb - lay.mStart) + off;
       if (P.loop) { a = ((a % m.len) + m.len) % m.len; b = a + (tb - ta); if (b > m.len) b = m.len; } else if (a >= m.len) return 0;
       minMax(m.chs[0], a, b, r);
       const gg = C.gain[Math.min(C.gain.length - 1, Math.max(0, Math.floor((ta + tb) / 2 / 480)))] / base;
       return Math.max(-r[0], r[1]) * mk * gg;
     });
     g.strokeStyle = cssv('--duck'); g.lineWidth = 1.5; g.setLineDash([5, 3]); g.beginPath();
+    let first = true;                    // solo nel tratto della musica (dopo la sigla, prima della chiusura)
     for (let x = 0; x <= W; x += 2) {
-      const t = v0 + x * spp, db = C.duck[Math.min(C.duck.length - 1, Math.max(0, Math.floor(t / 480)))] + 0;
+      const t = v0 + x * spp; if (t < lay.mStart || t > lay.mEnd) continue;
+      const db = C.duck[Math.min(C.duck.length - 1, Math.max(0, Math.floor(t / 480)))] + 0;
       const y = gm.my + 5 + (gm.mh - 10) * clamp(-db / 30, 0, 1);
-      if (x) g.lineTo(x, y); else g.moveTo(x, y);
+      if (first) { g.moveTo(x, y); first = false; } else g.lineTo(x, y);
     }
     g.stroke(); g.setLineDash([]); g.lineWidth = 1;
     laneLabel(g, 10, gm.my + 16, cssv('--music'), 'Musica', m.name, cLane, cInk, cMut);
@@ -4708,14 +4734,15 @@ function initTimeline() {
       // la freccia del mouse mostra cosa succede trascinando
       const { x, y } = pt(e), lay = layout(); if (!lay.total) { top.style.cursor = 'default'; return; }
       const h = laneAt(y) === 'fx' ? fxHit(x, W(), false, y) : null;
-      top.style.cursor = h ? (h.mode === 'move' ? 'grab' : h.mode === 'left' || h.mode === 'right' ? 'col-resize' : h.mode === 'env' ? 'move' : 'ew-resize') : seekZone(x, y, W()) ? 'ew-resize' : 'text';
+      top.style.cursor = h ? (h.mode === 'move' ? (h.e.anchor ? 'pointer' : 'grab') : h.mode === 'left' || h.mode === 'right' ? 'col-resize' : h.mode === 'env' ? 'move' : 'ew-resize') : seekZone(x, y, W()) ? 'ew-resize' : 'text';
       return;
     }
     const { x, y } = pt(e), lay = layout(), t = clamp(Math.round(tOfX(x, W())), 0, lay.total);
     if (DRAG.seek) { S.cur = t; S.anchor = t; drawTop(); updateSelInfo(); return; }
     if (Math.abs(x - DRAG.x0) > 3 || (DRAG.fx && DRAG.fx.mode === 'env' && Math.abs(y - DRAG.y0) > 3)) DRAG.moved = true;   // i punti della curva si spostano anche solo in verticale
     if (!DRAG.moved) return;
-    if (DRAG.fx) { fxDragTo(DRAG.fx, t, y); drawBase(); return; }
+    if (DRAG.fx) { if (DRAG.fx.mode === 'move' && DRAG.fx.start.anchor) return;   // sigla e chiusura non si spostano
+      fxDragTo(DRAG.fx, t, y); drawBase(); return; }
     S.sel = [Math.min(S.anchor, t), Math.max(S.anchor, t)]; S.cur = S.sel[0];
     drawTop(); updateSelInfo();
   });
@@ -5740,7 +5767,7 @@ function voiceEnvelope(which) {
 }
 function musicCurves(which) {
   const lay = layout();
-  const key = [S.version, which, S.procKey, P.match, P.target, P.voiceNorm, P.normEach, P.musicDb, P.fadeIn, P.fadeOut, P.intro, P.tail, P.duckOn, P.duckThrAuto, P.duckThr, P.duckDepth, P.duckAtk, P.duckRel, P.duckHold, P.duckLook, lay.total, P.vadMode === 'ai' ? 'vad' + P.vadSens + (vadReady() ? '' : '-attesa') : '', fxDuckKey()].join('|');
+  const key = [S.version, which, S.procKey, P.match, P.target, P.voiceNorm, P.normEach, P.musicDb, P.fadeIn, P.fadeOut, P.intro, P.tail, P.duckOn, P.duckThrAuto, P.duckThr, P.duckDepth, P.duckAtk, P.duckRel, P.duckHold, P.duckLook, lay.total, lay.mStart, lay.mEnd, P.vadMode === 'ai' ? 'vad' + P.vadSens + (vadReady() ? '' : '-attesa') : '', fxDuckKey()].join('|');
   if (MC.key === key) return MC.val;
   const n = Math.ceil(lay.total / 480) + 2, duck = new Float32Array(n), gain = new Float32Array(n);
   if (S.vlen && P.duckOn) {
@@ -5771,10 +5798,11 @@ function musicCurves(which) {
     let cur = 0;
     for (let j = 0; j < n; j++) { const t = tgt[j + la], c = t < cur ? ca : cr; cur = t + (cur - t) * c; if (cur < duck[j]) duck[j] = cur; }
   }
-  const total = lay.total / 480, fi = P.fadeIn * 100, fo = P.fadeOut * 100;
+  // dissolvenze all'inizio e alla fine del tratto della musica (dopo la sigla, prima della chiusura)
+  const ms = lay.mStart / 480, total = lay.mEnd / 480, fi = P.fadeIn * 100, fo = P.fadeOut * 100;
   for (let j = 0; j < n; j++) {
     let lin = dbToGain(P.musicDb + duck[j]);
-    if (fi > 0 && j < fi) { const x = j / fi; lin *= x * x * (3 - 2 * x); }
+    if (fi > 0 && j - ms < fi) { const x = clamp((j - ms) / fi, 0, 1); lin *= x * x * (3 - 2 * x); }
     if (fo > 0 && j > total - fo) { const x = clamp((total - j) / fo, 0, 1); lin *= x * x * (3 - 2 * x); }
     gain[j] = lin;
   }
@@ -5821,6 +5849,48 @@ async function importFx(file) {
     pushOp({ type: 'fxadd', id: fid, src: id, at, gainDb: 0, fadeIn: FX_FADE_NEW, fadeOut: FX_FADE_NEW, label: 'Effetto “' + file.name + '” a ' + fmtSec(at) });
   } catch { toast('Questo file non si può leggere. Prova con un MP3, WAV, M4A o FLAC.'); }
   finally { busy(false); }
+}
+/* ---------- sigla e chiusura ---------- */
+// Sono effetti ancorati: anchor 'start' (la sigla, all'inizio, con la voce che parte dopo) o 'end' (la chiusura, dopo
+// la coda della musica). La posizione la decide layout(); volume, dissolvenze e taglio si regolano come per ogni effetto.
+const anchoredFx = kind => S.fx.find(e => e.anchor === kind);
+const ANCHOR_NAME = { start: 'Sigla', end: 'Chiusura' };
+// volume che porta il file al livello della voce (obiettivo della voce, in LUFS)
+function anchorGain(chs) {
+  const max = SR * 120, n = chs[0].length, a = n > max ? Math.floor((n - max) / 2) : 0, b = Math.min(n, a + max);
+  const l = lufs(chs.map(c => c.subarray(a, b)), chs.length === 1);
+  return l > -80 ? Math.round(clamp(P.target - l, -30, 12) * 2) / 2 : 0;
+}
+// la base dell'operazione: si usa per un file nuovo e per i modelli di serie
+function anchoredOp(kind, srcId, gainDb, extra) {
+  return Object.assign({ type: 'fxadd', id: uid(), src: srcId, at: 0, anchor: kind, gainDb, fadeIn: FX_FADE_NEW, fadeOut: FX_FADE_NEW, name: ANCHOR_NAME[kind], color: 'fx3' }, extra || {});
+}
+async function importAnchored(file, kind) {
+  if (!file) return;
+  stopIfPlaying(); busy(true, 'Lettura di ' + file.name + '…', 0.3);
+  try {
+    const d = await decodeFile(file);
+    if (d.chs[0].length > SR * 180) toast('Questo file dura più di tre minuti: se è un sottofondo, caricalo come musica.');
+    const id = addSource(file.name, 'effetto', d.chs); saveSource(id);
+    const g = anchorGain(d.chs), add = anchoredOp(kind, id, g), old = anchoredFx(kind), what = (kind === 'start' ? 'Sigla' : 'Chiusura') + ' “' + file.name + '”';
+    S.fxSel = add.id;
+    pushOp(old ? { type: 'multi', ops: [{ type: 'fxdel', id: old.id }, add], label: what + ' al posto di quella di prima' } : Object.assign(add, { label: what }));
+    $('#siglaStatus').textContent = what + ': volume ' + (g >= 0 ? '+' : '') + fmtNum(g, 1) + ' dB per stare al livello della voce.';
+    toast(kind === 'start' ? 'Sigla aggiunta: la voce parte dopo.' : 'Chiusura aggiunta: suona alla fine e si sposta da sola se la voce cambia.');
+  } catch { toast('Questo file non si può leggere. Prova con un MP3, WAV, M4A o FLAC.'); }
+  finally { busy(false); }
+}
+function removeAnchored(kind) {
+  const e = anchoredFx(kind); if (!e) return;
+  stopIfPlaying(); pushOp({ type: 'fxdel', id: e.id, label: kind === 'start' ? 'Tolta la sigla' : 'Tolta la chiusura' });
+}
+function updateAnchoredUI() {
+  const box = $('#pSigla'); if (!box) return;
+  for (const [kind, nm, btn] of [['start', '#nameSig', '#btnSigRemove'], ['end', '#nameEnd', '#btnEndRemove']]) {
+    const e = anchoredFx(kind), src = e && S.sources.get(e.src);
+    $(nm).textContent = src ? src.name + ' (' + fmtDur(fxSpan(e) / SR) + ')' : 'Trascina qui un file o clicca per sceglierlo';
+    $(btn).disabled = !e;
+  }
 }
 // elenco degli effetti (un clic sceglie quello da modificare) e pannello dell'effetto selezionato
 const FX_HELP = {
@@ -5882,6 +5952,7 @@ function fxSlider(id, text, min, max, step, val, fmt, onCommit) {
   return { label, input, out };
 }
 function renderFxList() {
+  updateAnchoredUI();
   const ul = $('#fxList'), box = $('#fxEdit'); ul.innerHTML = ''; box.innerHTML = '';
   if (S.fxSel && !S.fx.some(e => e.id === S.fxSel)) S.fxSel = null;
   if (!S.fx.length) { const li = document.createElement('li'); li.textContent = 'Nessun effetto inserito.'; ul.appendChild(li); return; }
@@ -6365,7 +6436,7 @@ function fxPreview(e) {
 function selectFx(id) { if (S.fxSel === id) return; S.fxSel = id; renderFxList(); drawBase(); }
 
 // campi che una modifica può impostare; null toglie il campo (torna al valore neutro)
-const FX_FIELDS = ['at', 'gainDb', 'in', 'out', 'len', 'loop', 'fadeIn', 'fadeOut', 'env', 'pan', 'rate', 'rev', 'lp', 'name', 'color', 'mute', 'solo', 'duck'];
+const FX_FIELDS = ['anchor', 'at', 'gainDb', 'in', 'out', 'len', 'loop', 'fadeIn', 'fadeOut', 'env', 'pan', 'rate', 'rev', 'lp', 'name', 'color', 'mute', 'solo', 'duck'];
 function fxApplySet(e, set) { for (const k of FX_FIELDS) if (k in set) { if (set[k] == null || set[k] === false || ((k === 'fadeIn' || k === 'fadeOut') && !(set[k] > 0)) || (k === 'env' && !set[k].length) || (k === 'pan' && !set[k]) || (k === 'rate' && set[k] === 1) || (k === 'lp' && !set[k]) || (k === 'name' && !String(set[k]).trim()) || (k === 'color' && set[k] === 'fx') || (k === 'duck' && !(set[k] < 0))) delete e[k]; else e[k] = k === 'env' ? set[k].map(p => p.slice()) : k === 'rev' ? { type: set[k].type, mix: set[k].mix } : set[k]; } if (e.gainDb == null) e.gainDb = 0; }
 
 /* ---- 70-export.js ---- */
@@ -8269,6 +8340,8 @@ function init() {
   on('#btnMusicRemove', removeMusic); on('#btnCover', () => $('#fileCover').click()); on('#btnCoverDel', () => { META.cover = null; showCover(); scheduleSave(); });
   on('#btnInfo', openInfo); on('#btnGuide', () => $('#guide').showModal());
   bindFile('#fileVoice', '#slotVoice', importVoice); bindFile('#fileMusic', '#slotMusic', importMusic); bindFile('#fileFx', '#slotFx', importFx);
+  bindFile('#fileSig', '#slotSig', f => importAnchored(f, 'start')); bindFile('#fileEnd', '#slotEnd', f => importAnchored(f, 'end'));
+  on('#btnSigRemove', () => removeAnchored('start')); on('#btnEndRemove', () => removeAnchored('end'));
   bindFile('#fileReplace', null, f => importVoice(f, true));
   on('#btnReplaceVoice', () => $('#fileReplace').click());
   bindFile('#fileProj', null, openProject); bindFile('#fileCover', null, pickCover);

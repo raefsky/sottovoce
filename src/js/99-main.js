@@ -31,6 +31,8 @@ function init() {
   on('#btnMusicRemove', removeMusic); on('#btnCover', () => $('#fileCover').click()); on('#btnCoverDel', () => { META.cover = null; showCover(); scheduleSave(); });
   on('#btnInfo', openInfo); on('#btnGuide', () => $('#guide').showModal());
   bindFile('#fileVoice', '#slotVoice', importVoice); bindFile('#fileMusic', '#slotMusic', importMusic); bindFile('#fileFx', '#slotFx', importFx);
+  bindFile('#fileSig', '#slotSig', f => importAnchored(f, 'start')); bindFile('#fileEnd', '#slotEnd', f => importAnchored(f, 'end'));
+  on('#btnSigRemove', () => removeAnchored('start')); on('#btnEndRemove', () => removeAnchored('end'));
   bindFile('#fileReplace', null, f => importVoice(f, true));
   on('#btnReplaceVoice', () => $('#fileReplace').click());
   bindFile('#fileProj', null, openProject); bindFile('#fileCover', null, pickCover);

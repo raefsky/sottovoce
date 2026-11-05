@@ -83,7 +83,7 @@ function applyOp(st, op) {
     case 'fix': { const a = cl(op.a), b = cl(op.b); if (b > a) fadeRange(segs, a, b, 'fix', { sens: op.sens }); break; }
     case 'multi': for (const o of op.ops) applyOp(st, o); return;
     case 'fxadd': { const e = { id: op.id, src: op.src, at: op.at, gainDb: op.gainDb || 0 }; fxApplySet(e, op); st.fx.push(e); break; }   // con i campi facoltativi, se ci sono
-    case 'fxmove': { const e = st.fx.find(x => x.id === op.id); if (e) e.at = op.at; break; }
+    case 'fxmove': { const e = st.fx.find(x => x.id === op.id); if (e && !e.anchor) e.at = op.at; break; }
     case 'fxgain': { const e = st.fx.find(x => x.id === op.id); if (e) e.gainDb = op.gainDb; break; }
     case 'fxdel': st.fx = st.fx.filter(x => x.id !== op.id); break;
     case 'fxedit': { const e = st.fx.find(x => x.id === op.id); if (e) fxApplySet(e, op.set); break; }
@@ -118,12 +118,21 @@ function redo() { if (!S.redo.length) return; const op = S.redo.pop(); S.ops.pus
 
 /* ---------- disposizione del mix ---------- */
 // Con la musica, la voce entra dopo l'intro e la musica continua per la coda.
+// Linea del tempo: [sigla] [intro musicale] voce [coda musicale] [chiusura].
+// Sigla e chiusura sono effetti ancorati (anchor 'start' e 'end'): la posizione la decide questa funzione, così
+// la voce parte dopo la sigla e la chiusura segue la fine anche quando la voce cambia lunghezza.
+// La musica di sottofondo suona da mStart (fine della sigla) a mEnd (inizio della chiusura, o fine del mix).
 function layout() {
-  const intro = S.musicId && S.vlen ? Math.round(P.intro * SR) : 0, tail = S.musicId && S.vlen ? Math.round(P.tail * SR) : 0;
+  let sig = 0, hasEnd = false;
+  for (const e of S.fx) { if (e.anchor === 'start') { e.at = 0; sig = Math.max(sig, fxSpan(e)); } else if (e.anchor === 'end') hasEnd = true; }
+  const mi = S.musicId && S.vlen ? Math.round(P.intro * SR) : 0, tail = S.musicId && S.vlen ? Math.round(P.tail * SR) : 0;
+  const intro = sig + mi;
   let total = S.vlen ? intro + S.vlen + tail : 0;
-  if (!S.vlen && S.musicId) total = S.sources.get(S.musicId).len;
+  if (!S.vlen && S.musicId) total = sig + S.sources.get(S.musicId).len;
+  const endAt = S.vlen || S.musicId ? total : sig;
+  if (hasEnd) for (const e of S.fx) if (e.anchor === 'end') e.at = endAt;
   for (const e of S.fx) total = Math.max(total, e.at + fxSpan(e));
-  return { intro, tail, total };
+  return { intro, tail, total, sig, mStart: sig, mEnd: hasEnd ? endAt : total };
 }
 
 /* ---------- lettura della traccia della voce ---------- */

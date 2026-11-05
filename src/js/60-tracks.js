@@ -31,7 +31,7 @@ function voiceEnvelope(which) {
 }
 function musicCurves(which) {
   const lay = layout();
-  const key = [S.version, which, S.procKey, P.match, P.target, P.voiceNorm, P.normEach, P.musicDb, P.fadeIn, P.fadeOut, P.intro, P.tail, P.duckOn, P.duckThrAuto, P.duckThr, P.duckDepth, P.duckAtk, P.duckRel, P.duckHold, P.duckLook, lay.total, P.vadMode === 'ai' ? 'vad' + P.vadSens + (vadReady() ? '' : '-attesa') : '', fxDuckKey()].join('|');
+  const key = [S.version, which, S.procKey, P.match, P.target, P.voiceNorm, P.normEach, P.musicDb, P.fadeIn, P.fadeOut, P.intro, P.tail, P.duckOn, P.duckThrAuto, P.duckThr, P.duckDepth, P.duckAtk, P.duckRel, P.duckHold, P.duckLook, lay.total, lay.mStart, lay.mEnd, P.vadMode === 'ai' ? 'vad' + P.vadSens + (vadReady() ? '' : '-attesa') : '', fxDuckKey()].join('|');
   if (MC.key === key) return MC.val;
   const n = Math.ceil(lay.total / 480) + 2, duck = new Float32Array(n), gain = new Float32Array(n);
   if (S.vlen && P.duckOn) {
@@ -62,10 +62,11 @@ function musicCurves(which) {
     let cur = 0;
     for (let j = 0; j < n; j++) { const t = tgt[j + la], c = t < cur ? ca : cr; cur = t + (cur - t) * c; if (cur < duck[j]) duck[j] = cur; }
   }
-  const total = lay.total / 480, fi = P.fadeIn * 100, fo = P.fadeOut * 100;
+  // dissolvenze all'inizio e alla fine del tratto della musica (dopo la sigla, prima della chiusura)
+  const ms = lay.mStart / 480, total = lay.mEnd / 480, fi = P.fadeIn * 100, fo = P.fadeOut * 100;
   for (let j = 0; j < n; j++) {
     let lin = dbToGain(P.musicDb + duck[j]);
-    if (fi > 0 && j < fi) { const x = j / fi; lin *= x * x * (3 - 2 * x); }
+    if (fi > 0 && j - ms < fi) { const x = clamp((j - ms) / fi, 0, 1); lin *= x * x * (3 - 2 * x); }
     if (fo > 0 && j > total - fo) { const x = clamp((total - j) / fo, 0, 1); lin *= x * x * (3 - 2 * x); }
     gain[j] = lin;
   }
@@ -112,6 +113,48 @@ async function importFx(file) {
     pushOp({ type: 'fxadd', id: fid, src: id, at, gainDb: 0, fadeIn: FX_FADE_NEW, fadeOut: FX_FADE_NEW, label: 'Effetto “' + file.name + '” a ' + fmtSec(at) });
   } catch { toast('Questo file non si può leggere. Prova con un MP3, WAV, M4A o FLAC.'); }
   finally { busy(false); }
+}
+/* ---------- sigla e chiusura ---------- */
+// Sono effetti ancorati: anchor 'start' (la sigla, all'inizio, con la voce che parte dopo) o 'end' (la chiusura, dopo
+// la coda della musica). La posizione la decide layout(); volume, dissolvenze e taglio si regolano come per ogni effetto.
+const anchoredFx = kind => S.fx.find(e => e.anchor === kind);
+const ANCHOR_NAME = { start: 'Sigla', end: 'Chiusura' };
+// volume che porta il file al livello della voce (obiettivo della voce, in LUFS)
+function anchorGain(chs) {
+  const max = SR * 120, n = chs[0].length, a = n > max ? Math.floor((n - max) / 2) : 0, b = Math.min(n, a + max);
+  const l = lufs(chs.map(c => c.subarray(a, b)), chs.length === 1);
+  return l > -80 ? Math.round(clamp(P.target - l, -30, 12) * 2) / 2 : 0;
+}
+// la base dell'operazione: si usa per un file nuovo e per i modelli di serie
+function anchoredOp(kind, srcId, gainDb, extra) {
+  return Object.assign({ type: 'fxadd', id: uid(), src: srcId, at: 0, anchor: kind, gainDb, fadeIn: FX_FADE_NEW, fadeOut: FX_FADE_NEW, name: ANCHOR_NAME[kind], color: 'fx3' }, extra || {});
+}
+async function importAnchored(file, kind) {
+  if (!file) return;
+  stopIfPlaying(); busy(true, 'Lettura di ' + file.name + '…', 0.3);
+  try {
+    const d = await decodeFile(file);
+    if (d.chs[0].length > SR * 180) toast('Questo file dura più di tre minuti: se è un sottofondo, caricalo come musica.');
+    const id = addSource(file.name, 'effetto', d.chs); saveSource(id);
+    const g = anchorGain(d.chs), add = anchoredOp(kind, id, g), old = anchoredFx(kind), what = (kind === 'start' ? 'Sigla' : 'Chiusura') + ' “' + file.name + '”';
+    S.fxSel = add.id;
+    pushOp(old ? { type: 'multi', ops: [{ type: 'fxdel', id: old.id }, add], label: what + ' al posto di quella di prima' } : Object.assign(add, { label: what }));
+    $('#siglaStatus').textContent = what + ': volume ' + (g >= 0 ? '+' : '') + fmtNum(g, 1) + ' dB per stare al livello della voce.';
+    toast(kind === 'start' ? 'Sigla aggiunta: la voce parte dopo.' : 'Chiusura aggiunta: suona alla fine e si sposta da sola se la voce cambia.');
+  } catch { toast('Questo file non si può leggere. Prova con un MP3, WAV, M4A o FLAC.'); }
+  finally { busy(false); }
+}
+function removeAnchored(kind) {
+  const e = anchoredFx(kind); if (!e) return;
+  stopIfPlaying(); pushOp({ type: 'fxdel', id: e.id, label: kind === 'start' ? 'Tolta la sigla' : 'Tolta la chiusura' });
+}
+function updateAnchoredUI() {
+  const box = $('#pSigla'); if (!box) return;
+  for (const [kind, nm, btn] of [['start', '#nameSig', '#btnSigRemove'], ['end', '#nameEnd', '#btnEndRemove']]) {
+    const e = anchoredFx(kind), src = e && S.sources.get(e.src);
+    $(nm).textContent = src ? src.name + ' (' + fmtDur(fxSpan(e) / SR) + ')' : 'Trascina qui un file o clicca per sceglierlo';
+    $(btn).disabled = !e;
+  }
 }
 // elenco degli effetti (un clic sceglie quello da modificare) e pannello dell'effetto selezionato
 const FX_HELP = {
@@ -173,6 +216,7 @@ function fxSlider(id, text, min, max, step, val, fmt, onCommit) {
   return { label, input, out };
 }
 function renderFxList() {
+  updateAnchoredUI();
   const ul = $('#fxList'), box = $('#fxEdit'); ul.innerHTML = ''; box.innerHTML = '';
   if (S.fxSel && !S.fx.some(e => e.id === S.fxSel)) S.fxSel = null;
   if (!S.fx.length) { const li = document.createElement('li'); li.textContent = 'Nessun effetto inserito.'; ul.appendChild(li); return; }

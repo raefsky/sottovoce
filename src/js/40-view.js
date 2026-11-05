@@ -108,18 +108,20 @@ function drawBase() {
     const m = S.sources.get(S.musicId), C = musicCurves(which), off = Math.round(P.musicOffset * SR), my = gm.my + gm.mh / 2, mhalf = gm.mh / 2 - 6;
     const mk = 0.9 / Math.max(1e-6, peaksOfMusic(m)), base = dbToGain(P.musicDb || 0);
     drawBars(g, W, my, mhalf, cssv('--music'), (xa, xb) => {
-      const ta = v0 + xa * spp, tb = v0 + xb * spp; if (ta >= lay.total || tb <= 0) return 0;
-      let a = ta + off, b = tb + off;
+      const ta = v0 + xa * spp, tb = v0 + xb * spp; if (ta >= lay.mEnd || tb <= lay.mStart) return 0;
+      let a = Math.max(0, ta - lay.mStart) + off, b = Math.max(0, tb - lay.mStart) + off;
       if (P.loop) { a = ((a % m.len) + m.len) % m.len; b = a + (tb - ta); if (b > m.len) b = m.len; } else if (a >= m.len) return 0;
       minMax(m.chs[0], a, b, r);
       const gg = C.gain[Math.min(C.gain.length - 1, Math.max(0, Math.floor((ta + tb) / 2 / 480)))] / base;
       return Math.max(-r[0], r[1]) * mk * gg;
     });
     g.strokeStyle = cssv('--duck'); g.lineWidth = 1.5; g.setLineDash([5, 3]); g.beginPath();
+    let first = true;                    // solo nel tratto della musica (dopo la sigla, prima della chiusura)
     for (let x = 0; x <= W; x += 2) {
-      const t = v0 + x * spp, db = C.duck[Math.min(C.duck.length - 1, Math.max(0, Math.floor(t / 480)))] + 0;
+      const t = v0 + x * spp; if (t < lay.mStart || t > lay.mEnd) continue;
+      const db = C.duck[Math.min(C.duck.length - 1, Math.max(0, Math.floor(t / 480)))] + 0;
       const y = gm.my + 5 + (gm.mh - 10) * clamp(-db / 30, 0, 1);
-      if (x) g.lineTo(x, y); else g.moveTo(x, y);
+      if (first) { g.moveTo(x, y); first = false; } else g.lineTo(x, y);
     }
     g.stroke(); g.setLineDash([]); g.lineWidth = 1;
     laneLabel(g, 10, gm.my + 16, cssv('--music'), 'Musica', m.name, cLane, cInk, cMut);
@@ -359,14 +361,15 @@ function initTimeline() {
       // la freccia del mouse mostra cosa succede trascinando
       const { x, y } = pt(e), lay = layout(); if (!lay.total) { top.style.cursor = 'default'; return; }
       const h = laneAt(y) === 'fx' ? fxHit(x, W(), false, y) : null;
-      top.style.cursor = h ? (h.mode === 'move' ? 'grab' : h.mode === 'left' || h.mode === 'right' ? 'col-resize' : h.mode === 'env' ? 'move' : 'ew-resize') : seekZone(x, y, W()) ? 'ew-resize' : 'text';
+      top.style.cursor = h ? (h.mode === 'move' ? (h.e.anchor ? 'pointer' : 'grab') : h.mode === 'left' || h.mode === 'right' ? 'col-resize' : h.mode === 'env' ? 'move' : 'ew-resize') : seekZone(x, y, W()) ? 'ew-resize' : 'text';
       return;
     }
     const { x, y } = pt(e), lay = layout(), t = clamp(Math.round(tOfX(x, W())), 0, lay.total);
     if (DRAG.seek) { S.cur = t; S.anchor = t; drawTop(); updateSelInfo(); return; }
     if (Math.abs(x - DRAG.x0) > 3 || (DRAG.fx && DRAG.fx.mode === 'env' && Math.abs(y - DRAG.y0) > 3)) DRAG.moved = true;   // i punti della curva si spostano anche solo in verticale
     if (!DRAG.moved) return;
-    if (DRAG.fx) { fxDragTo(DRAG.fx, t, y); drawBase(); return; }
+    if (DRAG.fx) { if (DRAG.fx.mode === 'move' && DRAG.fx.start.anchor) return;   // sigla e chiusura non si spostano
+      fxDragTo(DRAG.fx, t, y); drawBase(); return; }
     S.sel = [Math.min(S.anchor, t), Math.max(S.anchor, t)]; S.cur = S.sel[0];
     drawTop(); updateSelInfo();
   });

@@ -361,6 +361,6 @@ function fxPreview(e) {
 function selectFx(id) { if (S.fxSel === id) return; S.fxSel = id; renderFxList(); drawBase(); }
 
 // campi che una modifica può impostare; null toglie il campo (torna al valore neutro)
-const FX_FIELDS = ['at', 'gainDb', 'in', 'out', 'len', 'loop', 'fadeIn', 'fadeOut', 'env', 'pan', 'rate', 'rev', 'lp', 'name', 'color', 'mute', 'solo', 'duck'];
+const FX_FIELDS = ['anchor', 'at', 'gainDb', 'in', 'out', 'len', 'loop', 'fadeIn', 'fadeOut', 'env', 'pan', 'rate', 'rev', 'lp', 'name', 'color', 'mute', 'solo', 'duck'];
 function fxApplySet(e, set) { for (const k of FX_FIELDS) if (k in set) { if (set[k] == null || set[k] === false || ((k === 'fadeIn' || k === 'fadeOut') && !(set[k] > 0)) || (k === 'env' && !set[k].length) || (k === 'pan' && !set[k]) || (k === 'rate' && set[k] === 1) || (k === 'lp' && !set[k]) || (k === 'name' && !String(set[k]).trim()) || (k === 'color' && set[k] === 'fx') || (k === 'duck' && !(set[k] < 0))) delete e[k]; else e[k] = k === 'env' ? set[k].map(p => p.slice()) : k === 'rev' ? { type: set[k].type, mix: set[k].mix } : set[k]; } if (e.gainDb == null) e.gainDb = 0; }
 

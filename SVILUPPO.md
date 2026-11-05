@@ -46,6 +46,14 @@ node strumenti/prova-file.mjs
 
 Questa prova serve la pagina da un piccolo server su `127.0.0.1`, perché le funzioni dei file richiedono un indirizzo sicuro. Le finestre "Salva" e "Apri" del sistema sono sostituite da un file vero nello spazio privato del browser (OPFS). Il ricollegamento dopo una ricarica non si prova in automatico: nel Chromium delle prove rileggere dal database un collegamento a un file OPFS fa crollare il browser, anche in una pagina vuota. Per questo l'app lo rilegge solo quando si clicca l'indicatore, e quel passaggio va provato a mano su Chrome o Edge.
 
+Per sigla e chiusura (effetti ancorati all'inizio e alla fine) e per il tratto della musica:
+
+```bash
+node strumenti/prova-sigla.mjs
+```
+
+Usa file di prova riconoscibili dal tono (sigla a 440 Hz, chiusura a 660 Hz, musica a 220 Hz) e controlla nel mix cosa suona e dove.
+
 Il volume di un file mono si misura come se suonasse su due casse, come fa l'app: -16 LUFS su due casse corrisponde a -19 LUFS misurati su un canale solo, la raccomandazione AES per i podcast in mono.
 
 ## Pubblicare

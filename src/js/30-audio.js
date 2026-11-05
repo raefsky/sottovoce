@@ -56,8 +56,8 @@ function renderMix(t0, n, which, curves, only) {
     const m = S.sources.get(S.musicId), mc = musicChs(), C = curves || musicCurves(which), off = Math.round(P.musicOffset * SR);
     const ml = mc[0], mr = mc[1] || mc[0], len = m.len;
     for (let i = 0; i < n; i++) {
-      const t = t0 + i; if (t < 0 || t >= lay.total) continue;
-      let p = t + off; if (P.loop) p %= len; else if (p >= len) continue;
+      const t = t0 + i; if (t < lay.mStart || t >= lay.mEnd) continue;
+      let p = t - lay.mStart + off; if (P.loop) p %= len; else if (p >= len) continue;
       const q = t / 480, k = Math.min(C.gain.length - 2, Math.floor(q)), f = q - k, gg = C.gain[k] + (C.gain[k + 1] - C.gain[k]) * f;
       Lo[i] += ml[p] * gg; Ro[i] += mr[p] * gg;
     }

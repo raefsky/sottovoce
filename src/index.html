@@ -255,6 +255,21 @@
         <p class="status" id="musicStatus"></p>
         <div class="btnrow"><button class="btn" id="btnMusicRemove" disabled>Togli la musica</button></div>
       </article>
+      <article class="panel sigla" id="pSigla"><h2 data-info="La sigla suona all’inizio e la voce parte dopo; la chiusura suona alla fine, dopo la coda della musica, e si sposta da sola se la voce cambia lunghezza. Il volume si regola da solo al livello della voce.">Sigla e chiusura</h2>
+        <p class="desc">Suonano prima e dopo l’episodio, sempre al loro posto.</p>
+        <label class="slot" id="slotSig" style="--c:var(--fx3)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileSig">
+          <span class="slot-title">Sigla</span>
+          <span class="slot-name" id="nameSig">Trascina qui un file o clicca per sceglierlo</span>
+        </label>
+        <label class="slot" id="slotEnd" style="--c:var(--fx3)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileEnd">
+          <span class="slot-title">Chiusura</span>
+          <span class="slot-name" id="nameEnd">Trascina qui un file o clicca per sceglierlo</span>
+        </label>
+        <p class="status" id="siglaStatus"></p>
+        <div class="btnrow"><button class="btn" id="btnSigRemove" disabled>Togli la sigla</button><button class="btn" id="btnEndRemove" disabled>Togli la chiusura</button></div>
+      </article>
       <article class="panel duck" id="pDuck"><h2 data-info="Funziona come in Sottovoce: la musica si abbassa da sola quando parli e risale nelle pause. La soglia che riconosce la voce si regola da sola.">Ducking automatico</h2>
         <p class="desc">La musica scende quando parli e risale nelle pause.</p>
         <figure class="duckviz"><svg id="duckViz" viewBox="0 0 380 124" role="img" aria-label="Schema: la linea del volume della musica scende durante le due frasi della voce e risale nella pausa"></svg>
