@@ -120,4 +120,8 @@ Poi si parte con la prima fase vera: riordino del codice, nuova interfaccia, mod
 **Trascrizione, Whisper base sul Mac (Edge, WebGPU):**
 - 2:14 di un capitolo letto in 14 s (9,5 volte il tempo reale), 199 MB scaricati, 31 s di primo caricamento.
 - Circa 10 errori su 100 parole nell'estratto ("divento" per "di vento", "le vigati" per "levigati", "crista" per "cresta"…): troppi per sottotitoli e montaggio dal testo.
-- Da provare: Whisper small e large v3 turbo sullo stesso file, con il testo originale come riferimento.
+
+**Trascrizione, Whisper small sul Mac (Edge, WebGPU):**
+- Stesso file: 28 s (4,7 volte il tempo reale), 562 MB scaricati, 88 s di primo caricamento.
+- Circa 2 errori su 100 parole nell'estratto ("Alghe hanno date" per "alghe annodate", "ingi nocchi" per "inginocchi"), più qualche maiuscola e punteggiatura. Quasi tutti gli errori di base sono spariti.
+- Proposta: Whisper small è il modello della v2, scaricato solo da chi attiva il testo dell'episodio. Da provare ancora: un pezzo parlato a braccio, per vedere se scrive gli "ehm".
