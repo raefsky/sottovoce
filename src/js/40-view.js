@@ -58,12 +58,15 @@ function musicViewScale(which) {
   return { k: 0.9 / Math.max(1e-6, peaksOfMusic(m)), base: dbToGain(P.musicDb || 0), db: false };
 }
 const musicViewH = (a, db) => !db ? a : a > 0 ? clamp((20 * Math.log10(a) + MUSIC_DB) / MUSIC_DB, 0, 1) : 0;
+// peakAt restituisce il picco del tratto, oppure [picco, volume medio]: in quel caso il picco si disegna chiaro e il
+// volume medio pieno sopra, come in Audacity, così anche nella vista d'insieme si vedono frasi forti, piane e pause
 function drawBars(g, W, cy, half, color, peakAt, x0) {
   g.fillStyle = color; x0 = x0 || 0;
   for (let x = 0; x < W; x += 3) {
-    const a = peakAt(x, x + 3); if (a <= 0) continue;
+    const v = peakAt(x, x + 3), two = Array.isArray(v), a = two ? v[0] : v; if (a <= 0) continue;
     const h = Math.max(1, clamp(a, 0, 1) * half);
-    rrect(g, x0 + x, cy - h, 2, 2 * h, 1); g.fill();
+    if (two) { g.globalAlpha = 0.36; rrect(g, x0 + x, cy - h, 2, 2 * h, 1); g.fill(); g.globalAlpha = 1; const hr = Math.max(1, clamp(v[1], 0, 1) * half); rrect(g, x0 + x, cy - hr, 2, 2 * hr, 1); g.fill(); }
+    else { rrect(g, x0 + x, cy - h, 2, 2 * h, 1); g.fill(); }
   }
 }
 function drawBase() {
@@ -79,7 +82,7 @@ function drawBase() {
   if (gm.mh) { rrect(g, 0, gm.my, W, gm.mh, 4); g.fill(); }
   if (gm.fh) { rrect(g, 0, gm.fy, W, gm.fh, 4); g.fill(); }
   if (S.fit) S.view = [0, Math.max(lay.total, SR, S.recording ? REC.viewEnd || 0 : 0)];
-  const sp = span(), v0 = S.view[0], step = niceStep(sp / SR, W), spp = sp / W, r = [0, 0];
+  const sp = span(), v0 = S.view[0], step = niceStep(sp / SR, W), spp = sp / W, r = [0, 0], rs = [0, 0];
   // righello dei tempi
   g.font = FONT_MONO; g.lineWidth = 1;
   for (let i = Math.ceil(v0 / SR / step); i * step * SR <= S.view[1]; i++) {
@@ -101,15 +104,16 @@ function drawBase() {
     drawBars(g, W, cy, half, cV, (xa, xb) => {
       const ta = v0 + xa * spp - lay.intro, tb = v0 + xb * spp - lay.intro;
       if (tb <= 0 || ta >= S.vlen) return 0;
-      let pk = 0;
+      let pk = 0, ss = 0, nn = 0;
       for (let i = segIndexAt(Math.max(0, ta)); i < S.segs.length && S.segT[i] < tb; i++) {
-        const sgm = S.segs[i], T = S.segT[i]; if (T + sgm.len <= ta || !sgm.src) continue;
+        const sgm = S.segs[i], T = S.segT[i]; if (T + sgm.len <= ta) continue;
         const pa = Math.max(ta, T) - T, pb = Math.min(tb, T + sgm.len) - T;
-        minMax(voiceData(sgm.src, useProc), sgm.s + pa, sgm.s + pb, r);
-        const gg = (sgm.f.length ? fadeGain(sgm.f, (pa + pb) / 2) : 1) * srcGain(sgm.src, useProc);
-        pk = Math.max(pk, -r[0] * gg, r[1] * gg);
+        if (!sgm.src) { nn += pb - pa; continue; }          // silenzio inserito: conta nel volume medio
+        const d = voiceData(sgm.src, useProc), gg = (sgm.f.length ? fadeGain(sgm.f, (pa + pb) / 2) : 1) * srcGain(sgm.src, useProc);
+        minMax(d, sgm.s + pa, sgm.s + pb, r); pk = Math.max(pk, -r[0] * gg, r[1] * gg);
+        sumSq(d, sgm.s + pa, sgm.s + pb, rs); ss += rs[0] * gg * gg; nn += rs[1];
       }
-      return pk * k;
+      return [pk * k, nn > 0 ? Math.sqrt(ss / nn) * k : 0];
     });
   }
   // punti di taglio e silenzi inseriti

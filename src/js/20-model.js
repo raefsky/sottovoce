@@ -253,15 +253,35 @@ function renderVoiceAll(useProc, onProg) { return renderVoice(0, S.vlen, useProc
 
 /* ---------- picchi per il disegno ---------- */
 const peakCache = new WeakMap();
+// piramide per il disegno, calcolata una volta per ogni originale: per blocchi di 64 e di 2048 campioni il minimo,
+// il massimo e la somma dei quadrati (ss), così picco e volume medio di qualsiasi tratto si leggono in un attimo
 function peaksOf(arr) {
   let p = peakCache.get(arr); if (p) return p;
-  const mk = B => { const n = Math.ceil(arr.length / B), mn = new Float32Array(n), mx = new Float32Array(n);
-    for (let i = 0; i < n; i++) { let lo = 1e9, hi = -1e9; for (let j = i * B, e = Math.min(arr.length, j + B); j < e; j++) { const v = arr[j]; if (v < lo) lo = v; if (v > hi) hi = v; } mn[i] = lo; mx[i] = hi; }
-    return { B, mn, mx }; };
-  const l1 = mk(64);
-  const l2 = { B: 2048, mn: new Float32Array(Math.ceil(l1.mn.length / 32)), mx: new Float32Array(Math.ceil(l1.mn.length / 32)) };
-  for (let i = 0; i < l2.mn.length; i++) { let lo = 1e9, hi = -1e9; for (let j = i * 32, e = Math.min(l1.mn.length, j + 32); j < e; j++) { if (l1.mn[j] < lo) lo = l1.mn[j]; if (l1.mx[j] > hi) hi = l1.mx[j]; } l2.mn[i] = lo; l2.mx[i] = hi; }
+  const B1 = 64, n1 = Math.ceil(arr.length / B1), l1 = { B: B1, mn: new Float32Array(n1), mx: new Float32Array(n1), ss: new Float64Array(n1) };
+  for (let i = 0; i < n1; i++) {
+    let lo = 1e9, hi = -1e9, ss = 0;
+    for (let j = i * B1, e = Math.min(arr.length, j + B1); j < e; j++) { const v = arr[j]; if (v < lo) lo = v; if (v > hi) hi = v; ss += v * v; }
+    l1.mn[i] = lo; l1.mx[i] = hi; l1.ss[i] = ss;
+  }
+  const n2 = Math.ceil(n1 / 32), l2 = { B: 2048, mn: new Float32Array(n2), mx: new Float32Array(n2), ss: new Float64Array(n2) };
+  for (let i = 0; i < n2; i++) {
+    let lo = 1e9, hi = -1e9, ss = 0;
+    for (let j = i * 32, e = Math.min(n1, j + 32); j < e; j++) { if (l1.mn[j] < lo) lo = l1.mn[j]; if (l1.mx[j] > hi) hi = l1.mx[j]; ss += l1.ss[j]; }
+    l2.mn[i] = lo; l2.mx[i] = hi; l2.ss[i] = ss;
+  }
   p = [l1, l2]; peakCache.set(arr, p); return p;
+}
+// somma dei quadrati e numero di campioni di arr tra a e b (per il volume medio nel disegno)
+function sumSq(arr, a, b, res) {
+  a = Math.max(0, Math.floor(a)); b = Math.min(arr.length, Math.ceil(b));
+  let ss = 0, n = 0;
+  if (b - a < 256) { for (let i = a; i < b; i++) ss += arr[i] * arr[i]; n = Math.max(0, b - a); }
+  else {
+    const lv = peaksOf(arr)[b - a > 2048 * 8 ? 1 : 0], i0 = Math.floor(a / lv.B), i1 = Math.min(lv.ss.length - 1, Math.floor((b - 1) / lv.B));
+    for (let i = i0; i <= i1; i++) ss += lv.ss[i];
+    n = Math.min(arr.length, (i1 + 1) * lv.B) - i0 * lv.B;
+  }
+  res[0] = ss; res[1] = n; return res;
 }
 // minimo e massimo di arr tra i campioni a e b
 function minMax(arr, a, b, res) {

@@ -41,6 +41,11 @@ check(t.superati === t.totale, 'controlli interni dell\'app: ' + t.superati + ' 
 await page.setInputFiles('#fileVoice', VOCE);
 await page.waitForFunction(() => window.__studio.S.vlen > 0, null, { timeout: 60000 });
 const dur = await page.evaluate(() => window.__studio.S.vlen / 48000);
+// volume medio per il disegno: la piramide dei blocchi dà lo stesso risultato del calcolo diretto
+const rmsOk = await page.evaluate(() => { const st = window.__studio, id = st.S.segs[0].src, x = st.S.sources.get(id).chs[0], out = [];
+  for (const [a, b] of [[1000, 1100], [4096, 200000], [12345, 300000]]) { const r = st.sumSq(x, a, b, [0, 0]); const i0 = Math.floor(a / (b - a > 16384 ? 2048 : 64)) * (b - a > 16384 ? 2048 : 64), B = b - a > 16384 ? 2048 : 64, i1 = Math.min(x.length, (Math.floor((b - 1) / B) + 1) * B); let d = 0; for (let i = (b - a < 256 ? a : i0); i < (b - a < 256 ? b : i1); i++) d += x[i] * x[i]; out.push(Math.abs(r[0] - d) / (d || 1)); }
+  return Math.max(...out); });
+check(rmsOk < 1e-4, 'volume medio per il disegno calcolato bene (scarto ' + rmsOk.toExponential(1) + ')');
 check(Math.abs(dur - 10) < 0.1, 'voce importata: ' + dur.toFixed(2) + ' s');
 await page.click('#stepper [data-go="improve"]');
 const nav = await page.evaluate(() => ({ aperti: [...document.querySelectorAll('#stepper .st[data-open="true"]')].map(li => li.dataset.step), schede: [...document.querySelectorAll('.tabs .tab')].filter(t => t.offsetParent).length, kicker: document.querySelector('#nsKicker').textContent, pannello: !document.querySelector('#pane-improve').hidden }));
