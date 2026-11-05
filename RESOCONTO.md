@@ -131,3 +131,13 @@ Poi si parte con la prima fase vera: riordino del codice, nuova interfaccia, mod
 - Scrive invece ripetizioni e autocorrezioni ("del del", "da non confondere a, da non confondere dicevo", "il PDP no il PDP, volevo dire…"): queste si possono trovare nel testo.
 - Errori su sigle e termini di scuola: "pay" per "PEI", "gl o" per "GLO".
 - Conseguenza: "Togli gli ehm" non può basarsi sul testo. Idea da provare: un "ehm" è un tratto in cui RNNoise sente voce ma Whisper non mette nessuna parola.
+
+## Ricerca degli "ehm" e delle ripetizioni (aggiunta il 5 novembre)
+
+`trascrizione.html` ora cerca gli "ehm" dal suono, non dal testo. RNNoise (lo stesso dell'app) dice ogni 10 ms se c'è voce, Whisper dice dove sono le parole. Un tratto di voce lungo da 0,18 a 2,2 secondi senza parole è un probabile "ehm", "mmm" o respiro. I punti trovati compaiono nel testo come **ehm?** e in un elenco da controllare a orecchio ("Era un ehm" / "Non lo era").
+
+Cerca anche le ripetizioni ("del del") e le frasi ripartite ("da non confondere a, da non confondere"), escludendo i raddoppi normali come "piano piano" o "molto molto".
+
+Banco di prova, con frasi e "ehm" sintetici e i tempi esatti delle parole: trovati 4 riempitivi su 4, nessun falso allarme, pausa muta e respiro non segnalati, ripetizioni trovate 2 su 2.
+
+Il limite da verificare: con Whisper vero i tempi delle parole sono imprecisi di qualche decimo di secondo. Una parola che "si allarga" sopra un "ehm" lo nasconde, una che finisce troppo presto crea un falso allarme. La prova su `ehm.wav` dirà quanto pesa.

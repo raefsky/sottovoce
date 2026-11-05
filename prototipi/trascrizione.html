@@ -39,6 +39,14 @@ textarea{width:100%;min-height:110px;padding:10px 12px;border-radius:10px;border
 #text button.on{background:var(--accent);color:var(--onaccent)}
 #text button.filler{background:var(--fill);color:var(--fillText)}
 #text button.low{text-decoration:underline dotted var(--dim);text-underline-offset:4px}
+#text button.ehm{border:1.5px dashed var(--accent);color:var(--fillText);font-family:system-ui,sans-serif;font-size:13px;padding:0 6px;margin:0 2px;vertical-align:2px}
+#text button.rep{text-decoration:underline wavy var(--red);text-underline-offset:5px}
+.cand{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.cand .when{min-width:120px}
+.cand button{min-height:36px;padding:0 12px;font-size:14px}
+.cand button[aria-pressed="true"]{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.reps li{margin:4px 0}
+input[type=number]{width:90px;min-height:40px;padding:0 10px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2)}
 audio{width:100%;margin:8px 0 12px}
 .err{color:var(--red)}
 .ok{color:var(--teal)}
@@ -86,7 +94,7 @@ audio{width:100%;margin:8px 0 12px}
     <h2 id="h3s">3. Il risultato</h2>
     <div class="stats" id="stats"></div>
     <audio id="player" controls></audio>
-    <p class="dim">Clicca una parola per ascoltare da lì. In evidenza i riempitivi (ehm, eh, uhm…). Le parole sottolineate a puntini sono quelle su cui il modello era meno sicuro dei tempi.</p>
+    <p class="dim">Clicca una parola per ascoltare da lì. I riquadri tratteggiati <b>ehm?</b> sono i punti dove c'è voce ma nessuna parola: probabili "ehm", "mmm" o respiri. Le parole sottolineate a onda sono ripetizioni o frasi ripartite da capo. Quelle a puntini hanno tempi stimati.</p>
     <div id="text"></div>
     <div class="row" style="margin-top:16px">
       <button type="button" id="srt">Scarica i sottotitoli (SRT)</button>
@@ -96,12 +104,32 @@ audio{width:100%;margin:8px 0 12px}
     </div>
     <p class="dim" style="margin-top:8px">"Copia i risultati" prepara un riepilogo da incollare nella chat con Claude.</p>
   </section>
+
+  <section class="card" aria-labelledby="h4s" id="ehmCard" hidden>
+    <h2 id="h4s">4. Controlla gli ehm trovati</h2>
+    <p class="muted">Whisper non scrive gli "ehm". La pagina li cerca dal suono: RNNoise sente voce, ma Whisper non ci mette nessuna parola. Ascolta ogni punto e di' se era davvero un riempitivo: serve a capire se il metodo funziona.</p>
+    <div id="cands"></div>
+    <div class="row" style="margin-top:14px">
+      <label for="heard">Quanti "ehm" e "mmm" hai sentito in tutto nel file?</label>
+      <input type="number" id="heard" min="0" step="1" inputmode="numeric">
+      <span class="dim">Facoltativo: serve a contare quelli che la pagina non ha trovato.</span>
+    </div>
+    <h3 style="font-size:16px;margin:20px 0 6px">Ripetizioni e frasi ripartite</h3>
+    <ul class="reps" id="reps"></ul>
+  </section>
 </main>
 
+<script src="lib/rnnoise-sottovoce.js"></script>
 <script type="module">
 const TF_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1';
 const SR = 16000;              // Whisper lavora a 16 kHz
 const CHUNK = 28, SEARCH = 4;  // pezzi da circa 28 s, tagliati nella pausa più silenziosa degli ultimi 4 s
+// ricerca degli ehm dal suono: tratti di voce (RNNoise) non coperti da nessuna parola di Whisper
+const EHM = { vadThr: 0.6, margin: 0.06, minDur: 0.18, maxDur: 2.2, gapClose: 0.04 };
+// raddoppi normali in italiano, da non segnalare come ripetizioni
+const REDUP = new Set(['piano', 'pian', 'molto', 'poco', 'via', 'ora', 'così', 'presto', 'adagio', 'bene', 'sempre', 'tanto', 'tanti', 'sì', 'no', 'mai', 'già', 'quasi', 'appena', 'ciao']);
+// parole che di solito separano un inizio sbagliato dalla ripartenza: "il PDP no il PEI"
+const REPAIR = new Set(['no', 'cioè', 'anzi', 'dicevo', 'scusate', 'scusa', 'volevo', 'dire', 'ehm', 'eh', 'insomma']);
 const FILLERS = new Set(['ehm', 'eh', 'ehh', 'ehmm', 'uhm', 'um', 'mm', 'mmm', 'hmm', 'ah', 'uh', 'em']);
 
 const $ = s => document.querySelector(s);
@@ -110,7 +138,7 @@ const fmt = t => { const m = Math.floor(t / 60), s = Math.floor(t % 60); return 
 const num = (x, d = 1) => x.toFixed(d).replace('.', ',');
 const mb = b => num(b / 1048576, b > 1e8 ? 0 : 1) + ' MB';
 
-let file = null, audio16 = null, words = [], run = null, stopAsked = false;
+let file = null, audio16 = null, words = [], run = null, stopAsked = false, vad = null, cands = [], reps = [];
 
 /* ---------- scheda grafica ---------- */
 let hasGPU = false;
@@ -215,8 +243,18 @@ async function go() {
       const ws = await transcribeChunk(pipe, audio16.subarray(a, b));
       ws.forEach(w => { w.a += off; w.b += off; words.push(w); });
     }
-    const procS = (performance.now() - t0) / 1000, doneDur = stopAsked && words.length ? Math.min(dur, words[words.length - 1].b) : dur;
-    run = { id, device, dur, doneDur, procS, loadS, bytes: dlBytes, wordLevel, stopped: stopAsked };
+    const procS = (performance.now() - t0) / 1000;
+    let ehmS = 0;
+    if (!stopAsked && words.length) {
+      st('Cerco gli ehm: dove c\u2019è voce ma nessuna parola…', 1);
+      const te = performance.now();
+      try { vad = await voiceActivity(file, p => st('Cerco gli ehm: ' + Math.round(p * 100) + ' %…', 1)); cands = findEhm(vad, words); }
+      catch (e) { console.error(e); vad = null; cands = []; }
+      ehmS = (performance.now() - te) / 1000;
+    } else { vad = null; cands = []; }
+    reps = findReps(words);
+    const doneDur = stopAsked && words.length ? Math.min(dur, words[words.length - 1].b) : dur;
+    run = { id, device, dur, doneDur, procS, loadS, bytes: dlBytes, wordLevel, stopped: stopAsked, ehmS, vadOk: !!vad };
     st(stopAsked ? 'Fermato. Ecco la parte trascritta.' : 'Fatto.', 1);
     show();
   } catch (e) {
@@ -224,6 +262,76 @@ async function go() {
     st('Non riuscito: ' + (e && e.message ? e.message : e) + '. La prima volta serve internet per scaricare programma e modello.', null);
     $('#status').className = 'err';
   } finally { $('#go').disabled = false; $('#stop').hidden = true; }
+}
+
+/* ---------- voce, 10 ms alla volta, con il RNNoise di Sottovoce ---------- */
+let RN = null;
+async function loadRnnoise() {
+  if (RN) return RN;
+  const bin = atob(RNNOISE_WASM_B64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  RN = await createRNNWasmModule({ wasmBinary: u });
+  return RN;
+}
+async function decode48(f) {
+  const ac = new (window.AudioContext || window.webkitAudioContext)();
+  const ab = await ac.decodeAudioData(await f.arrayBuffer()); ac.close();
+  const off = new OfflineAudioContext(1, Math.ceil(ab.duration * 48000), 48000);
+  const s = off.createBufferSource(); s.buffer = ab; s.connect(off.destination); s.start();
+  return (await off.startRendering()).getChannelData(0);
+}
+// probabilità di voce per ogni tratto di 10 ms, allineata all'audio (come analyzeVad in index.html)
+async function voiceActivity(f, prog) {
+  const x = await decode48(f), M = await loadRnnoise(), st = M._rnnoise_create(0), ptr = M._malloc(480 * 4), off = ptr >> 2;
+  const n = x.length, frames = Math.ceil(n / 480) + 1, raw = new Float32Array(frames);
+  for (let k = 0; k < frames; k++) {
+    const s = k * 480, H = M.HEAPF32;
+    for (let j = 0; j < 480; j++) H[off + j] = (s + j < n ? x[s + j] : 0) * 32768;
+    raw[k] = M._rnnoise_process_frame(st, ptr, ptr);
+    if ((k & 1023) === 1023) { prog(k / frames); await yieldUI(); }
+  }
+  M._rnnoise_destroy(st); M._free(ptr);
+  const nF = Math.ceil(n / 480), out = new Float32Array(nF);
+  for (let k = 0; k < nF; k++) out[k] = Math.max(raw[k] || 0, raw[k + 1] || 0);
+  return out;
+}
+// tratti di voce senza parole: probabili ehm, mmm o respiri
+function findEhm(v, ws) {
+  const F = 0.01, n = v.length, voiced = new Uint8Array(n);
+  for (let k = 0; k < n; k++) voiced[k] = v[k] >= EHM.vadThr ? 1 : 0;
+  const close = Math.round(EHM.gapClose / F);          // chiude i buchi brevissimi dentro una vocale
+  for (let k = 0; k < n; ) { if (voiced[k]) { k++; continue; } let e = k; while (e < n && !voiced[e]) e++; if (k > 0 && e < n && e - k <= close) voiced.fill(1, k, e); k = e; }
+  const covered = new Uint8Array(n);
+  ws.forEach(w => { const a = Math.max(0, Math.floor((w.a - EHM.margin) / F)), b = Math.min(n, Math.ceil((w.b + EHM.margin) / F)); covered.fill(1, a, b); });
+  const out = [];
+  for (let k = 0; k < n; ) {
+    if (!(voiced[k] && !covered[k])) { k++; continue; }
+    let e = k; let sum = 0; while (e < n && voiced[e] && !covered[e]) { sum += v[e]; e++; }
+    const a = k * F, b = e * F, d = b - a;
+    if (d >= EHM.minDur && d <= EHM.maxDur) out.push({ a, b, conf: sum / (e - k), answer: null });
+    k = e;
+  }
+  return out;
+}
+// ripetizioni: parola ripetuta subito ("del del") o gruppo di parole ripreso poco dopo ("da non confondere a, da non confondere")
+function findReps(ws) {
+  const t = ws.map(w => (norm(w.text)[0] || '')), groups = [], used = new Uint8Array(ws.length);
+  const same = (i, j, n) => { for (let k = 0; k < n; k++) if (!t[i + k] || t[i + k] !== t[j + k]) return false; return true; };
+  for (let i = 0; i < ws.length; i++) {
+    if (used[i]) continue;
+    let hit = null;
+    for (let n = 4; n >= 2 && !hit; n--) {
+      const maxD = n >= 3 ? n + 4 : n + 1;
+      for (let d = n; d <= maxD && !hit; d++) {
+        if (i + d + n > ws.length || !same(i, i + d, n)) continue;
+        const between = t.slice(i + n, i + d);
+        if (n === 2 && d > 2 && !between.every(x => REPAIR.has(x))) continue;
+        hit = [i, i + d - 1];
+      }
+    }
+    if (!hit && t[i] && t[i] === t[i + 1] && !REDUP.has(t[i])) hit = [i, i];
+    if (hit) { for (let k = hit[0]; k <= hit[1]; k++) used[k] = 1; groups.push({ from: hit[0], to: hit[1], a: ws[hit[0]].a, text: ws.slice(hit[0], Math.min(ws.length, hit[1] + 4)).map(w => w.text).join('').trim() }); }
+  }
+  return groups;
 }
 
 /* ---------- precisione: parole sbagliate rispetto al testo di riferimento ---------- */
@@ -241,6 +349,8 @@ function wer(ref, hyp) {
 const isFiller = w => FILLERS.has(norm(w)[0] || '') && norm(w).length === 1;
 
 /* ---------- risultato ---------- */
+let wordBtns = [];
+const fmtT = t => { const m = Math.floor(t / 60), s = t - m * 60; return m + ':' + (s < 10 ? '0' : '') + num(s, 1); };
 function show() {
   const text = words.map(w => w.text).join('').trim();
   const fillers = words.filter(w => isFiller(w.text)).length;
@@ -253,33 +363,71 @@ function show() {
     [num(speed, speed >= 10 ? 0 : 1) + '×', 'il tempo reale'],
     [run.bytes ? mb(run.bytes) : 'già in memoria', 'modello scaricato'],
     [w ? num(w.rate * 100) + ' %' : '—', w ? 'parole sbagliate (' + w.errors + ' su ' + w.n + ')' : 'parole sbagliate: serve il testo di riferimento'],
-    [String(fillers), 'riempitivi trovati']
+    [String(cands.length), run.vadOk ? 'possibili ehm dal suono' : 'ehm dal suono: non cercati'],
+    [String(fillers), 'riempitivi scritti da Whisper'],
+    [String(reps.length), 'ripetizioni e ripartenze']
   ];
   $('#stats').innerHTML = '';
   stats.forEach(([b, s]) => { const d = document.createElement('div'); d.className = 'stat'; const bb = document.createElement('b'); bb.textContent = b; const ss = document.createElement('span'); ss.textContent = s; d.append(bb, ss); $('#stats').appendChild(d); });
   const note = document.createElement('p'); note.className = 'dim'; note.style.gridColumn = '1 / -1'; note.style.margin = '0';
   note.textContent = 'Modello ' + run.id.split('/')[1] + ' sul ' + run.device + '. Tempi ' + (run.wordLevel ? 'per parola.' : 'per frase: questo modello non dà i tempi delle singole parole, che sono stimati.');
   $('#stats').appendChild(note);
-  const box = $('#text'); box.innerHTML = '';
+  // testo: parole e, nel punto giusto, i possibili ehm
+  const repWord = new Uint8Array(words.length); reps.forEach(g => { for (let k = g.from; k <= g.to; k++) repWord[k] = 1; });
+  const box = $('#text'); box.innerHTML = ''; wordBtns = []; let c = 0;
+  const addCand = cd => { const b = document.createElement('button'); b.type = 'button'; b.className = 'ehm'; b.textContent = 'ehm?'; b.setAttribute('aria-label', 'Possibile ehm a ' + fmtT(cd.a)); b.onclick = () => playRange(cd.a - 0.6, cd.b + 0.4); box.append(b, ' '); };
   words.forEach((wd, i) => {
-    const b = document.createElement('button'); b.type = 'button'; b.textContent = wd.text.trim(); b.dataset.i = i;
-    if (isFiller(wd.text)) b.className = 'filler'; else if (!wd.exact) b.className = 'low';
+    while (c < cands.length && cands[c].a < wd.a) addCand(cands[c++]);
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = wd.text.trim();
+    b.className = isFiller(wd.text) ? 'filler' : repWord[i] ? 'rep' : !wd.exact ? 'low' : '';
     b.onclick = () => { const p = $('#player'); p.currentTime = wd.a; p.play().catch(() => {}); };
-    box.append(b, ' ');
+    box.append(b, ' '); wordBtns.push(b);
   });
+  while (c < cands.length) addCand(cands[c++]);
+  renderCands(); renderReps();
   const p = $('#player'); if (p.dataset.src !== file.name) { if (p.src) URL.revokeObjectURL(p.src); p.src = URL.createObjectURL(file); p.dataset.src = file.name; }
-  $('#out').hidden = false;
+  $('#out').hidden = false; $('#ehmCard').hidden = false;
+}
+let stopAt = null;
+function playRange(a, b) { const p = $('#player'); p.currentTime = Math.max(0, a); stopAt = b; p.play().catch(() => {}); }
+function renderCands() {
+  const box = $('#cands'); box.innerHTML = '';
+  if (!run.vadOk) { box.innerHTML = '<p class="err">Non sono riuscito ad analizzare la voce con RNNoise.</p>'; return; }
+  if (!cands.length) { box.innerHTML = '<p class="dim">Nessun tratto di voce senza parole.</p>'; return; }
+  cands.forEach((cd, i) => {
+    const row = document.createElement('div'); row.className = 'cand';
+    const when = document.createElement('span'); when.className = 'when mono'; when.textContent = fmtT(cd.a) + ' · ' + num(cd.b - cd.a, 1) + ' s';
+    const play = document.createElement('button'); play.type = 'button'; play.textContent = 'Ascolta'; play.onclick = () => playRange(cd.a - 0.6, cd.b + 0.4);
+    const yes = document.createElement('button'); yes.type = 'button'; yes.textContent = 'Era un ehm';
+    const no = document.createElement('button'); no.type = 'button'; no.textContent = 'Non lo era';
+    const sync = () => { yes.setAttribute('aria-pressed', String(cd.answer === true)); no.setAttribute('aria-pressed', String(cd.answer === false)); };
+    yes.onclick = () => { cd.answer = cd.answer === true ? null : true; sync(); };
+    no.onclick = () => { cd.answer = cd.answer === false ? null : false; sync(); };
+    sync(); row.append(when, play, yes, no); box.appendChild(row);
+  });
+}
+function renderReps() {
+  const ul = $('#reps'); ul.innerHTML = '';
+  if (!reps.length) { const li = document.createElement('li'); li.className = 'dim'; li.textContent = 'Nessuna ripetizione trovata.'; ul.appendChild(li); return; }
+  reps.forEach(g => {
+    const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Ascolta';
+    b.style.minHeight = '34px'; b.style.marginRight = '8px'; b.onclick = () => playRange(g.a - 0.4, words[Math.min(words.length - 1, g.to + 3)].b + 0.3);
+    const sp = document.createElement('span'); sp.textContent = fmtT(g.a) + '  «' + g.text + '…»';
+    li.append(b, sp); ul.appendChild(li);
+  });
 }
 let lastOn = -1;
 $('#player').ontimeupdate = () => {
-  const t = $('#player').currentTime; let k = -1;
+  const p = $('#player'), t = p.currentTime;
+  if (stopAt != null && t >= stopAt) { p.pause(); stopAt = null; }
+  let k = -1;
   for (let i = 0; i < words.length; i++) { if (words[i].a <= t) k = i; else break; }
   if (k === lastOn) return;
-  const btns = $('#text').children;
-  if (lastOn >= 0 && btns[lastOn]) btns[lastOn].classList.remove('on');
-  if (k >= 0 && btns[k]) btns[k].classList.add('on');
+  if (lastOn >= 0 && wordBtns[lastOn]) wordBtns[lastOn].classList.remove('on');
+  if (k >= 0 && wordBtns[k]) wordBtns[k].classList.add('on');
   lastOn = k;
 };
+$('#player').onpause = () => { stopAt = null; };
 
 /* ---------- sottotitoli e testo ---------- */
 function srt() {
@@ -305,7 +453,11 @@ $('#copy').onclick = async () => {
     'Modello: ' + r.id + ' su ' + r.device + ', tempi ' + (r.wordLevel ? 'per parola' : 'per frase'),
     'Tempo: ' + fmt(r.procS) + ' (' + num(r.speed) + '× il tempo reale); caricamento del modello ' + num(r.loadS) + ' s; scaricati ' + (r.bytes ? mb(r.bytes) : 'niente, era in memoria'),
     'Parole sbagliate: ' + (r.wer ? num(r.wer.rate * 100) + ' % (' + r.wer.errors + ' su ' + r.wer.n + ')' : 'non misurate'),
-    'Riempitivi trovati: ' + r.fillers,
+    'Riempitivi scritti da Whisper: ' + r.fillers,
+    'Possibili ehm dal suono: ' + (r.vadOk ? cands.length + ' (' + num(r.ehmS) + ' s di analisi). Controllati: ' + cands.filter(c => c.answer === true).length + ' veri, ' + cands.filter(c => c.answer === false).length + ' falsi, ' + cands.filter(c => c.answer == null).length + ' non controllati' : 'non cercati'),
+    'Ehm sentiti in tutto: ' + ($('#heard').value || 'non indicato'),
+    'Elenco: ' + cands.map(c => fmtT(c.a) + ' (' + num(c.b - c.a, 1) + ' s, ' + (c.answer === true ? 'vero' : c.answer === false ? 'falso' : '?') + ')').join('; '),
+    'Ripetizioni: ' + reps.length + (reps.length ? ' (' + reps.map(g => '«' + g.text + '»').join('; ') + ')' : ''),
     'Browser: ' + navigator.userAgent, '', 'Inizio del testo:', words.map(w => w.text).join('').trim().slice(0, 600)];
   try { await navigator.clipboard.writeText(lines.join('\n')); $('#copyStatus').textContent = ' Copiati.'; }
   catch (e) { $('#copyStatus').textContent = ' Non riesco a copiare.'; }
@@ -322,7 +474,7 @@ $('#go').onclick = go;
 $('#stop').onclick = () => { stopAsked = true; $('#status').textContent = 'Mi fermo alla fine del pezzo in corso…'; };
 
 // per il banco di prova automatico
-window.SV = { chunkBounds, wer, norm, isFiller, srt, get words() { return words; }, get run() { return run; } };
+window.SV = { chunkBounds, wer, norm, isFiller, srt, findEhm, findReps, EHM, get words() { return words; }, get run() { return run; }, get cands() { return cands; }, get reps() { return reps; }, get vad() { return vad; } };
 </script>
 </body>
 </html>

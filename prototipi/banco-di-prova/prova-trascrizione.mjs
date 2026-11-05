@@ -53,7 +53,7 @@ check(await a.page.evaluate(() => SV.run.bytes) === 0, 'seconda trascrizione nel
 check(cut.n >= 2 && cut.contiguous && cut.end, 'audio diviso in pezzi contigui che coprono tutto (' + cut.n + ' pezzi, tagli a ' + cut.cuts.join(', ') + ' s)');
 check(cut.cutRms.every(v => v < cut.rmsAll * 0.2), 'i tagli cadono nelle pause (livello al taglio ' + cut.cutRms.map(v => (20 * Math.log10(v / cut.rmsAll)).toFixed(0) + ' dB').join(', ') + ' rispetto alla media)');
 const w20 = await a.page.evaluate(() => SV.words[20]);
-await a.page.locator('#text button').nth(20).click();
+await a.page.locator('#text button:not(.ehm)').nth(20).click();
 await a.page.waitForTimeout(400);
 const ct = await a.page.evaluate(() => document.querySelector('#player').currentTime);
 check(Math.abs(ct - w20.a) < 0.6, 'cliccando una parola l\'ascolto parte da lì (' + ct.toFixed(2) + ' s, parola a ' + w20.a.toFixed(2) + ' s)');

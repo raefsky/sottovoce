@@ -13,10 +13,15 @@ export async function pipeline(task, id, opts = {}) {
     for (let k = 0; k <= 4; k++) { cb({ status: 'progress', file: f, loaded: k * 5e6, total: 2e7 }); await new Promise(r => setTimeout(r, 5)); }
     cb({ status: 'done', file: f });
   }
-  const ws = TESTO.split(/\s+/).filter(Boolean);
-  ws.splice(10, 0, 'ehm,'); ws.splice(60, 0, 'ehm,');
-  const T0 = 0.5, T1 = 54.5, step = (T1 - T0) / ws.length;
-  const timeline = ws.map((w, i) => ({ w, a: T0 + i * step, b: T0 + i * step + step * 0.8 }));
+  // con window.__PAROLE_FINTE la pagina di prova dà i tempi esatti delle parole (come Whisper, senza gli "ehm")
+  let timeline, T1;
+  if (window.__PAROLE_FINTE) { timeline = window.__PAROLE_FINTE; T1 = timeline[timeline.length - 1].b; }
+  else {
+    const ws = TESTO.split(/\s+/).filter(Boolean);
+    ws.splice(10, 0, 'ehm,'); ws.splice(60, 0, 'ehm,');
+    const T0 = 0.5, step = (54.5 - T0) / ws.length; T1 = 54.5;
+    timeline = ws.map((w, i) => ({ w, a: T0 + i * step, b: T0 + i * step + step * 0.8 }));
+  }
   let cursor = 0;
   const pipe = async (x, o = {}) => {
     if (o.language !== 'italian') throw new Error('lingua attesa: italian');

@@ -36,6 +36,12 @@ node banco-di-prova/prova-trascrizione.mjs <cartella del repository> <cartella c
 node banco-di-prova/prova-file-locale.mjs <cartella del repository> <cartella con gli audio di prova>
 ```
 
+```bash
+node banco-di-prova/prova-ehm.mjs <cartella del repository> <cartella con ehm_prova.wav, parole_ehm.json e verita_ehm.json>
+```
+
+L'audio per `prova-ehm.mjs` si monta con `genera_ehm.py`, a partire da frasi sintetiche (`frasi_ehm.txt`) e da "ehm" e "mmm" sintetici, con una pausa muta e un respiro. Il programma scrive anche i tempi veri delle parole e la posizione degli "ehm" per il controllo.
+
 Gli audio di prova si creano con una voce sintetica italiana (espeak-ng con la voce mbrola `it4`) a partire da `banco-di-prova/testo.txt`, poi `genera_audio.py` aggiunge rumore di ventola con ronzio, voci lontane con tastiera, ed eco di una stanza:
 
 ```bash
