@@ -11,6 +11,7 @@
 70-export.js
 80-project.js
 81-file.js
+82-serie.js
 90-ui.js
 92-flow.js
 95-test.js

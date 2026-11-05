@@ -498,3 +498,15 @@ dialog.episode{width:min(480px,92vw);padding:24px 26px 18px}
 .export-warn .linkbtn{font-size:13.5px;font-weight:600;color:var(--ink)}
 dialog.voice-ask{width:min(440px,92vw)}
 
+
+/* modelli di serie */
+.serie-list{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:8px}
+.serie-item{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2)}
+.serie-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.serie-text b{font-weight:600}
+.serie-text span{font-size:13px;color:var(--muted)}
+.serie-item .btnrow{margin:0}
+.serie-empty{font-size:13px;color:var(--muted)}
+.serie-new{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px;font-size:13.5px}
+.serie-row{display:flex;flex-wrap:wrap;gap:8px}
+.serie-row input{flex:1 1 180px;width:auto;min-width:0}

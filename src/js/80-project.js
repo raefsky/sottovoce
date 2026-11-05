@@ -190,8 +190,8 @@ async function loadState(st, sources, cover) {
   if (st.procActive && S.vlen) await improveSources();   // i miglioramenti si ricalcolano: nel file ci sono solo gli originali
   flowReset();                    // percorso guidato: il passo si ricalcola senza spostare le schede
 }
-async function newProject() {
-  if ((S.ops.length || S.musicId) && !confirm('Iniziare un progetto nuovo? Il lavoro attuale viene tolto da questo browser. Se ti serve, prima usa “Salva il progetto”.')) return;
+async function newProject(force) {
+  if (force !== true && (S.ops.length || S.musicId) && !confirm('Iniziare un progetto nuovo? Il lavoro attuale viene tolto da questo browser. Se ti serve, prima usa “Salva il progetto”.')) return;
   stopIfPlaying(); if (S.recording) await stopRecording();
   S.sources = new Map(); S.ops = []; S.redo = []; S.improved = new Map(); S.procActive = false; S.procKey = ''; S.mode = 'orig'; S.musicId = null; S.clip = null; VAD.clear(); vadFail = false; fxCachePrune(true);
   META.title = ''; META.album = ''; META.track = ''; META.comment = ''; META.cover = null;

@@ -26,6 +26,7 @@ function init() {
   on('#abOrig', () => setMode(BL.on ? 'x' : 'orig')); on('#abProc', () => setMode(BL.on ? 'y' : 'proc')); on('#btnBlind', toggleBlind);
   on('#btnApply', improveSources); on('#btnHum', findHum); on('#btnPropose', analyzePropose); on('#btnPodcast', podcastMode); initEpisode(); initEditBar(); on('#btnSilFind', previewSilences); on('#btnSilApply', applySilences);
   $$('[data-spec]').forEach(b => b.addEventListener('click', () => { P.specView = b.dataset.spec; $$('[data-spec]').forEach(o => o.setAttribute('aria-pressed', String(o === b))); scheduleSpec(0); scheduleSave(); })); on('#btnExport', doExport); on('#btnStems', doStems);
+  on('#btnSerieSave', saveSerie); on('#btnSerieImport', () => $('#fileSerie').click()); bindFile('#fileSerie', null, importSerie); renderSerie();
   on('#btnSaveProj', saveProject); on('#btnSaveAs', () => saveProject(null, true)); on('#fileFlag', fileFlagClick);
   on('#btnOpenProj', () => FILE.ok ? openWithPicker() : $('#fileProj').click()); on('#btnNewProj', newProject);
   on('#btnMusicRemove', removeMusic); on('#btnCover', () => $('#fileCover').click()); on('#btnCoverDel', () => { META.cover = null; showCover(); scheduleSave(); });

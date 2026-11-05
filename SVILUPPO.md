@@ -54,6 +54,12 @@ node strumenti/prova-sigla.mjs
 
 Usa file di prova riconoscibili dal tono (sigla a 440 Hz, chiusura a 660 Hz, musica a 220 Hz) e controlla nel mix cosa suona e dove.
 
+Per i modelli di serie (salvataggio, nuovo episodio, numero dell'episodio, scaricamento e reimportazione):
+
+```bash
+node strumenti/prova-serie.mjs
+```
+
 Il volume di un file mono si misura come se suonasse su due casse, come fa l'app: -16 LUFS su due casse corrisponde a -19 LUFS misurati su un canale solo, la raccomandazione AES per i podcast in mono.
 
 ## Pubblicare

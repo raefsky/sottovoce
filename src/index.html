@@ -321,6 +321,15 @@
         <input class="vh" type="file" accept=".sottovoce,.zip,application/zip" id="fileProj" tabindex="-1" aria-hidden="true">
         <p class="status" id="projStatus" role="status"></p>
       </article>
+      <article class="panel neutral" id="pSerie"><h2 data-info="Un modello conserva sigla, chiusura, musica, tutte le regolazioni, autore, nome della serie, anno e copertina. Ogni nuovo episodio parte con tutto al suo posto e con il numero dell’episodio successivo. I modelli restano in questo browser; con “Scarica” li porti su un altro computer.">Modelli di serie</h2>
+        <p class="desc">Ogni episodio nuovo parte già pronto: porti solo la voce.</p>
+        <ul class="serie-list" id="serieList" aria-label="Modelli di serie"></ul>
+        <div class="serie-new"><label for="serieName">Salva questo progetto come modello</label>
+          <div class="serie-row"><input type="text" id="serieName" maxlength="80" placeholder="Nome della serie"><button class="btn" id="btnSerieSave">Salva come modello</button></div></div>
+        <div class="btnrow"><button class="btn" id="btnSerieImport">Aggiungi un modello da file</button></div>
+        <input class="vh" type="file" accept=".serie,.zip,application/zip" id="fileSerie" tabindex="-1" aria-hidden="true">
+        <p class="status" id="serieStatus" role="status"></p>
+      </article>
       <article class="panel neutral" id="pPreset"><h2>Preset</h2>
         <p class="desc">Salva le tue regolazioni e richiamale con un clic.</p>
         <div class="body"></div>
