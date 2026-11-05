@@ -14,7 +14,7 @@ function geom() {
   // la corsia degli effetti si alza di una fila per ogni livello di sovrapposizione (massimo 4 file)
   const rows = fxLayout().rows, ruler = small ? 20 : 24, vh = small ? 96 : 136, mh = S.musicId ? (small ? 44 : 58) : 0, fh = (S.fx.length || S.musicId) ? (small ? 32 : 40) + (rows - 1) * (small ? 14 : 18) : 0;
   let H = ruler + vh + (mh ? gap + mh : 0) + (fh ? gap + fh : 0) + 4;
-  if (!layout().total) H = small ? 180 : 250;
+  if (!layout().total && !S.recording) H = small ? 180 : 250;
   const vy = ruler, my = vy + vh + gap, fy = (mh ? my + mh + gap : vy + vh + gap);
   return { W, H, ruler, vy, vh, my, mh, fy, fh };
 }
@@ -64,14 +64,14 @@ function drawBase() {
   const cv = $('#cvBase'), { g, W, H } = sizeCanvas(cv), gm = geom(), lay = layout();
   const cLane = cssv('--lane'), cLane2 = cssv('--lane2'), cMut = cssv('--muted'), cLine = cssv('--line'), cInk = cssv('--ink'), cBg = cssv('--bg');
   g.clearRect(0, 0, W, H);
-  $('#emptyHint').hidden = !!lay.total;
+  $('#emptyHint').hidden = !!lay.total || S.recording;      // mentre si registra si vede la forma d'onda
   if (P.specView !== 'off') scheduleSpec(250);   // ricalcola solo se è cambiato qualcosa, altrimenti ridisegna
-  if (!lay.total) return;
+  if (!lay.total && !S.recording) return;
   // corsie
   g.fillStyle = cLane; rrect(g, 0, gm.vy, W, gm.vh, 4); g.fill();
   if (gm.mh) { rrect(g, 0, gm.my, W, gm.mh, 4); g.fill(); }
   if (gm.fh) { rrect(g, 0, gm.fy, W, gm.fh, 4); g.fill(); }
-  if (S.fit) S.view = [0, Math.max(lay.total, SR)];
+  if (S.fit) S.view = [0, Math.max(lay.total, SR, S.recording ? REC.viewEnd || 0 : 0)];
   const sp = span(), v0 = S.view[0], step = niceStep(sp / SR, W), spp = sp / W, r = [0, 0];
   // righello dei tempi
   g.font = FONT_MONO; g.lineWidth = 1;
@@ -197,7 +197,7 @@ function peaksOfMusic(m) { let p = musicPeakCache.get(m); if (p == null) { p = s
 function drawTop() {
   const cv = $('#cvTop'), { g, W, H } = sizeCanvas(cv), gm = geom(), lay = layout();
   g.clearRect(0, 0, W, H);
-  if (!lay.total) return;
+  if (!lay.total && !S.recording) return;
   const lanesH = H - gm.ruler - 4;
   // selezione: riempimento ambra al 16 % e due bordi pieni
   if (S.sel && S.sel[1] > S.sel[0]) {

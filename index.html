@@ -4327,8 +4327,9 @@ async function toggleRecord() {
     else { REC.mode = 'cursor'; REC.at = vcur; }
   }
   REC.chunks = []; REC.len = 0; REC.pks = []; REC.clips = 0; $('#clipFlag').textContent = '';
-  S.monitoring = false; S.recording = true; REC.t0 = performance.now();
+  S.monitoring = false; S.recording = true; REC.t0 = performance.now(); REC.viewEnd = 0;
   REC.cap.set(true);
+  flowRender(); drawAll();      // anche alla prima registrazione la linea del tempo compare subito, con la forma d'onda in rosso
   $('#recStatus').textContent = 'Registrazione in corso. ' + micNote();
   updateTransport(); startMeter(); requestAnimationFrame(recTick);
 }
@@ -4336,7 +4337,10 @@ function recTick() {
   if (!S.recording) return;
   $('#timeNow').textContent = fmtSec(REC.len);
   const lay = layout(), x0 = REC.at + lay.intro, xe = x0 + REC.len;
-  if (xe > S.view[1]) { const span = S.view[1] - S.view[0]; S.view = [Math.max(0, xe - span * 0.85), Math.max(0, xe - span * 0.85) + span]; S.fit = false; drawBase(); }
+  // vista intera: si allarga a passi mentre la registrazione cresce, così si vede tutto il progetto più la registrazione;
+  // vista ingrandita: scorre per seguire la fine della registrazione
+  if (S.fit) { if (xe > Math.max(lay.total, SR) * 0.92 && xe > REC.viewEnd * 0.92) { REC.viewEnd = Math.max(SR * 10, xe * 1.5); drawBase(); } }
+  else if (xe > S.view[1]) { const span = S.view[1] - S.view[0]; S.view = [Math.max(0, xe - span * 0.85), Math.max(0, xe - span * 0.85) + span]; drawBase(); }
   drawTop(); requestAnimationFrame(recTick);
 }
 async function stopRecording() {
@@ -4422,7 +4426,7 @@ function geom() {
   // la corsia degli effetti si alza di una fila per ogni livello di sovrapposizione (massimo 4 file)
   const rows = fxLayout().rows, ruler = small ? 20 : 24, vh = small ? 96 : 136, mh = S.musicId ? (small ? 44 : 58) : 0, fh = (S.fx.length || S.musicId) ? (small ? 32 : 40) + (rows - 1) * (small ? 14 : 18) : 0;
   let H = ruler + vh + (mh ? gap + mh : 0) + (fh ? gap + fh : 0) + 4;
-  if (!layout().total) H = small ? 180 : 250;
+  if (!layout().total && !S.recording) H = small ? 180 : 250;
   const vy = ruler, my = vy + vh + gap, fy = (mh ? my + mh + gap : vy + vh + gap);
   return { W, H, ruler, vy, vh, my, mh, fy, fh };
 }
@@ -4472,14 +4476,14 @@ function drawBase() {
   const cv = $('#cvBase'), { g, W, H } = sizeCanvas(cv), gm = geom(), lay = layout();
   const cLane = cssv('--lane'), cLane2 = cssv('--lane2'), cMut = cssv('--muted'), cLine = cssv('--line'), cInk = cssv('--ink'), cBg = cssv('--bg');
   g.clearRect(0, 0, W, H);
-  $('#emptyHint').hidden = !!lay.total;
+  $('#emptyHint').hidden = !!lay.total || S.recording;      // mentre si registra si vede la forma d'onda
   if (P.specView !== 'off') scheduleSpec(250);   // ricalcola solo se è cambiato qualcosa, altrimenti ridisegna
-  if (!lay.total) return;
+  if (!lay.total && !S.recording) return;
   // corsie
   g.fillStyle = cLane; rrect(g, 0, gm.vy, W, gm.vh, 4); g.fill();
   if (gm.mh) { rrect(g, 0, gm.my, W, gm.mh, 4); g.fill(); }
   if (gm.fh) { rrect(g, 0, gm.fy, W, gm.fh, 4); g.fill(); }
-  if (S.fit) S.view = [0, Math.max(lay.total, SR)];
+  if (S.fit) S.view = [0, Math.max(lay.total, SR, S.recording ? REC.viewEnd || 0 : 0)];
   const sp = span(), v0 = S.view[0], step = niceStep(sp / SR, W), spp = sp / W, r = [0, 0];
   // righello dei tempi
   g.font = FONT_MONO; g.lineWidth = 1;
@@ -4605,7 +4609,7 @@ function peaksOfMusic(m) { let p = musicPeakCache.get(m); if (p == null) { p = s
 function drawTop() {
   const cv = $('#cvTop'), { g, W, H } = sizeCanvas(cv), gm = geom(), lay = layout();
   g.clearRect(0, 0, W, H);
-  if (!lay.total) return;
+  if (!lay.total && !S.recording) return;
   const lanesH = H - gm.ruler - 4;
   // selezione: riempimento ambra al 16 % e due bordi pieni
   if (S.sel && S.sel[1] > S.sel[0]) {
@@ -8173,7 +8177,7 @@ function flowRender() {
   // un solo pulsante pieno alla volta: "Applica i miglioramenti" ed "Esporta" lo sono solo quando sono il passo da fare
   ['#btnApply', '#btnExport'].forEach(sel => $(sel).classList.toggle('primary', flowTarget(step) === sel));
   // meno elementi a schermo finché non c'è niente da montare
-  $('#app').classList.toggle('is-empty', !layout().total);
+  $('#app').classList.toggle('is-empty', !layout().total && !S.recording);
 }
 // chiamata dopo ogni cambiamento del lavoro: aggiorna la barra e, al passaggio di passo, guida verso il successivo
 function flowUpdate() {

@@ -240,8 +240,9 @@ async function toggleRecord() {
     else { REC.mode = 'cursor'; REC.at = vcur; }
   }
   REC.chunks = []; REC.len = 0; REC.pks = []; REC.clips = 0; $('#clipFlag').textContent = '';
-  S.monitoring = false; S.recording = true; REC.t0 = performance.now();
+  S.monitoring = false; S.recording = true; REC.t0 = performance.now(); REC.viewEnd = 0;
   REC.cap.set(true);
+  flowRender(); drawAll();      // anche alla prima registrazione la linea del tempo compare subito, con la forma d'onda in rosso
   $('#recStatus').textContent = 'Registrazione in corso. ' + micNote();
   updateTransport(); startMeter(); requestAnimationFrame(recTick);
 }
@@ -249,7 +250,10 @@ function recTick() {
   if (!S.recording) return;
   $('#timeNow').textContent = fmtSec(REC.len);
   const lay = layout(), x0 = REC.at + lay.intro, xe = x0 + REC.len;
-  if (xe > S.view[1]) { const span = S.view[1] - S.view[0]; S.view = [Math.max(0, xe - span * 0.85), Math.max(0, xe - span * 0.85) + span]; S.fit = false; drawBase(); }
+  // vista intera: si allarga a passi mentre la registrazione cresce, così si vede tutto il progetto più la registrazione;
+  // vista ingrandita: scorre per seguire la fine della registrazione
+  if (S.fit) { if (xe > Math.max(lay.total, SR) * 0.92 && xe > REC.viewEnd * 0.92) { REC.viewEnd = Math.max(SR * 10, xe * 1.5); drawBase(); } }
+  else if (xe > S.view[1]) { const span = S.view[1] - S.view[0]; S.view = [Math.max(0, xe - span * 0.85), Math.max(0, xe - span * 0.85) + span]; drawBase(); }
   drawTop(); requestAnimationFrame(recTick);
 }
 async function stopRecording() {

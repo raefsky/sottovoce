@@ -77,7 +77,7 @@ function flowRender() {
   // un solo pulsante pieno alla volta: "Applica i miglioramenti" ed "Esporta" lo sono solo quando sono il passo da fare
   ['#btnApply', '#btnExport'].forEach(sel => $(sel).classList.toggle('primary', flowTarget(step) === sel));
   // meno elementi a schermo finché non c'è niente da montare
-  $('#app').classList.toggle('is-empty', !layout().total);
+  $('#app').classList.toggle('is-empty', !layout().total && !S.recording);
 }
 // chiamata dopo ogni cambiamento del lavoro: aggiorna la barra e, al passaggio di passo, guida verso il successivo
 function flowUpdate() {

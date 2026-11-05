@@ -60,6 +60,12 @@ Per i modelli di serie (salvataggio, nuovo episodio, numero dell'episodio, scari
 node strumenti/prova-serie.mjs
 ```
 
+Per la registrazione, con il microfono finto di Chromium (la forma d'onda deve vedersi mentre si registra):
+
+```bash
+node strumenti/prova-registra.mjs
+```
+
 Il volume di un file mono si misura come se suonasse su due casse, come fa l'app: -16 LUFS su due casse corrisponde a -19 LUFS misurati su un canale solo, la raccomandazione AES per i podcast in mono.
 
 ## Pubblicare
