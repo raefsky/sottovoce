@@ -42,7 +42,7 @@
         <button class="tseg" data-theme-btn="light" aria-pressed="false">Chiaro</button>
         <button class="tseg" data-theme-btn="dark" aria-pressed="false">Scuro</button>
       </div>
-      <button class="btn small" id="btnGuide">Guida rapida</button>
+      <button class="btn small studio-btn" id="btnStudio" type="button"><span class="recdot" aria-hidden="true"></span>Studio</button><button class="btn small" id="btnGuide">Guida rapida</button>
     </div>
   </header>
 
@@ -102,7 +102,7 @@
       <div class="empty-hint" id="emptyHint">
         <h2>Comincia dalla voce</h2>
         <p>Registra adesso oppure trascina qui un file audio.</p>
-        <div class="btnrow"><button class="btn rec-fill" id="emptyRec" type="button"><span class="recdot" aria-hidden="true"></span>Registra</button><button class="btn" id="emptyImport" type="button">Importa un file</button></div>
+        <div class="btnrow"><button class="btn rec-fill" id="emptyRec" type="button"><span class="recdot" aria-hidden="true"></span>Registra</button><button class="btn" id="emptyStudio" type="button">Apri lo studio</button><button class="btn" id="emptyImport" type="button">Importa un file</button></div>
       </div>
     </div>
     <input type="range" id="hscroll" class="vscroll" min="0" max="1000" value="0" aria-label="Scorri la forma d’onda" disabled>
@@ -444,6 +444,23 @@
   <form method="dialog" class="dlg-foot"><button class="btn primary">Ho capito</button></form>
 </dialog>
 
+<dialog id="studio" class="studio" aria-labelledby="stTitle" aria-describedby="stHint">
+  <div class="st-top"><span class="st-brand"><span class="recdot" aria-hidden="true"></span>Studio</span><button class="btn" id="stClose" type="button">Esci dallo studio</button></div>
+  <div class="st-main">
+    <h2 class="st-title" id="stTitle">Pronto a registrare</h2>
+    <p class="st-time" id="stTime">0:00,0</p>
+    <div class="st-meter">
+      <div class="st-bar" aria-hidden="true"><span class="st-zone"></span><span class="st-clip"></span><span class="st-level" id="stLevel"></span><span class="st-peak" id="stPeak" hidden></span></div>
+      <div class="st-scale" aria-hidden="true"><span style="left:0.0%">-60</span><span style="left:20.0%">-48</span><span style="left:40.0%">-36</span><span style="left:60.0%">-24</span><span style="left:80.0%">-12</span><span style="left:90.0%">-6</span><span style="left:100.0%">0 dB</span></div>
+    </div>
+    <p class="st-hint" id="stHint" role="status"></p>
+    <div class="st-wavebox"><canvas class="st-wave" id="stWave" aria-hidden="true"></canvas></div>
+    <button class="st-rec" id="stRec" type="button" aria-label="Inizia a registrare"><span class="st-rec-ic" aria-hidden="true"></span></button>
+    <span class="st-rec-l" id="stRecL" aria-hidden="true">Registra</span>
+    <p class="st-keys">Barra spaziatrice o R per iniziare e fermare · Esc per uscire</p>
+    <p class="st-where" id="stWhere"></p>
+  </div>
+</dialog>
 <dialog id="musicAsk" class="voice-ask" aria-labelledby="maT" aria-describedby="maText">
   <h2 id="maT">C’è già una musica</h2>
   <p id="maText"></p>

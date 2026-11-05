@@ -72,6 +72,12 @@ Per gli stili come schede e "Ascolta 10 s" (l'anteprima non deve cambiare né sa
 node strumenti/prova-stili.mjs
 ```
 
+Per la modalità Studio, con il microfono finto di Chromium:
+
+```bash
+node strumenti/prova-studio.mjs
+```
+
 Il volume di un file mono si misura come se suonasse su due casse, come fa l'app: -16 LUFS su due casse corrisponde a -19 LUFS misurati su un canale solo, la raccomandazione AES per i podcast in mono.
 
 ## Pubblicare

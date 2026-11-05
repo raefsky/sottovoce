@@ -2,6 +2,7 @@
 10-dsp.js
 20-model.js
 30-audio.js
+31-studio.js
 40-view.js
 45-spectrum.js
 47-correct.js

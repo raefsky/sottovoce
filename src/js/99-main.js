@@ -11,7 +11,7 @@ function init() {
   DEFAULTS = Object.assign({}, P);
   try { const saved = JSON.parse(localStorage.getItem('sottovoce-studio.impostazioni.v1') || 'null'); if (saved) Object.keys(saved).forEach(k => { if (k in P && typeof saved[k] === typeof P[k]) P[k] = saved[k]; }); } catch { }
   buildPanels(); markAdvanced(); buildStyles(); buildPresetUI(); bindControls(); syncAll();
-  initHelp(); initTabs(); initLook(); initTimeline(); initKeys(); initMenus(); initWelcome(); initFlow();
+  initHelp(); initTabs(); initLook(); initTimeline(); initKeys(); initStudio(); initMenus(); initWelcome(); initFlow();
   const on = (id, fn) => $(id).addEventListener('click', fn);
   on('#tUndo', undo); on('#tRedo', redo); on('#tCut', doCut); on('#tCopy', () => doCopy()); on('#tPaste', doPaste); on('#tDel', doDelete); on('#tSil', doSilence);
   on('#tFadeIn', () => doFade('in')); on('#tFadeOut', () => doFade('out')); on('#tAll', selectAll);
