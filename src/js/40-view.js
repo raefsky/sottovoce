@@ -9,10 +9,17 @@ function sizeCanvas(cv) {
   const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); return { g, W: w, H: h };
 }
 // altezze delle corsie: più basse sul telefono; con la timeline vuota resta un'area per lo stato iniziale
+// altezza della corsia della voce: sugli schermi grandi cresce con la finestra (da 136 a 300 pixel), lasciando in vista
+// la barra di montaggio e i comandi in basso; la musica cresce in proporzione
+function laneHeights(small) {
+  if (small) return { vh: 96, mh: 44 };
+  const vh = Math.round(clamp(136 + (window.innerHeight - 760) * 0.75, 136, 300));
+  return { vh, mh: Math.round(clamp(vh * 0.42, 58, 110)) };
+}
 function geom() {
-  const W = $('#wrap').clientWidth, small = window.innerWidth < 700, gap = 4;
+  const W = $('#wrap').clientWidth, small = window.innerWidth < 700, gap = 4, lh = laneHeights(small);
   // la corsia degli effetti si alza di una fila per ogni livello di sovrapposizione (massimo 4 file)
-  const rows = fxLayout().rows, ruler = small ? 20 : 24, vh = small ? 96 : 136, mh = S.musicId ? (small ? 44 : 58) : 0, fh = (S.fx.length || S.musicId) ? (small ? 32 : 40) + (rows - 1) * (small ? 14 : 18) : 0;
+  const rows = fxLayout().rows, ruler = small ? 20 : 24, vh = lh.vh, mh = S.musicId ? lh.mh : 0, fh = (S.fx.length || S.musicId) ? (small ? 32 : 40) + (rows - 1) * (small ? 14 : 18) : 0;
   let H = ruler + vh + (mh ? gap + mh : 0) + (fh ? gap + fh : 0) + 4;
   if (!layout().total && !S.recording) H = small ? 180 : 250;
   const vy = ruler, my = vy + vh + gap, fy = (mh ? my + mh + gap : vy + vh + gap);

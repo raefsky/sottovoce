@@ -96,7 +96,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 #tipPop{position:fixed;z-index:60;max-width:min(330px,calc(100vw - 16px));padding:9px 12px;border-radius:var(--r);background:var(--ink);color:var(--bg);font-size:13px;line-height:1.45;pointer-events:none}
 
 /* ---------- disposizione: timeline e pannello laterale ---------- */
-.workspace{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;align-items:start}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) clamp(380px,30vw,460px);gap:24px;align-items:start}
 .side{position:sticky;top:calc(var(--st-h) + 12px);max-height:calc(100vh - var(--tp-h) - var(--st-h) - 24px);overflow:auto;padding-right:4px;overscroll-behavior:contain}
 
 /* ---------- montaggio ---------- */
