@@ -54,14 +54,14 @@ audio{width:100%;margin:8px 0 12px}
     <div class="row">
       <label for="model">Modello</label>
       <select id="model">
-        <option value="Xenova/whisper-tiny">Whisper tiny: velocissimo, poco preciso (circa 40 MB)</option>
-        <option value="Xenova/whisper-base" selected>Whisper base: equilibrato (circa 80 MB)</option>
-        <option value="Xenova/whisper-small">Whisper small: più preciso, più lento (circa 250 MB)</option>
+        <option value="Xenova/whisper-tiny">Whisper tiny: velocissimo, poco preciso (leggero)</option>
+        <option value="Xenova/whisper-base" selected>Whisper base: veloce, ma sbaglia spesso in italiano (circa 200 MB con la scheda grafica)</option>
+        <option value="Xenova/whisper-small">Whisper small: più preciso, più lento (pesante)</option>
         <option value="onnx-community/whisper-large-v3-turbo">Whisper large v3 turbo: il più preciso, solo con scheda grafica (molto pesante)</option>
       </select>
     </div>
     <p class="dim" id="gpuInfo" style="margin-top:8px"></p>
-    <p class="dim">Il modello si scarica una volta sola, poi il browser lo tiene in memoria. Il peso esatto compare qui sotto durante lo scaricamento.</p>
+    <p class="dim">Il modello si scarica una volta sola, poi il browser lo tiene in memoria. Il peso dipende dal computer: con la scheda grafica i modelli sono più grandi. Il peso esatto compare qui sotto durante lo scaricamento.</p>
   </section>
 
   <section class="card" aria-labelledby="h2s">

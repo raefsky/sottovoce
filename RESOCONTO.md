@@ -64,7 +64,7 @@ Al posto di DeepFilterNet e di Whisper ho usato dei **sostituti finti** scritti 
 ## Cose da sapere prima di decidere
 
 1. **Whisper tende a non scrivere gli "ehm".** È addestrato su testi "puliti", quindi spesso li salta. Il conteggio dei riempitivi potrebbe essere basso. Se succede, per la v2 servirà un altro modo per trovarli, per esempio cercando i suoni brevi tra le parole.
-2. **I pesi dei modelli sono stime.** Tiny circa 40 MB, base circa 80, small circa 250. Large v3 turbo è molto più pesante: provalo solo con la scheda grafica. Il peso vero compare nella pagina mentre scarica.
+2. **I pesi dei modelli dipendono dal computer.** Con la scheda grafica sono più grandi: Whisper base ha scaricato 199 MB sul Mac (Edge, WebGPU). Large v3 turbo è molto più pesante. Il peso vero compare nella pagina mentre scarica.
 3. **Le misure di velocità che conteranno sono le tue.** Questo computer nel cloud non ha scheda grafica: sul tuo Mac o PC i numeri saranno diversi, probabilmente migliori con WebGPU.
 4. **DeepFilterNet viene da una versione non ufficiale** (`@lofcz/deepfilternet-web`, licenza MIT o Apache-2.0). Ne ho letto il codice JavaScript: non fa chiamate esterne e il modello è dentro il file wasm. Se entrasse nella v2, prima andrebbe ricompilato dal codice ufficiale di DeepFilterNet o verificato meglio.
 5. **Pesa:** 34 MB contro i circa 110 KB di RNNoise. Per l'app servirebbe uno scaricamento a parte, solo per chi sceglie la "qualità alta".
@@ -108,3 +108,16 @@ Quando mi incolli i risultati delle due prove, decidiamo insieme:
 - quale modello Whisper è il compromesso giusto tra precisione, peso e velocità sul tuo computer.
 
 Poi si parte con la prima fase vera: riordino del codice, nuova interfaccia, modelli di serie e salvataggio su file.
+
+## Risultati delle prove (5 novembre)
+
+**Pulizia, ascolto alla cieca sul Mac (Edge):**
+- Senza limite: RNNoise 2, DeepFilterNet 0, pari 1.
+- Con DeepFilterNet al massimo a 30 dB: DeepFilterNet vince sui file rumorosi (crowd, Fan), RNNoise sulla voce pulita (solo).
+- Velocità: RNNoise circa 120 volte il tempo reale, DeepFilterNet 30–39. Ritardo misurato di DeepFilterNet: 30 ms su tutti i file.
+- Proposta: RNNoise resta la pulizia normale. DeepFilterNet diventa "Pulizia forte", limitato a 30 dB, scelto dalla Modalità Podcast solo con molto rumore e scaricato solo quando serve. Prima va ricompilato dal codice ufficiale.
+
+**Trascrizione, Whisper base sul Mac (Edge, WebGPU):**
+- 2:14 di un capitolo letto in 14 s (9,5 volte il tempo reale), 199 MB scaricati, 31 s di primo caricamento.
+- Circa 10 errori su 100 parole nell'estratto ("divento" per "di vento", "le vigati" per "levigati", "crista" per "cresta"…): troppi per sottotitoli e montaggio dal testo.
+- Da provare: Whisper small e large v3 turbo sullo stesso file, con il testo originale come riferimento.
