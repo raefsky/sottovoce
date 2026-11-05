@@ -21,6 +21,7 @@ export async function pipeline(task, id, opts = {}) {
   const pipe = async (x, o = {}) => {
     if (o.language !== 'italian') throw new Error('lingua attesa: italian');
     // il tempo assoluto si ricava dai pezzi già restituiti: un errore non fa avanzare, come un modello senza memoria
+    if (cursor > T1) cursor = 0;   // una nuova trascrizione dello stesso file riparte dall'inizio
     const a = cursor, b = cursor + x.length / 16000;
     const mine = timeline.filter(t => t.a >= a && t.a < b);
     await new Promise(r => setTimeout(r, 30));

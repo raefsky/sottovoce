@@ -147,6 +147,7 @@ function chunkBounds(x) {
 let TF = null, asr = null, asrKey = '', dlBytes = 0, device = '';
 async function loadModel(id, onStatus) {
   if (!TF) { onStatus('Scarico il programma di trascrizione…', 0); TF = await import(TF_URL); TF.env.allowLocalModels = false; }
+  dlBytes = 0;                       // se il modello è già caricato in questa pagina non si scarica nulla
   if (asr && asrKey === id) return asr;
   const files = {};
   const progress_callback = d => {

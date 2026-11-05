@@ -125,3 +125,9 @@ Poi si parte con la prima fase vera: riordino del codice, nuova interfaccia, mod
 - Stesso file: 28 s (4,7 volte il tempo reale), 562 MB scaricati, 88 s di primo caricamento.
 - Circa 2 errori su 100 parole nell'estratto ("Alghe hanno date" per "alghe annodate", "ingi nocchi" per "inginocchi"), più qualche maiuscola e punteggiatura. Quasi tutti gli errori di base sono spariti.
 - Proposta: Whisper small è il modello della v2, scaricato solo da chi attiva il testo dell'episodio. Da provare ancora: un pezzo parlato a braccio, per vedere se scrive gli "ehm".
+
+**Parlato a braccio, Whisper small (ehm.wav, 1:46, registrazione da riunione online):**
+- 18 s (5,7 volte il tempo reale). Riempitivi trovati: 0. Whisper non scrive gli "ehm", come temuto.
+- Scrive invece ripetizioni e autocorrezioni ("del del", "da non confondere a, da non confondere dicevo", "il PDP no il PDP, volevo dire…"): queste si possono trovare nel testo.
+- Errori su sigle e termini di scuola: "pay" per "PEI", "gl o" per "GLO".
+- Conseguenza: "Togli gli ehm" non può basarsi sul testo. Idea da provare: un "ehm" è un tratto in cui RNNoise sente voce ma Whisper non mette nessuna parola.

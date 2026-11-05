@@ -46,6 +46,10 @@ const cut = await a.page.evaluate(async () => {
   let all = 0; for (let k = 0; k < x.length; k++) all += x[k] * x[k];
   return { n: b.length, cuts: b.slice(0, -1).map(c => +(c[1] / 16000).toFixed(2)), cutRms: b.slice(0, -1).map(c => rms(c[1], 800)), rmsAll: Math.sqrt(all / x.length), contiguous: b.every((c, i) => i === 0 || c[0] === b[i - 1][1]), end: b[b.length - 1][1] === x.length };
 });
+// seconda trascrizione nella stessa pagina: il modello è già caricato, non va contato come scaricato
+await a.page.click('#go');
+await a.page.waitForFunction(() => document.querySelector('#status').textContent === 'Fatto.' && SV.run && SV.run.loadS < 1, null, { timeout: 60000 });
+check(await a.page.evaluate(() => SV.run.bytes) === 0, 'seconda trascrizione nella stessa pagina: niente scaricato');
 check(cut.n >= 2 && cut.contiguous && cut.end, 'audio diviso in pezzi contigui che coprono tutto (' + cut.n + ' pezzi, tagli a ' + cut.cuts.join(', ') + ' s)');
 check(cut.cutRms.every(v => v < cut.rmsAll * 0.2), 'i tagli cadono nelle pause (livello al taglio ' + cut.cutRms.map(v => (20 * Math.log10(v / cut.rmsAll)).toFixed(0) + ' dB').join(', ') + ' rispetto alla media)');
 const w20 = await a.page.evaluate(() => SV.words[20]);
