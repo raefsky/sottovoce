@@ -38,6 +38,14 @@ node strumenti/prova-app.mjs
 
 La prova apre l'app in Chromium senza rete ed esegue i controlli interni (`studioTest`). Poi segue il percorso di chi la usa: importa `strumenti/prova/voce-prova.flac`, applica la Modalità Podcast, esporta l'MP3 e lo misura con ffmpeg. Servono Playwright con Chromium e ffmpeg.
 
+Per il salvataggio del progetto in un file:
+
+```bash
+node strumenti/prova-file.mjs
+```
+
+Questa prova serve la pagina da un piccolo server su `127.0.0.1`, perché le funzioni dei file richiedono un indirizzo sicuro. Le finestre "Salva" e "Apri" del sistema sono sostituite da un file vero nello spazio privato del browser (OPFS). Il ricollegamento dopo una ricarica non si prova in automatico: nel Chromium delle prove rileggere dal database un collegamento a un file OPFS fa crollare il browser, anche in una pagina vuota. Per questo l'app lo rilegge solo quando si clicca l'indicatore, e quel passaggio va provato a mano su Chrome o Edge.
+
 Il volume di un file mono si misura come se suonasse su due casse, come fa l'app: -16 LUFS su due casse corrisponde a -19 LUFS misurati su un canale solo, la raccomandazione AES per i podcast in mono.
 
 ## Pubblicare

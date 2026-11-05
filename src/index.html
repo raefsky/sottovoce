@@ -36,7 +36,7 @@
       </div>
     </div>
     <div class="look" aria-label="Aspetto dell’interfaccia">
-      <p class="projbar" id="projBar" role="status" hidden><span id="projName"></span><span class="dirty" id="dirtyFlag" hidden>modifiche non salvate</span></p>
+      <p class="projbar" id="projBar" role="status" hidden><span id="projName"></span><span class="dirty" id="dirtyFlag" hidden>modifiche non salvate</span><button type="button" class="fileflag" id="fileFlag" hidden></button></p>
       <div class="tgroup" role="group" aria-label="Tema">
         <button class="tseg" data-theme-btn="auto" aria-pressed="true">Auto</button>
         <button class="tseg" data-theme-btn="light" aria-pressed="false">Chiaro</button>
@@ -301,8 +301,8 @@
   <section class="pane" id="pane-project" role="tabpanel" aria-labelledby="tab-project" hidden>
     <div class="panels">
       <article class="panel neutral" id="pProject"><h2 data-info="“Salva il progetto” crea un file con gli originali e l’elenco delle modifiche. Si riapre anche con una versione nuova del programma o su un altro computer.">Progetto</h2>
-        <p class="desc">Il lavoro si salva da solo in questo browser.</p>
-        <div class="btnrow"><button class="btn primary" id="btnSaveProj" disabled>Salva il progetto</button><button class="btn" id="btnOpenProj">Apri un progetto</button><button class="btn" id="btnNewProj">Nuovo progetto</button></div>
+        <p class="desc" id="projLead">Il lavoro si salva da solo in questo browser.</p>
+        <div class="btnrow"><button class="btn primary" id="btnSaveProj" disabled>Salva il progetto</button><button class="btn" id="btnSaveAs" hidden>Salva con un altro nome</button><button class="btn" id="btnOpenProj">Apri un progetto</button><button class="btn" id="btnNewProj">Nuovo progetto</button></div>
         <input class="vh" type="file" accept=".sottovoce,.zip,application/zip" id="fileProj" tabindex="-1" aria-hidden="true">
         <p class="status" id="projStatus" role="status"></p>
       </article>

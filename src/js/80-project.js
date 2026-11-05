@@ -39,16 +39,16 @@ async function importVoice(file, replaceAll) {
 /* ========================= Zip semplice (senza compressione) ========================= */
 const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 function crc32(u8, c) { c = c == null ? 0xFFFFFFFF : c; for (let i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 255] ^ (c >>> 8); return c; }
-function makeZip(entries) {      // entries: [{ name, data: Uint8Array }]
+function makeZip(entries) {      // entries: [{ name, data: Uint8Array }] oppure [{ name, blob, crc, size }] già pronti
   const dt = new Date(), dosTime = (dt.getHours() << 11) | (dt.getMinutes() << 5) | (dt.getSeconds() >> 1);
   const dosDate = ((dt.getFullYear() - 1980) << 9) | ((dt.getMonth() + 1) << 5) | dt.getDate();
   const body = [], central = []; let offset = 0;
   for (const e of entries) {
-    const nm = new TextEncoder().encode(e.name), crc = (crc32(e.data) ^ 0xFFFFFFFF) >>> 0, size = e.data.length;
+    const nm = new TextEncoder().encode(e.name), crc = e.blob ? e.crc : (crc32(e.data) ^ 0xFFFFFFFF) >>> 0, size = e.blob ? e.size : e.data.length;
     const lh = new DataView(new ArrayBuffer(30));
     lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true);
     lh.setUint32(14, crc, true); lh.setUint32(18, size, true); lh.setUint32(22, size, true); lh.setUint16(26, nm.length, true);
-    body.push(lh, nm, e.data);
+    body.push(lh, nm, e.blob || e.data);
     const cd = new DataView(new ArrayBuffer(46));
     cd.setUint32(0, 0x02014b50, true); cd.setUint16(4, 20, true); cd.setUint16(6, 20, true); cd.setUint16(8, 0x0800, true); cd.setUint16(12, dosTime, true); cd.setUint16(14, dosDate, true);
     cd.setUint32(16, crc, true); cd.setUint32(20, size, true); cd.setUint32(24, size, true); cd.setUint16(28, nm.length, true); cd.setUint32(42, offset, true);
@@ -88,7 +88,8 @@ function wavFloat(chs) {
 // Impronta del lavoro: montaggio ed effetti (l'elenco delle operazioni), musica, impostazioni, titolo e copertina.
 // Non contano cursore, zoom e vista (vzoom, match, specView) né il microfono scelto. Si confronta con l'impronta
 // dell'ultimo "Salva il progetto" (o dell'apertura di un progetto): se è diversa, ci sono modifiche non salvate su file.
-// Nessun salvataggio automatico su file: l'indicatore e l'avviso all'uscita servono a ricordarlo.
+// Con Chrome ed Edge, dopo il primo "Salva il progetto" il file si aggiorna da solo (81-file.js); con gli altri browser
+// non c'è salvataggio automatico su file: l'indicatore e l'avviso all'uscita servono a ricordarlo.
 let projFileName = '';                                  // nome dell'ultimo file di progetto salvato o aperto
 function projSig() {
   const p = {}; Object.keys(P).forEach(k => { if (!PSKIP.has(k)) p[k] = P[k]; });
@@ -102,8 +103,9 @@ function updateDirty() {
   const bar = $('#projBar'); if (!bar) return;
   bar.hidden = !hasWork();
   $('#projName').textContent = META.title || projFileName.replace(/\.sottovoce$/i, '') || 'Progetto senza nome';
-  const d = isDirty(); $('#dirtyFlag').hidden = !d;
+  const d = isDirty(); $('#dirtyFlag').hidden = !d || !!(FILE.handle || FILE.pending);
   bar.title = d ? 'Ci sono modifiche non ancora salvate in un file di progetto. Il browser conserva il lavoro, ma per una copia sicura usa “Salva il progetto” nella scheda Progetto.' : 'Tutto salvato nel file di progetto.';
+  updateFileFlag();
 }
 
 /* ========================= Progetto su file ========================= */
@@ -117,14 +119,30 @@ function projectState() {
     cover: META.cover ? 'copertina.jpg' : null
   };
 }
-async function saveProject() {
+// il file di progetto: progetto.json, gli originali in WAV a 32 bit e la copertina. Gli originali non cambiano mai,
+// quindi il loro pezzo di zip si prepara una volta sola (ZIPSRC) e i salvataggi successivi rifanno solo progetto.json
+const ZIPSRC = new Map();
+async function projectBlob(onProg) {
+  const st = projectState(), entries = [{ name: 'progetto.json', data: new TextEncoder().encode(JSON.stringify(st, null, 1)) }];
+  for (let i = 0; i < st.sources.length; i++) {
+    const s = st.sources[i]; let z = ZIPSRC.get(s.id);
+    if (!z) {
+      if (onProg) onProg('Salvataggio di ' + s.name + '…', 0.1 + 0.8 * i / st.sources.length);
+      await yieldUI(); const data = wavFloat(S.sources.get(s.id).chs);
+      z = { blob: new Blob([data]), crc: (crc32(data) ^ 0xFFFFFFFF) >>> 0, size: data.length }; ZIPSRC.set(s.id, z);
+    }
+    entries.push({ name: s.file, blob: z.blob, crc: z.crc, size: z.size });
+  }
+  for (const id of ZIPSRC.keys()) if (!S.sources.has(id)) ZIPSRC.delete(id);
+  if (META.cover) entries.push({ name: 'copertina.jpg', data: META.cover });
+  return makeZip(entries);
+}
+async function saveProject(e, other) {
   if (!S.ops.length && !S.musicId) return;
+  if (FILE.ok) { await saveToFile(!!other); return; }
   stopIfPlaying(); busy(true, 'Preparazione del progetto…', 0.1);
   try {
-    const st = projectState(), entries = [{ name: 'progetto.json', data: new TextEncoder().encode(JSON.stringify(st, null, 1)) }];
-    for (let i = 0; i < st.sources.length; i++) { const s = st.sources[i]; busy(true, 'Salvataggio di ' + s.name + '…', 0.1 + 0.8 * i / st.sources.length); await yieldUI(); entries.push({ name: s.file, data: wavFloat(S.sources.get(s.id).chs) }); }
-    if (META.cover) entries.push({ name: 'copertina.jpg', data: META.cover });
-    const blob = makeZip(entries), name = fileBase('progetto') + '.sottovoce';
+    const blob = await projectBlob((m, p) => busy(true, m, p)), name = fileBase('progetto') + '.sottovoce';
     busy(false); downloadBlob(name, blob); projFileName = name; markSaved(); scheduleSave();
     $('#projStatus').textContent = 'Progetto salvato come “' + name + '” (' + fmtBytes(blob.size) + ') nella cartella dei download.';
   } catch (e) { busy(false); $('#projStatus').textContent = 'Salvataggio non riuscito' + (e && e.message ? ': ' + e.message : '.'); }
@@ -134,7 +152,7 @@ function newerNote(st) {
   return st && st.appVersion && cmpVersion(st.appVersion, APP_VERSION) > 0
     ? ' Nota: è stato salvato con la versione ' + st.appVersion + ', più recente di questa (' + APP_VERSION + '). Si apre lo stesso; se qualcosa non torna, usa la versione più recente.' : '';
 }
-async function openProject(file) {
+async function openProject(file, handle) {
   if (!file) return;
   if ((S.ops.length || S.musicId) && !confirm('Aprire il progetto “' + file.name + '”? Il lavoro attuale viene sostituito (resta salvato solo se hai usato “Salva il progetto”).')) return;
   stopIfPlaying(); busy(true, 'Apertura di ' + file.name + '…', 0.1);
@@ -152,6 +170,7 @@ async function openProject(file) {
     await loadState(st, sources, st.cover && files[st.cover] ? files[st.cover].slice() : null);
     projFileName = file.name; markSaved();
     busy(false); await clearDb(); await saveAllToDb();
+    await linkFile(handle || null);
     $('#projStatus').textContent = 'Progetto “' + file.name + '” aperto: ' + st.ops.length + ' modifiche, salvato il ' + new Date(st.saved).toLocaleString('it-IT') + '.' + newerNote(st);
     toast(newerNote(st) ? 'Progetto aperto. È stato salvato con una versione più recente: leggi la nota nella scheda Progetto.' : 'Progetto aperto.');
   } catch (e) { busy(false); $('#projStatus').textContent = 'Il progetto non si è aperto: ' + (e && e.message ? e.message : 'file non valido') + '.'; }
@@ -180,7 +199,7 @@ async function newProject() {
   $('#nameVoice').textContent = 'Trascina qui un file o clicca per sceglierlo'; $('#nameMusic').textContent = 'Trascina qui un file o clicca per sceglierlo';
   $('#reportBody').innerHTML = '<p class="status">Ancora nessuna esportazione.</p>';
   syncAll(); showCover(); await clearDb(); afterEdit(null); flowReset(); flowShowTab('rec');
-  projFileName = ''; markSaved();
+  projFileName = ''; await linkFile(null); markSaved();
   $('#projStatus').textContent = 'Nuovo progetto pronto.';
 }
 
@@ -206,9 +225,9 @@ function scheduleSave() {
   clearTimeout(saveT);
   saveT = setTimeout(() => {
     // nel salvataggio automatico del browser si ricordano anche l'impronta e il nome dell'ultimo file salvato (non nel file di progetto)
-    const st = projectState(); st.coverBytes = META.cover || null; st.savedSig = S.savedSig || null; st.projFileName = projFileName;
+    const st = projectState(); st.coverBytes = META.cover || null; st.savedSig = S.savedSig || null; st.projFileName = projFileName; st.fileLinked = !!(FILE.handle || FILE.pending);
     idb('kv', 'readwrite', s => s.put(st, 'stato')).catch(() => { });
-    updateDirty();
+    updateDirty(); scheduleFileSave();
     try { localStorage.setItem('sottovoce-studio.impostazioni.v1', JSON.stringify(Object.assign({}, P, { micId: P.micId }))); } catch { }
   }, 600);
 }
@@ -240,7 +259,7 @@ async function offerRestore() {
     for (const s of st.sources) { const r = await idb('src', 'readonly', x => x.get(s.id)); if (r) sources.set(s.id, { id: r.id, name: r.name, kind: r.kind, chs: r.chs, len: r.chs[0].length, gain: r.gain }); }
     const missing = st.sources.filter(s => !sources.has(s.id));
     await loadState(st, sources, st.coverBytes || null);
-    S.savedSig = st.savedSig || null; projFileName = st.projFileName || ''; updateDirty();
+    S.savedSig = st.savedSig || null; projFileName = st.projFileName || ''; restoreFileLink(st); updateDirty();
     busy(false);
     toast(missing.length ? 'Lavoro ripreso, ma mancano ' + missing.length + ' originali: il browser non li aveva salvati.' : 'Lavoro ripreso da dove l’avevi lasciato.' + newerNote(st));
   } catch { busy(false); toast('Non è stato possibile riprendere il lavoro salvato. Prova ad aprire un progetto.'); }

@@ -26,7 +26,8 @@ function init() {
   on('#abOrig', () => setMode(BL.on ? 'x' : 'orig')); on('#abProc', () => setMode(BL.on ? 'y' : 'proc')); on('#btnBlind', toggleBlind);
   on('#btnApply', improveSources); on('#btnHum', findHum); on('#btnPropose', analyzePropose); on('#btnPodcast', podcastMode); initEpisode(); initEditBar(); on('#btnSilFind', previewSilences); on('#btnSilApply', applySilences);
   $$('[data-spec]').forEach(b => b.addEventListener('click', () => { P.specView = b.dataset.spec; $$('[data-spec]').forEach(o => o.setAttribute('aria-pressed', String(o === b))); scheduleSpec(0); scheduleSave(); })); on('#btnExport', doExport); on('#btnStems', doStems);
-  on('#btnSaveProj', saveProject); on('#btnOpenProj', () => $('#fileProj').click()); on('#btnNewProj', newProject);
+  on('#btnSaveProj', saveProject); on('#btnSaveAs', () => saveProject(null, true)); on('#fileFlag', fileFlagClick);
+  on('#btnOpenProj', () => FILE.ok ? openWithPicker() : $('#fileProj').click()); on('#btnNewProj', newProject);
   on('#btnMusicRemove', removeMusic); on('#btnCover', () => $('#fileCover').click()); on('#btnCoverDel', () => { META.cover = null; showCover(); scheduleSave(); });
   on('#btnInfo', openInfo); on('#btnGuide', () => $('#guide').showModal());
   bindFile('#fileVoice', '#slotVoice', importVoice); bindFile('#fileMusic', '#slotMusic', importMusic); bindFile('#fileFx', '#slotFx', importFx);
@@ -36,7 +37,7 @@ function init() {
   ['dragover', 'drop'].forEach(ev => window.addEventListener(ev, e => e.preventDefault()));
   // avviso prima di chiudere o ricaricare: durante la registrazione e quando ci sono modifiche non salvate in un file di progetto
   window.addEventListener('beforeunload', e => { if (S.recording || isDirty()) { e.preventDefault(); e.returnValue = ''; } });
-  replay(); afterEdit(null); showCover(); renderReport(); startMeter();
+  replay(); afterEdit(null); showCover(); renderReport(); startMeter(); updateProjText();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => drawAll());   // ridisegna la timeline quando i caratteri sono pronti
   offerRestore().then(maybeWelcome, maybeWelcome);   // prima l'eventuale ripresa del lavoro, poi il benvenuto
 }

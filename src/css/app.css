@@ -55,6 +55,13 @@ h1{margin:0;font-family:var(--f-serif);font-size:26px;line-height:1.1;font-weigh
 .projbar .dirty{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
 .projbar .dirty::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .projbar .dirty[hidden]{display:none}
+.fileflag{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;color:var(--muted);background:none;border:0;padding:4px 6px;border-radius:var(--r);cursor:pointer;max-width:34ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fileflag::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.fileflag[data-state="pending"]::before,.fileflag[data-state="saving"]::before{background:var(--accent)}
+.fileflag[data-state="perm"],.fileflag[data-state="error"]{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.fileflag[data-state="perm"]::before,.fileflag[data-state="error"]::before{background:var(--bad)}
+.fileflag:disabled{cursor:default}
+.fileflag[hidden]{display:none}
 .tgroup{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .tseg{font:inherit;font-size:13px;font-weight:500;padding:6px 11px;border:0;background:transparent;color:var(--muted);cursor:pointer}
 .tseg:hover:not(:disabled){color:var(--ink)}
