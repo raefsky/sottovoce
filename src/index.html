@@ -244,17 +244,6 @@
     <div class="styles" id="musicStyles"></div>
     <div class="styles" id="duckReact"></div>
     <div class="panels">
-      <article class="panel music" id="pMusic"><h2>Musica</h2>
-        <p class="desc">Il sottofondo musicale, al volume giusto da solo.</p>
-        <label class="slot" id="slotMusic" style="--c:var(--music)">
-          <input class="vh" type="file" accept="audio/*,video/*" id="fileMusic">
-          <span class="slot-title">Musica</span>
-          <span class="slot-name" id="nameMusic">Trascina qui un file o clicca per sceglierlo</span>
-        </label>
-        <div class="body"></div>
-        <p class="status" id="musicStatus"></p>
-        <div class="btnrow"><button class="btn" id="btnMusicRemove" disabled>Togli la musica</button></div>
-      </article>
       <article class="panel sigla" id="pSigla"><h2 data-info="La sigla suona all’inizio e la voce parte dopo; la chiusura suona alla fine, dopo la coda della musica, e si sposta da sola se la voce cambia lunghezza. Il volume si regola da solo al livello della voce.">Sigla e chiusura</h2>
         <p class="desc">Suonano prima e dopo l’episodio, sempre al loro posto.</p>
         <label class="slot" id="slotSig" style="--c:var(--fx3)">
@@ -269,6 +258,17 @@
         </label>
         <p class="status" id="siglaStatus"></p>
         <div class="btnrow"><button class="btn" id="btnSigRemove" disabled>Togli la sigla</button><button class="btn" id="btnEndRemove" disabled>Togli la chiusura</button></div>
+      </article>
+      <article class="panel music" id="pMusic"><h2>Musica</h2>
+        <p class="desc">Il sottofondo musicale, al volume giusto da solo.</p>
+        <label class="slot" id="slotMusic" style="--c:var(--music)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileMusic">
+          <span class="slot-title">Musica</span>
+          <span class="slot-name" id="nameMusic">Trascina qui un file o clicca per sceglierlo</span>
+        </label>
+        <div class="body"></div>
+        <p class="status" id="musicStatus"></p>
+        <div class="btnrow"><button class="btn" id="btnMusicRemove" disabled>Togli la musica</button></div>
       </article>
       <article class="panel duck" id="pDuck"><h2 data-info="Funziona come in Sottovoce: la musica si abbassa da sola quando parli e risale nelle pause. La soglia che riconosce la voce si regola da sola.">Ducking automatico</h2>
         <p class="desc">La musica scende quando parli e risale nelle pause.</p>
@@ -433,6 +433,17 @@
   <form method="dialog" class="dlg-foot"><button class="btn primary">Ho capito</button></form>
 </dialog>
 
+<dialog id="musicAsk" class="voice-ask" aria-labelledby="maT" aria-describedby="maText">
+  <h2 id="maT">C’è già una musica</h2>
+  <p id="maText"></p>
+  <p class="note">Sigla e chiusura suonano da sole prima e dopo l’episodio; la musica di sottofondo sta sotto la voce.</p>
+  <div class="ep-foot">
+    <button class="btn cta" id="maSig" type="button">Usalo come sigla</button>
+    <button class="btn" id="maEnd" type="button">Usalo come chiusura</button>
+    <button class="btn" id="maReplace" type="button">Sostituisci la musica</button>
+  </div>
+  <form method="dialog" class="ep-close"><button class="linkbtn">Lascia tutto com’è</button></form>
+</dialog>
 <dialog id="voiceAsk" class="voice-ask" aria-labelledby="vaT" aria-describedby="vaText">
   <h2 id="vaT">Un’altra voce</h2>
   <p id="vaText"></p>

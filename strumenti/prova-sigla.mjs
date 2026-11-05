@@ -48,6 +48,24 @@ await page.setInputFiles('#fileMusic', P('musica-220.flac'));
 await page.waitForFunction(() => !!window.__studio.S.musicId);
 l = await L();
 check(l.mStart === 3 && l.intro === 9 && l.fx[1].at === 25 && l.mEnd === 25 && l.total === 27, 'con la musica: musica da 3 a 25 s, voce da 9 s, chiusura a 25 s (' + JSON.stringify({ mStart: l.mStart, intro: l.intro, chiusura: l.fx[1].at, mEnd: l.mEnd, total: l.total }) + ')');
+// un secondo file nel riquadro della musica: si chiede cosa farne
+const ordine = await page.evaluate(() => { const a = document.getElementById('pSigla'), b = document.getElementById('pMusic'); return !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING); });
+check(ordine, 'il riquadro «Sigla e chiusura» viene prima della Musica');
+const opsPrima = (await L()).ops;
+await page.setInputFiles('#fileMusic', P('chiusura-660.flac'));
+await page.waitForFunction(() => document.querySelector('#musicAsk').open);
+check(/musica-220\.flac.*chiusura-660\.flac/.test(await page.textContent('#maText')), 'seconda musica: compare la domanda con i due nomi');
+await page.click('#musicAsk .ep-close button');
+await page.waitForFunction(() => !document.querySelector('#musicAsk').open);
+l = await L(); check(l.ops === opsPrima && (await page.evaluate(() => window.__studio.S.sources.get(window.__studio.S.musicId).name)) === 'musica-220.flac', '«Lascia tutto com’è»: non cambia nulla');
+await page.setInputFiles('#fileMusic', P('chiusura-660.flac'));
+await page.waitForFunction(() => document.querySelector('#musicAsk').open);
+await page.click('#maEnd');
+await page.waitForFunction(n => window.__studio.S.ops.length === n + 1, opsPrima);
+l = await L();
+check(l.fx.filter(e => e.anchor === 'end').length === 1 && (await page.evaluate(() => window.__studio.S.sources.get(window.__studio.S.musicId).name)) === 'musica-220.flac', '«Usalo come chiusura»: prende il posto della chiusura, la musica resta');
+await page.evaluate(() => window.__studio.undo());
+
 // cosa suona dove: ampiezza dei tre toni nel mix, in dB
 const mix = await page.evaluate(() => {
   const st = window.__studio, SR = 48000;

@@ -73,8 +73,21 @@ function musicCurves(which) {
   MC.key = key; MC.val = { duck, gain, thr: S.duckThrAutoVal };
   return MC.val;
 }
+// un secondo file nel riquadro della musica: si chiede se è la sigla, la chiusura o la nuova musica di sottofondo
+function askMusicImport(file) {
+  return new Promise(res => {
+    const d = $('#musicAsk'), m = S.sources.get(S.musicId); let v = null;
+    $('#maText').textContent = 'C’è già la musica di sottofondo «' + m.name + '». Cosa fare con «' + file.name + '»?';
+    $('#maSig').onclick = () => { v = 'start'; d.close(); }; $('#maEnd').onclick = () => { v = 'end'; d.close(); }; $('#maReplace').onclick = () => { v = 'replace'; d.close(); };
+    d.addEventListener('close', () => res(v), { once: true }); d.showModal(); $('#maSig').focus();
+  });
+}
 async function importMusic(file) {
   if (!file) return;
+  if (S.musicId && S.sources.has(S.musicId)) {
+    const c = await askMusicImport(file); if (!c) return;
+    if (c !== 'replace') { await importAnchored(file, c); return; }
+  }
   stopIfPlaying(); busy(true, 'Lettura di ' + file.name + '…', 0.2);
   try {
     const d = await decodeFile(file);
