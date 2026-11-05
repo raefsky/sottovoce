@@ -34,6 +34,11 @@ check(falsi.length === 0, 'nessun falso allarme sulle parole (' + falsi.map(t).j
 check(r.reps.some(x => /da non confondere a/.test(x)), 'trovata la ripartenza «da non confondere a, da non confondere»');
 check(r.reps.some(x => /^del del/.test(x)), 'trovata la ripetizione «del del»');
 check(r.reps.length === 2, 'nessuna altra ripetizione segnalata (' + r.reps.length + ': ' + r.reps.join(' | ') + ')');
+// i riempitivi scritti da Whisper non devono diventare ripetizioni (come «um, um, um» nella prova su ehm.wav)
+const rf = await page.evaluate(() => SV.findReps(['um,', 'um,', 'um.', 'Siamo', 'pronti,', 'um,', 'um,', 'Ciao', 'a', 'tutti'].map((w, i) => ({ text: ' ' + w, a: i, b: i + 0.5 }))).map(g => g.text));
+check(rf.length === 0, 'i riempitivi ripetuti non sono contati come ripetizioni (' + rf.join(' | ') + ')');
+const rr = await page.evaluate(() => SV.findReps('il pdp, no il pdp, volevo dire il pei dal punto di vista umano punto di vista umano'.split(' ').map((w, i) => ({ text: ' ' + w, a: i, b: i + 0.5 }))).map(g => g.text));
+check(rr.length === 2, 'le ripartenze della prova su ehm.wav restano trovate (' + rr.join(' | ') + ')');
 // segnare a mano e copiare i risultati
 await page.locator('#cands .cand').first().locator('button', { hasText: 'Era un ehm' }).click();
 await page.fill('#heard', '4');

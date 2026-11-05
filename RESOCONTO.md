@@ -141,3 +141,8 @@ Cerca anche le ripetizioni ("del del") e le frasi ripartite ("da non confondere 
 Banco di prova, con frasi e "ehm" sintetici e i tempi esatti delle parole: trovati 4 riempitivi su 4, nessun falso allarme, pausa muta e respiro non segnalati, ripetizioni trovate 2 su 2.
 
 Il limite da verificare: con Whisper vero i tempi delle parole sono imprecisi di qualche decimo di secondo. Una parola che "si allarga" sopra un "ehm" lo nasconde, una che finisce troppo presto crea un falso allarme. La prova su `ehm.wav` dirà quanto pesa.
+
+**Prova su ehm.wav (Whisper base, Mac, WebGPU):**
+- Ehm dal suono: 7 segnalati, 5 veri e 2 falsi. L'autore ne ha sentiti 5 in tutto: **trovati tutti e 5**, con 2 falsi allarmi brevi (0,2–0,3 s).
+- Whisper base ha scritto 6 "um", raggruppati in "um, um, um" vicino a "Siamo pronti" e "Ciao": da verificare a orecchio se sono veri o inventati dal modello.
+- Ripetizioni trovate giuste: «il pdp, no il pdp», «da non confondere, da non confondere», «punto di vista umano, punto di vista». Gli "um, um, um" venivano contati come ripetizioni: corretto, ora i riempitivi si contano a parte.

@@ -314,7 +314,8 @@ function findEhm(v, ws) {
 }
 // ripetizioni: parola ripetuta subito ("del del") o gruppo di parole ripreso poco dopo ("da non confondere a, da non confondere")
 function findReps(ws) {
-  const t = ws.map(w => (norm(w.text)[0] || '')), groups = [], used = new Uint8Array(ws.length);
+  // i riempitivi ("um, um, um") non sono ripetizioni: si contano a parte
+  const t = ws.map(w => (isFiller(w.text) ? '' : (norm(w.text)[0] || ''))), groups = [], used = new Uint8Array(ws.length);
   const same = (i, j, n) => { for (let k = 0; k < n; k++) if (!t[i + k] || t[i + k] !== t[j + k]) return false; return true; };
   for (let i = 0; i < ws.length; i++) {
     if (used[i]) continue;
