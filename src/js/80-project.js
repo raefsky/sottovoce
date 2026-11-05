@@ -224,6 +224,7 @@ let saveT = null;
 function scheduleSave() {
   clearTimeout(saveT);
   saveT = setTimeout(() => {
+    if (typeof STYLE_PV !== 'undefined' && STYLE_PV.busy) { scheduleSave(); return; }   // durante l'anteprima di uno stile le regolazioni sono provvisorie
     // nel salvataggio automatico del browser si ricordano anche l'impronta e il nome dell'ultimo file salvato (non nel file di progetto)
     const st = projectState(); st.coverBytes = META.cover || null; st.savedSig = S.savedSig || null; st.projFileName = projFileName; st.fileLinked = !!(FILE.handle || FILE.pending);
     idb('kv', 'readwrite', s => s.put(st, 'stato')).catch(() => { });

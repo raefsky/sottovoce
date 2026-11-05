@@ -538,6 +538,21 @@ dialog.voice-ask{width:min(440px,92vw)}
 .serie-new{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px;font-size:13.5px}
 .serie-row{display:flex;flex-wrap:wrap;gap:8px}
 .serie-row input{flex:1 1 180px;width:auto;min-width:0}
+
+/* stili come schede: nome e descrizione sempre visibili, bordo colorato sulla scheda scelta */
+.style-grid.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;padding-bottom:0;margin-top:8px}
+.style-card{display:flex;flex-direction:column;border:1.5px solid var(--line);border-radius:10px;background:var(--panel2);transition:border-color .15s ease,background-color .15s ease}
+.style-card:hover{border-color:color-mix(in srgb,var(--c) 55%,var(--line))}
+.style-card.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 11%,var(--panel2))}
+.style-card .style{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;padding:10px 12px 6px;border:0;border-radius:10px 10px 0 0;color:var(--ink)}
+.style-card .style b{font-weight:600}
+.style-card .style span,.style-card .style[aria-pressed="true"] span{display:block;position:static;font-size:12.5px;line-height:1.4;color:var(--muted);white-space:normal;overflow:visible}
+.style-card .style[aria-pressed="true"]{border-bottom-color:transparent}
+.style-pv{align-self:flex-start;margin:2px 12px 10px;font:inherit;font-size:12.5px;font-weight:500;min-height:30px;padding:0 11px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);cursor:pointer}
+.style-pv:hover{border-color:var(--c)}
+.style-pv[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:var(--onaccent)}
+.style-pv:disabled{opacity:.45;cursor:default}
+#styleStatus:empty{display:none}
 </style>
 </head>
 <body>
@@ -4162,7 +4177,7 @@ function playPos() {
   return Math.min(PB.end, PB.from + Math.max(0, (ACTX.currentTime - PB.startAt)) * SR);
 }
 function startPlayback(from, end) {
-  stopPlayback(true); stopFxPreview();
+  stopPlayback(true); stopFxPreview(); stopStylePreview();
   const c = ctx(), lay = layout();
   if (!lay.total) return;
   PB.from = clamp(Math.round(from), 0, lay.total); PB.end = clamp(Math.round(end == null ? lay.total : end), PB.from, lay.total);
@@ -6956,6 +6971,7 @@ let saveT = null;
 function scheduleSave() {
   clearTimeout(saveT);
   saveT = setTimeout(() => {
+    if (typeof STYLE_PV !== 'undefined' && STYLE_PV.busy) { scheduleSave(); return; }   // durante l'anteprima di uno stile le regolazioni sono provvisorie
     // nel salvataggio automatico del browser si ricordano anche l'impronta e il nome dell'ultimo file salvato (non nel file di progetto)
     const st = projectState(); st.coverBytes = META.cover || null; st.savedSig = S.savedSig || null; st.projFileName = projFileName; st.fileLinked = !!(FILE.handle || FILE.pending);
     idb('kv', 'readwrite', s => s.put(st, 'stato')).catch(() => { });
@@ -7734,17 +7750,29 @@ const DUCK_REACT = [
 const STYLE_SETS = [['#voiceStyles', 'voice', VOICE_STYLES, 'Stile della voce', 'Scegli uno stile e premi Applica. Poi rifinisci con i cursori.', '--voice', 'Se la voce suona metallica, abbassa “Attenua il metallico”. Se rimbomba, alza “Riduci l’eco della stanza”.'],
   ['#musicStyles', 'music', MUSIC_STYLES, 'Livello della musica', 'Se copre le parole, scegli un’opzione più bassa.', '--music', 'Il volume si ricalcola da solo sul brano, in LUFS.'],
   ['#duckReact', 'react', DUCK_REACT, 'Reazione della musica', 'Quanto in fretta la musica scende e risale.', '--duck']];
+// Stili della voce e livelli della musica: schede con nome e descrizione sempre visibili; gli stili della voce hanno
+// anche "Ascolta 10 s" (91-anteprima.js). La reazione della musica resta una fila compatta.
 function buildStyles() {
   STYLE_SETS.forEach(([sel, kind, list, title, hint, col, tip]) => {
-    const box = $(sel); box.innerHTML = '<h2 class="styles-h"></h2><p class="styles-d"></p><div class="style-grid" role="group"></div>';
+    const cards = kind === 'voice' || kind === 'music', box = $(sel);
+    box.innerHTML = '<h2 class="styles-h"></h2><p class="styles-d"></p><div class="style-grid' + (cards ? ' cards' : '') + '" role="group"></div>' + (kind === 'voice' ? '<p class="status" id="styleStatus" role="status"></p>' : '');
     $('.styles-h', box).textContent = title; $('.styles-d', box).textContent = hint; $('.style-grid', box).setAttribute('aria-label', title);
     if (tip) $('.styles-h', box).appendChild(makeInfo(tip, title));
     list.forEach(st => {
-      const b = document.createElement('button'); b.className = 'style'; b.dataset.style = st.id; b.setAttribute('aria-pressed', 'false'); b.style.setProperty('--c', 'var(' + col + ')');
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'style'; b.dataset.style = st.id; b.setAttribute('aria-pressed', 'false'); b.style.setProperty('--c', 'var(' + col + ')');
       const t = document.createElement('b'); t.textContent = st.name; const d = document.createElement('span'); d.textContent = st.desc;
-      b.append(t, d); b.addEventListener('click', () => applyStyle(kind, st)); $('.style-grid', box).appendChild(b);
+      b.append(t, d); b.addEventListener('click', () => applyStyle(kind, st));
+      if (!cards) { $('.style-grid', box).appendChild(b); return; }
+      const card = document.createElement('div'); card.className = 'style-card'; card.style.setProperty('--c', 'var(' + col + ')'); card.appendChild(b);
+      if (kind === 'voice') {
+        const pv = document.createElement('button'); pv.type = 'button'; pv.className = 'style-pv'; pv.dataset.style = st.id; pv.textContent = 'Ascolta 10 s';
+        pv.setAttribute('aria-label', 'Ascolta 10 secondi della tua voce con lo stile ' + st.name); pv.setAttribute('aria-pressed', 'false');
+        pv.addEventListener('click', () => stylePreview(st)); card.appendChild(pv);
+      }
+      $('.style-grid', box).appendChild(card);
     });
   });
+  updatePvButtons();
 }
 // Schema del ducking: due frasi su 6 secondi con una pausa breve. È un'illustrazione del comportamento, non l'anteprima esatta.
 // Modello: la musica è abbassata se c'è una frase tra inizio meno anticipo e fine più tenuta; discesa e risalita sono rampe lineari.
@@ -7776,7 +7804,7 @@ function drawDuckViz() {
 function updateStyleCards() {
   STYLE_SETS.forEach(([sel, , list]) => {
     let any = false;
-    $$(sel + ' .style').forEach(b => { const st = list.find(x => x.id === b.dataset.style); if (!st.v) return; const on = Object.keys(st.v).every(k => P[k] === st.v[k]); any = any || on; b.setAttribute('aria-pressed', String(on)); });
+    $$(sel + ' .style').forEach(b => { const st = list.find(x => x.id === b.dataset.style); if (!st.v) return; const on = Object.keys(st.v).every(k => P[k] === st.v[k]); any = any || on; b.setAttribute('aria-pressed', String(on)); const c = b.closest('.style-card'); if (c) c.classList.toggle('on', on); });
     // "Personalizzata" si accende da sola quando i valori non corrispondono a nessun preset
     const cu = $(sel + ' .style[data-style="custom"]'); if (cu) cu.setAttribute('aria-pressed', String(!any));
   });
@@ -7932,7 +7960,7 @@ function afterEdit() {
   const lay = layout();
   S.cur = clamp(S.cur, 0, lay.total);
   if (S.sel) { S.sel = [clamp(S.sel[0], 0, lay.total), clamp(S.sel[1], 0, lay.total)]; if (S.sel[1] - S.sel[0] < 1) S.sel = null; }
-  drawAll(); updateButtons(); updateTransport(); updateLegend(); renderHistory(); renderFxList(); updateApplyStatus(); scheduleDiag(); scheduleSave(); updateLevelStatus();
+  drawAll(); updateButtons(); updateTransport(); updateLegend(); renderHistory(); renderFxList(); updatePvButtons(); updateApplyStatus(); scheduleDiag(); scheduleSave(); updateLevelStatus();
   flowUpdate();
 }
 
@@ -8104,6 +8132,61 @@ function openInfo() {
   $('#info').showModal();
 }
 
+/* ---- 91-anteprima.js ---- */
+/* ========================= Ascolta 10 s: anteprima di uno stile della voce ========================= */
+// Prende 10 secondi della voce montata (dal cursore, se è dentro la voce; altrimenti dall'inizio del parlato),
+// li passa nella catena di miglioramento con le regolazioni dello stile e li fa ascoltare, portati al volume
+// dell'obiettivo della voce: così tutti gli stili si confrontano allo stesso volume. Lo stile non viene applicato.
+// La catena legge le regolazioni globali (P): durante il calcolo si cambiano e poi si rimettono com'erano;
+// intanto il salvataggio automatico aspetta (STYLE_PV.busy), così non si salvano regolazioni provvisorie.
+const STYLE_PV = { busy: false, node: null, id: null, cache: new Map() };
+const PV_LEN = 10;
+function pvStart() {
+  const lay = layout(), n = PV_LEN * SR, cur = S.cur - lay.intro;
+  if (cur > 0.2 * SR && cur < S.vlen - SR) return Math.round(Math.min(cur, Math.max(0, S.vlen - n)));
+  // dall'inizio del parlato: il primo tratto di 50 ms sopra -45 dBFS, meno mezzo secondo
+  const x = renderVoice(0, Math.min(S.vlen, 60 * SR), false), w = SR / 20;
+  for (let i = 0; i + w <= x.length; i += w) { let e = 0; for (let k = i; k < i + w; k++) e += x[k] * x[k]; if (e / w > 3.2e-5) return Math.max(0, Math.min(i - SR / 2, S.vlen - n)); }
+  return 0;
+}
+function stopStylePreview() {
+  if (STYLE_PV.node) { try { STYLE_PV.node.onended = null; STYLE_PV.node.stop(); } catch { } STYLE_PV.node.disconnect(); }
+  STYLE_PV.node = null; STYLE_PV.id = null; updatePvButtons();
+}
+function updatePvButtons() {
+  $$('.style-pv').forEach(b => {
+    const on = b.dataset.style === STYLE_PV.id;
+    b.textContent = on ? 'Ferma' : 'Ascolta 10 s'; b.setAttribute('aria-pressed', String(on));
+    b.disabled = !S.vlen || S.recording || (STYLE_PV.busy && !on);
+  });
+}
+async function stylePreview(st) {
+  if (STYLE_PV.id === st.id) { stopStylePreview(); return; }
+  if (!S.vlen || STYLE_PV.busy) return;
+  stopIfPlaying(); stopStylePreview(); stopFxPreview();
+  const a = pvStart(), n = Math.min(PV_LEN * SR, S.vlen - a), key = [st.id, a, n, S.version, improveKey()].join('|');
+  let y = STYLE_PV.cache.get(key);
+  if (!y) {
+    STYLE_PV.busy = true; updatePvButtons();
+    const old = {}; Object.keys(st.v).forEach(k => { old[k] = P[k]; P[k] = st.v[k]; });
+    try {
+      busy(true, 'Anteprima dello stile “' + st.name + '”…', 0);
+      const x = renderVoice(a, n, false);
+      y = await processSource(x, f => busy(true, 'Anteprima dello stile “' + st.name + '”…', f));
+      const l = lufs(y, true); if (l > -90) y = scaleArr(y, dbToGain(P.target - l));
+      const pk = y.reduce((m, v) => Math.max(m, Math.abs(v)), 0); if (pk > 0.98) y = scaleArr(y, 0.98 / pk);
+      if (STYLE_PV.cache.size > 8) STYLE_PV.cache.delete(STYLE_PV.cache.keys().next().value);
+      STYLE_PV.cache.set(key, y);
+    } catch (e) { toast('Anteprima non riuscita' + (e && e.message ? ': ' + e.message : '.')); return; }
+    finally { Object.assign(P, old); STYLE_PV.busy = false; busy(false); updatePvButtons(); }
+  }
+  const c = ctx(), buf = c.createBuffer(1, y.length, SR); buf.copyToChannel(y, 0);
+  const node = c.createBufferSource(); node.buffer = buf; node.connect(c.destination);
+  node.onended = () => { if (STYLE_PV.node === node) { STYLE_PV.node = null; STYLE_PV.id = null; updatePvButtons(); } };
+  if (c.state === 'suspended') await c.resume();
+  node.start(); STYLE_PV.node = node; STYLE_PV.id = st.id; updatePvButtons();
+  $('#styleStatus').textContent = 'Ascolti “' + st.name + '” su ' + fmtDur(n / SR) + ' della tua voce, da ' + fmtSec(a) + '. Per sceglierlo, clicca la scheda e poi “Applica i miglioramenti”.';
+}
 /* ---- 92-flow.js ---- */
 /* ========================= Percorso guidato (un passo alla volta) ========================= */
 // Il lavoro è un percorso in cinque passi: Voce, Migliora, Musica, Esporta, Progetto.
@@ -8547,7 +8630,7 @@ async function studioTest() {
   return { superati: R.length - bad.length, totale: R.length, falliti: bad, risultati: R };
 }
 window.studioTest = studioTest;
-window.__studio = { S, P, META, musicViewScale, podcastResult, FXPK, FXB, fxBase, fxLongRange, fxIsLong, fxLayout, fxBox, voicePauseEdges, FXPV, duplicateFx, fxSpan, fxRender, FXR, SPEC, findSilences, measureSib, diagnose, levelSlow, deClick, lowerBreaths, analyzeVad, dePlosive, detectHum, humBuild, renderChain, musicCurves, voiceVad, ensureVad, vadReady, VAD, doStems, clearHistory, collapseHistory, REC, METER, actx: () => ACTX, pushOp, undo, redo, replay, layout, renderVoice, renderMix, lufs, truePeakDb, importVoice, importMusic, importFx, improveSources, doExport, saveProject, openProject, selectAll, setMode, togglePlay, decodeWav, readZip, id3Tag };
+window.__studio = { S, P, META, musicViewScale, STYLE_PV, stylePreview, VOICE_STYLES, improveKey, podcastResult, FXPK, FXB, fxBase, fxLongRange, fxIsLong, fxLayout, fxBox, voicePauseEdges, FXPV, duplicateFx, fxSpan, fxRender, FXR, SPEC, findSilences, measureSib, diagnose, levelSlow, deClick, lowerBreaths, analyzeVad, dePlosive, detectHum, humBuild, renderChain, musicCurves, voiceVad, ensureVad, vadReady, VAD, doStems, clearHistory, collapseHistory, REC, METER, actx: () => ACTX, pushOp, undo, redo, replay, layout, renderVoice, renderMix, lufs, truePeakDb, importVoice, importMusic, importFx, improveSources, doExport, saveProject, openProject, selectAll, setMode, togglePlay, decodeWav, readZip, id3Tag };
 
 /* ---- 99-main.js ---- */
 /* ========================= Avvio ========================= */

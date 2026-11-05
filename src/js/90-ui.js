@@ -432,17 +432,29 @@ const DUCK_REACT = [
 const STYLE_SETS = [['#voiceStyles', 'voice', VOICE_STYLES, 'Stile della voce', 'Scegli uno stile e premi Applica. Poi rifinisci con i cursori.', '--voice', 'Se la voce suona metallica, abbassa “Attenua il metallico”. Se rimbomba, alza “Riduci l’eco della stanza”.'],
   ['#musicStyles', 'music', MUSIC_STYLES, 'Livello della musica', 'Se copre le parole, scegli un’opzione più bassa.', '--music', 'Il volume si ricalcola da solo sul brano, in LUFS.'],
   ['#duckReact', 'react', DUCK_REACT, 'Reazione della musica', 'Quanto in fretta la musica scende e risale.', '--duck']];
+// Stili della voce e livelli della musica: schede con nome e descrizione sempre visibili; gli stili della voce hanno
+// anche "Ascolta 10 s" (91-anteprima.js). La reazione della musica resta una fila compatta.
 function buildStyles() {
   STYLE_SETS.forEach(([sel, kind, list, title, hint, col, tip]) => {
-    const box = $(sel); box.innerHTML = '<h2 class="styles-h"></h2><p class="styles-d"></p><div class="style-grid" role="group"></div>';
+    const cards = kind === 'voice' || kind === 'music', box = $(sel);
+    box.innerHTML = '<h2 class="styles-h"></h2><p class="styles-d"></p><div class="style-grid' + (cards ? ' cards' : '') + '" role="group"></div>' + (kind === 'voice' ? '<p class="status" id="styleStatus" role="status"></p>' : '');
     $('.styles-h', box).textContent = title; $('.styles-d', box).textContent = hint; $('.style-grid', box).setAttribute('aria-label', title);
     if (tip) $('.styles-h', box).appendChild(makeInfo(tip, title));
     list.forEach(st => {
-      const b = document.createElement('button'); b.className = 'style'; b.dataset.style = st.id; b.setAttribute('aria-pressed', 'false'); b.style.setProperty('--c', 'var(' + col + ')');
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'style'; b.dataset.style = st.id; b.setAttribute('aria-pressed', 'false'); b.style.setProperty('--c', 'var(' + col + ')');
       const t = document.createElement('b'); t.textContent = st.name; const d = document.createElement('span'); d.textContent = st.desc;
-      b.append(t, d); b.addEventListener('click', () => applyStyle(kind, st)); $('.style-grid', box).appendChild(b);
+      b.append(t, d); b.addEventListener('click', () => applyStyle(kind, st));
+      if (!cards) { $('.style-grid', box).appendChild(b); return; }
+      const card = document.createElement('div'); card.className = 'style-card'; card.style.setProperty('--c', 'var(' + col + ')'); card.appendChild(b);
+      if (kind === 'voice') {
+        const pv = document.createElement('button'); pv.type = 'button'; pv.className = 'style-pv'; pv.dataset.style = st.id; pv.textContent = 'Ascolta 10 s';
+        pv.setAttribute('aria-label', 'Ascolta 10 secondi della tua voce con lo stile ' + st.name); pv.setAttribute('aria-pressed', 'false');
+        pv.addEventListener('click', () => stylePreview(st)); card.appendChild(pv);
+      }
+      $('.style-grid', box).appendChild(card);
     });
   });
+  updatePvButtons();
 }
 // Schema del ducking: due frasi su 6 secondi con una pausa breve. È un'illustrazione del comportamento, non l'anteprima esatta.
 // Modello: la musica è abbassata se c'è una frase tra inizio meno anticipo e fine più tenuta; discesa e risalita sono rampe lineari.
@@ -474,7 +486,7 @@ function drawDuckViz() {
 function updateStyleCards() {
   STYLE_SETS.forEach(([sel, , list]) => {
     let any = false;
-    $$(sel + ' .style').forEach(b => { const st = list.find(x => x.id === b.dataset.style); if (!st.v) return; const on = Object.keys(st.v).every(k => P[k] === st.v[k]); any = any || on; b.setAttribute('aria-pressed', String(on)); });
+    $$(sel + ' .style').forEach(b => { const st = list.find(x => x.id === b.dataset.style); if (!st.v) return; const on = Object.keys(st.v).every(k => P[k] === st.v[k]); any = any || on; b.setAttribute('aria-pressed', String(on)); const c = b.closest('.style-card'); if (c) c.classList.toggle('on', on); });
     // "Personalizzata" si accende da sola quando i valori non corrispondono a nessun preset
     const cu = $(sel + ' .style[data-style="custom"]'); if (cu) cu.setAttribute('aria-pressed', String(!any));
   });
@@ -630,7 +642,7 @@ function afterEdit() {
   const lay = layout();
   S.cur = clamp(S.cur, 0, lay.total);
   if (S.sel) { S.sel = [clamp(S.sel[0], 0, lay.total), clamp(S.sel[1], 0, lay.total)]; if (S.sel[1] - S.sel[0] < 1) S.sel = null; }
-  drawAll(); updateButtons(); updateTransport(); updateLegend(); renderHistory(); renderFxList(); updateApplyStatus(); scheduleDiag(); scheduleSave(); updateLevelStatus();
+  drawAll(); updateButtons(); updateTransport(); updateLegend(); renderHistory(); renderFxList(); updatePvButtons(); updateApplyStatus(); scheduleDiag(); scheduleSave(); updateLevelStatus();
   flowUpdate();
 }
 

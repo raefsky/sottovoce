@@ -75,7 +75,7 @@ function playPos() {
   return Math.min(PB.end, PB.from + Math.max(0, (ACTX.currentTime - PB.startAt)) * SR);
 }
 function startPlayback(from, end) {
-  stopPlayback(true); stopFxPreview();
+  stopPlayback(true); stopFxPreview(); stopStylePreview();
   const c = ctx(), lay = layout();
   if (!lay.total) return;
   PB.from = clamp(Math.round(from), 0, lay.total); PB.end = clamp(Math.round(end == null ? lay.total : end), PB.from, lay.total);

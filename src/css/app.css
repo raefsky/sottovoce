@@ -513,3 +513,18 @@ dialog.voice-ask{width:min(440px,92vw)}
 .serie-new{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px;font-size:13.5px}
 .serie-row{display:flex;flex-wrap:wrap;gap:8px}
 .serie-row input{flex:1 1 180px;width:auto;min-width:0}
+
+/* stili come schede: nome e descrizione sempre visibili, bordo colorato sulla scheda scelta */
+.style-grid.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;padding-bottom:0;margin-top:8px}
+.style-card{display:flex;flex-direction:column;border:1.5px solid var(--line);border-radius:10px;background:var(--panel2);transition:border-color .15s ease,background-color .15s ease}
+.style-card:hover{border-color:color-mix(in srgb,var(--c) 55%,var(--line))}
+.style-card.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 11%,var(--panel2))}
+.style-card .style{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;padding:10px 12px 6px;border:0;border-radius:10px 10px 0 0;color:var(--ink)}
+.style-card .style b{font-weight:600}
+.style-card .style span,.style-card .style[aria-pressed="true"] span{display:block;position:static;font-size:12.5px;line-height:1.4;color:var(--muted);white-space:normal;overflow:visible}
+.style-card .style[aria-pressed="true"]{border-bottom-color:transparent}
+.style-pv{align-self:flex-start;margin:2px 12px 10px;font:inherit;font-size:12.5px;font-weight:500;min-height:30px;padding:0 11px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);cursor:pointer}
+.style-pv:hover{border-color:var(--c)}
+.style-pv[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:var(--onaccent)}
+.style-pv:disabled{opacity:.45;cursor:default}
+#styleStatus:empty{display:none}
