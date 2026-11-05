@@ -46,7 +46,7 @@ function flowTarget(step) {
 // testi e pulsanti della barra "Prossimo passo"
 function flowCard(step) {
   const n = { voce: 1, migliora: 2, musica: 3, esporta: 4, fatto: 5 }[step];
-  const kicker = n ? 'Passo ' + n + ' di 5' : 'Tutto fatto';
+  const kicker = n ? 'Da fare adesso · ' + n + ' ' + ['', 'Voce', 'Migliora', 'Musica', 'Esporta', 'Progetto'][n] : 'Tutto fatto';
   if (step === 'voce') return { kicker, text: 'Comincia dalla voce: registra con il pulsante rosso in basso, oppure importa un file audio.', main: ['Importa un file', () => { flowShowTab('rec'); $('#fileVoice').click(); }], alt: ['Registra adesso', toggleRecord] };
   if (step === 'migliora') return FLOW.analyzed
     ? { kicker, text: 'L’analisi è pronta. Con un clic si applicano tutti i suggerimenti, poi ascolti e confronti con l’originale.', main: ['Applica tutti i suggerimenti', () => { flowShowTab('improve'); applyAllSuggestions(); }], alt: ['Rivedi l’analisi', () => { flowShowTab('improve'); flowFocus('#proposeBox'); }] }
@@ -66,11 +66,11 @@ function flowRender() {
   // barra del percorso e schede: passi fatti, in corso, da fare ('fatto' è il passo Progetto, 'finito' li completa tutti)
   const cur = FLOW_ORDER.indexOf(step);
   ['voce', 'migliora', 'musica', 'esporta', 'fatto'].forEach((s, i) => {
-    const st = i < cur ? 'done' : i === cur ? 'current' : 'upcoming', word = st === 'done' ? 'fatto' : st === 'current' ? 'in corso' : 'da fare';
+    const st = i < cur ? 'done' : i === cur ? 'current' : 'upcoming', word = st === 'done' ? 'fatto' : st === 'current' ? 'da fare adesso' : 'da fare dopo';
     const t = $('#tab-' + FLOW_TAB[s]); t.dataset.flow = st; t.setAttribute('aria-description', st === 'done' ? 'passo fatto' : st === 'current' ? 'passo attuale' : 'passo successivo');
     const li = $$('#stepper .st')[i], b = li.querySelector('.st-btn');
     li.dataset.state = st; b.setAttribute('aria-label', 'Passo ' + (i + 1) + ', ' + li.querySelector('.st-l').textContent + ': ' + word);
-    if (st === 'current') b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    b.title = word.charAt(0).toUpperCase() + word.slice(1);
   });
   $$('.next-action').forEach(el => el.classList.remove('next-action'));
   const tsel = flowTarget(step), tg = tsel && $(tsel); if (tg) tg.classList.add('next-action');
@@ -142,10 +142,20 @@ function setAdvGroup(open) {
 const applyAdvGroup = () => setAdvGroup(advOpen != null ? advOpen : !$('#app').classList.contains('simple'));
 // un clic su un passo della barra apre la sua scheda; su schermi stretti la porta anche in vista
 function initStepper() {
-  $$('#stepper .st-btn').forEach(b => b.addEventListener('click', () => {
-    flowShowTab(b.dataset.go); flowRender();
-    if (window.matchMedia('(max-width:1099px)').matches) $('.side').scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
-  }));
+  const btns = $$('#stepper .st-btn');
+  btns.forEach((b, i) => {
+    b.addEventListener('click', () => {
+      flowShowTab(b.dataset.go); flowRender();
+      if (window.matchMedia('(max-width:1099px)').matches) $('.side').scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
+    });
+    // frecce sinistra e destra: passo precedente o successivo, come prima tra le schede
+    b.addEventListener('keydown', e => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault(); e.stopPropagation();
+      const n = btns[(i + (e.key === 'ArrowRight' ? 1 : btns.length - 1)) % btns.length];
+      n.focus(); flowShowTab(n.dataset.go); flowRender();
+    });
+  });
 }
 function initFlow() {
   initCollapsibles();

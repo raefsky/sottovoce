@@ -429,7 +429,10 @@ h2 .info-i,.styles-h .info-i{display:inline-flex;margin-left:8px;vertical-align:
 .st[data-state="done"] .st-chk{stroke-dashoffset:0;opacity:1}
 .st[data-state="done"] .st-line i{width:100%}
 .st[data-state="current"] .st-btn{color:var(--ink)}
-.st[data-state="current"] .st-l{font-weight:600}
+.st[data-open="true"] .st-btn{color:var(--ink);background:color-mix(in srgb,var(--accent) 13%,transparent);padding:0 14px 0 8px}
+.st[data-open="true"] .st-l{font-weight:600}
+.tabs .tab{display:none}
+.tabs{justify-content:flex-end;border-bottom:0}
 .st[data-state="current"] .st-dot{background:var(--accent);border-color:var(--accent);color:var(--onaccent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
 @media (max-width:699px){
   .stepper{margin:0 -14px 12px;padding:4px 10px}

@@ -63,7 +63,7 @@ let s = await S(page);
 check(/scegli un file sul computer/.test(s.lead), 'scheda Progetto: spiega che si può collegare un file');
 await page.setInputFiles('#fileVoice', VOCE);
 await attendi(page, () => window.__studio.S.vlen > 0);
-await page.click('[data-tab="project"]');
+await page.click('#stepper [data-go="project"]');
 await page.click('#btnSaveProj');
 await attendi(page, () => /si salvano da sole/.test(document.querySelector('#projStatus').textContent));
 let f = await nelFile(page); s = await S(page);
@@ -98,14 +98,14 @@ check(/era collegato al file “prova\.sottovoce”/.test(s.lead), 'scheda Proge
 check(await page.evaluate(() => !document.querySelector('#dirtyFlag').hidden) === false, 'non compaiono due indicatori insieme');
 
 // nuovo progetto: il file si scollega; apri: si ricollega
-await page.click('[data-tab="project"]');
+await page.click('#stepper [data-go="project"]');
 await page.click('#btnNewProj');
 await attendi(page, () => window.__studio.S.ops.length === 0 && /Nuovo progetto pronto/.test(document.querySelector('#projStatus').textContent));
 s = await S(page);
 check(!s.flag && /scegli un file sul computer/.test(s.lead), 'nuovo progetto: nessun file collegato' + (s.flag || !/scegli/.test(s.lead) ? ' — indicatore «' + s.flag + '», scheda «' + s.lead + '»' : ''));
 f = await nelFile(page);
 check(f && f.ops === 2, 'nuovo progetto: il file salvato resta com\'era');
-await page.click('[data-tab="project"]');
+await page.click('#stepper [data-go="project"]');
 await page.click('#btnOpenProj');
 await attendi(page, () => window.__studio.S.ops.length === 2 && !document.querySelector('#fileFlag').hidden);
 s = await S(page);
@@ -127,7 +127,7 @@ s = await S(page);
 check(/cartella dei download/.test(s.lead), 'senza le API dei file: la scheda Progetto parla dello scaricamento');
 await page.setInputFiles('#fileVoice', VOCE);
 await attendi(page, () => window.__studio.S.vlen > 0);
-await page.click('[data-tab="project"]');
+await page.click('#stepper [data-go="project"]');
 const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#btnSaveProj')]);
 check(/\.sottovoce$/.test(dl.suggestedFilename()), 'senza le API dei file: «Salva il progetto» scarica ' + dl.suggestedFilename());
 check(!(await page.isVisible('#btnSaveAs')) && (await S(page)).flag === '', 'senza le API dei file: niente «Salva con un altro nome» né indicatore del file');

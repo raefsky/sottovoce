@@ -723,8 +723,11 @@ function initHelp() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') hideTip(); });
   window.addEventListener('scroll', () => { if (cur) hideTip(); }, { passive: true, capture: true });
 }
+// una sola navigazione: i passi in alto. Il passo aperto ha lo sfondo evidenziato; i cerchi dicono il progresso
+// (spunta: fatto; ambra: da fare adesso). Le vecchie schede restano nascoste solo come etichette dei pannelli.
 function showTab(name) {
   $$('.tab').forEach(b => { const on = b.dataset.tab === name; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
+  $$('#stepper .st').forEach(li => { const b = li.querySelector('.st-btn'), on = b.dataset.go === name; li.dataset.open = String(on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   $$('.pane').forEach(p => { p.hidden = p.id !== 'pane-' + name; });
   if (name === 'improve') scheduleDiag();
   if (name === 'rec') fillMics();

@@ -22,7 +22,7 @@ const L = () => page.evaluate(() => { const st = window.__studio, l = st.layout(
 const waitOps = n => page.waitForFunction(n => window.__studio.S.ops.length === n, n, { timeout: 30000 });
 
 await page.setInputFiles('#fileVoice', P('voce-prova.flac')); await waitOps(1);
-await page.click('[data-tab="tracks"]');
+await page.click('#stepper [data-go="tracks"]');
 await page.setInputFiles('#fileSig', P('sigla-440.flac')); await waitOps(2);
 let l = await L();
 check(l.intro === 3 && l.fx[0].anchor === 'start' && l.fx[0].at === 0 && l.fx[0].name === 'Sigla', 'sigla: all\'inizio, la voce parte dopo 3 s (' + JSON.stringify(l.fx[0]) + ', intro ' + l.intro + ')');
@@ -89,7 +89,7 @@ const onda = async () => { await page.evaluate(() => { window.__studio.S.fit = t
   const d = g.getImageData(0, 0, cv.width, cv.height).data; let n = 0;
   for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - cr) < 12 && Math.abs(d[i + 1] - cg) < 12 && Math.abs(d[i + 2] - cb) < 12) n++;
   return n; }); };
-const scegli = async nome => { await page.click('[data-tab="tracks"]'); await page.locator('#musicStyles button', { hasText: nome }).first().click(); await page.waitForTimeout(300); };
+const scegli = async nome => { await page.click('#stepper [data-go="tracks"]'); await page.locator('#musicStyles button', { hasText: nome }).first().click(); await page.waitForTimeout(300); };
 await scegli('Sottofondo minimo'); const pMin = await onda();
 await scegli('Presente, cinematografico'); const pMax = await onda();
 check(pMax > pMin * 1.2, 'l\'onda della musica cresce con il livello: ' + pMin + ' pixel con «minimo», ' + pMax + ' con «presente»');

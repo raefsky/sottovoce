@@ -30,7 +30,7 @@ const lista = () => page.$$eval('#serieList .serie-item', li => li.map(x => x.qu
 
 // 1. un episodio completo
 await page.setInputFiles('#fileVoice', F('voce-prova.flac')); await page.waitForFunction(() => window.__studio.S.ops.length === 1);
-await page.click('[data-tab="tracks"]');
+await page.click('#stepper [data-go="tracks"]');
 await page.setInputFiles('#fileMusic', F('musica-220.flac')); await page.waitForFunction(() => !!window.__studio.S.musicId);
 await page.setInputFiles('#fileSig', F('sigla-440.flac')); await page.waitForFunction(() => window.__studio.S.ops.length === 2);
 await page.setInputFiles('#fileEnd', F('chiusura-660.flac')); await page.waitForFunction(() => window.__studio.S.ops.length === 3);
@@ -41,7 +41,7 @@ await page.setInputFiles('#fileCover', F('copertina.jpg')); await page.waitForFu
 const prima = await st();
 
 // 2. salva come modello
-await page.click('[data-tab="project"]');
+await page.click('#stepper [data-go="project"]');
 check((await lista()).length === 0 && /Ancora nessun modello/.test(await page.textContent('#serieList')), 'all\'inizio nessun modello, con una spiegazione');
 await page.fill('#serieName', 'Serie di prova');
 await page.click('#btnSerieSave');
@@ -70,7 +70,7 @@ const mix = await page.evaluate(() => { const s = window.__studio, SR = 48000; c
 check(mix.sig > -35 && mix.mus > -45 && mix.end > -35, 'nel mix suonano sigla, musica e chiusura (' + Object.values(mix).map(v => v.toFixed(0)).join(', ') + ' dB)');
 
 // 4. scarica, elimina, reimporta
-await page.click('[data-tab="project"]');
+await page.click('#stepper [data-go="project"]');
 const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#serieList .serie-item .btn:nth-child(2)')]);
 const file = path.join(os.tmpdir(), 'prova-' + process.pid + '.serie'); await dl.saveAs(file);
 check(dl.suggestedFilename() === 'Serie di prova.serie', 'scarica: ' + dl.suggestedFilename());
@@ -87,7 +87,7 @@ check(true, 'un file che non è un modello viene rifiutato con un messaggio');
 const t = await page.evaluate(() => studioTest());
 check(t.superati === t.totale, 'controlli interni dell\'app: ' + t.superati + ' su ' + t.totale);
 check(!errori.length, 'nessun errore nella console' + (errori.length ? ': ' + errori.slice(0, 3).join(' | ') : ''));
-await page.setViewportSize({ width: 1400, height: 1000 }); await page.click('[data-tab="project"]');
+await page.setViewportSize({ width: 1400, height: 1000 }); await page.click('#stepper [data-go="project"]');
 await page.screenshot({ path: path.join(os.tmpdir(), 'sottovoce-serie.png') });
 console.log('RIUSCITI ' + ok.length + ':\n  ' + ok.join('\n  '));
 console.log('NON RIUSCITI ' + ko.length + (ko.length ? ':\n  ' + ko.join('\n  ') : ''));
