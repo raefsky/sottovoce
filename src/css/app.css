@@ -580,3 +580,28 @@ dialog.studio::backdrop{background:var(--bg)}
 .st-rec-l{margin-top:-8px;font-weight:600}
 .st-keys,.st-where{margin:0;font-size:13.5px;color:var(--muted)}
 @media (max-width:699px){.st-top{padding:12px 14px}.st-main{gap:14px;padding:1vh 14px 24px}.st-rec{width:96px;height:96px}}
+
+.g-short{display:none}
+/* schermi touch (senza mouse): bersagli da almeno 44 pixel, anche per link, menu, caselle e lettere "i" */
+@media (pointer:coarse){
+  .linkbtn{display:inline-flex;align-items:center;min-height:44px}
+  select,input[type=text],input[type=number]{min-height:44px}
+  input[type=checkbox]{width:22px;height:22px}
+  .info-i{position:relative}
+  .info-i::after{content:"";position:absolute;inset:-14px}
+  .style-pv{min-height:44px;padding:0 14px}
+  .fileflag{min-height:40px}
+  .st-keys{display:none}
+}
+/* telefono: intestazione compatta, una riga per tema, Studio e Guida */
+@media (max-width:699px){
+  .slogan{display:none}
+  .look{width:100%;justify-content:flex-start;gap:6px 8px}
+  .look .projbar{flex:1 1 100%}
+  .look .tseg{padding:6px 9px}
+  .look #btnStudio{margin-left:auto}
+  .g-long{display:none}
+  .g-short{display:inline}
+  .st-s6{display:none}
+  #zSel{display:none}            /* sul telefono si ingrandisce con due dita: la barra degli strumenti sta su due righe */
+}

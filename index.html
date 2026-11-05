@@ -605,6 +605,31 @@ dialog.studio::backdrop{background:var(--bg)}
 .st-rec-l{margin-top:-8px;font-weight:600}
 .st-keys,.st-where{margin:0;font-size:13.5px;color:var(--muted)}
 @media (max-width:699px){.st-top{padding:12px 14px}.st-main{gap:14px;padding:1vh 14px 24px}.st-rec{width:96px;height:96px}}
+
+.g-short{display:none}
+/* schermi touch (senza mouse): bersagli da almeno 44 pixel, anche per link, menu, caselle e lettere "i" */
+@media (pointer:coarse){
+  .linkbtn{display:inline-flex;align-items:center;min-height:44px}
+  select,input[type=text],input[type=number]{min-height:44px}
+  input[type=checkbox]{width:22px;height:22px}
+  .info-i{position:relative}
+  .info-i::after{content:"";position:absolute;inset:-14px}
+  .style-pv{min-height:44px;padding:0 14px}
+  .fileflag{min-height:40px}
+  .st-keys{display:none}
+}
+/* telefono: intestazione compatta, una riga per tema, Studio e Guida */
+@media (max-width:699px){
+  .slogan{display:none}
+  .look{width:100%;justify-content:flex-start;gap:6px 8px}
+  .look .projbar{flex:1 1 100%}
+  .look .tseg{padding:6px 9px}
+  .look #btnStudio{margin-left:auto}
+  .g-long{display:none}
+  .g-short{display:inline}
+  .st-s6{display:none}
+  #zSel{display:none}            /* sul telefono si ingrandisce con due dita: la barra degli strumenti sta su due righe */
+}
 </style>
 </head>
 <body>
@@ -631,7 +656,7 @@ dialog.studio::backdrop{background:var(--bg)}
         <button class="tseg" data-theme-btn="light" aria-pressed="false">Chiaro</button>
         <button class="tseg" data-theme-btn="dark" aria-pressed="false">Scuro</button>
       </div>
-      <button class="btn small studio-btn" id="btnStudio" type="button"><span class="recdot" aria-hidden="true"></span>Studio</button><button class="btn small" id="btnGuide">Guida rapida</button>
+      <button class="btn small studio-btn" id="btnStudio" type="button"><span class="recdot" aria-hidden="true"></span>Studio</button><button class="btn small" id="btnGuide" aria-label="Guida rapida"><span class="g-long">Guida rapida</span><span class="g-short" aria-hidden="true">Guida</span></button>
     </div>
   </header>
 
@@ -1040,13 +1065,13 @@ dialog.studio::backdrop{background:var(--bg)}
     <p class="st-time" id="stTime">0:00,0</p>
     <div class="st-meter">
       <div class="st-bar" aria-hidden="true"><span class="st-zone"></span><span class="st-clip"></span><span class="st-level" id="stLevel"></span><span class="st-peak" id="stPeak" hidden></span></div>
-      <div class="st-scale" aria-hidden="true"><span style="left:0.0%">-60</span><span style="left:20.0%">-48</span><span style="left:40.0%">-36</span><span style="left:60.0%">-24</span><span style="left:80.0%">-12</span><span style="left:90.0%">-6</span><span style="left:100.0%">0 dB</span></div>
+      <div class="st-scale" aria-hidden="true"><span style="left:0.0%">-60</span><span style="left:20.0%">-48</span><span style="left:40.0%">-36</span><span style="left:60.0%">-24</span><span style="left:80.0%">-12</span><span style="left:90.0%" class="st-s6">-6</span><span style="left:100.0%">0 dB</span></div>
     </div>
     <p class="st-hint" id="stHint" role="status"></p>
     <div class="st-wavebox"><canvas class="st-wave" id="stWave" aria-hidden="true"></canvas></div>
     <button class="st-rec" id="stRec" type="button" aria-label="Inizia a registrare"><span class="st-rec-ic" aria-hidden="true"></span></button>
     <span class="st-rec-l" id="stRecL" aria-hidden="true">Registra</span>
-    <p class="st-keys">Barra spaziatrice o R per iniziare e fermare · Esc per uscire</p>
+    <p class="st-keys" id="stKeys">Barra spaziatrice o R per iniziare e fermare · Esc per uscire</p>
     <p class="st-where" id="stWhere"></p>
   </div>
 </dialog>
@@ -4542,7 +4567,7 @@ function studioRender() {
   $('#stTitle').textContent = rec ? 'Sto registrando' : S.vlen ? 'Pronto per la prossima registrazione' : 'Pronto a registrare';
   $('#stRec').setAttribute('aria-label', rec ? 'Ferma la registrazione' : 'Inizia a registrare');
   $('#stRecL').textContent = rec ? 'Ferma' : 'Registra';
-  $('#stWhere').textContent = 'La registrazione va ' + (REC_WHERE[P.recWhere] || REC_WHERE.end) + (S.vlen ? '; la voce dura ora ' + fmtDur(S.vlen / SR) + '.' : '.');
+  $('#stWhere').textContent = 'La registrazione va ' + (REC_WHERE[P.recWhere] || REC_WHERE.end) + (S.vlen ? '; la voce dura ora ' + fmtDur(S.vlen / SR).replace(' ', '\u00a0') + '.' : '.');
   if (!rec) $('#stTime').textContent = fmtSec(0);
 }
 // verdetto sul livello: si guarda il picco più alto degli ultimi 1,5 s

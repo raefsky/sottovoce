@@ -42,7 +42,7 @@
         <button class="tseg" data-theme-btn="light" aria-pressed="false">Chiaro</button>
         <button class="tseg" data-theme-btn="dark" aria-pressed="false">Scuro</button>
       </div>
-      <button class="btn small studio-btn" id="btnStudio" type="button"><span class="recdot" aria-hidden="true"></span>Studio</button><button class="btn small" id="btnGuide">Guida rapida</button>
+      <button class="btn small studio-btn" id="btnStudio" type="button"><span class="recdot" aria-hidden="true"></span>Studio</button><button class="btn small" id="btnGuide" aria-label="Guida rapida"><span class="g-long">Guida rapida</span><span class="g-short" aria-hidden="true">Guida</span></button>
     </div>
   </header>
 
@@ -451,13 +451,13 @@
     <p class="st-time" id="stTime">0:00,0</p>
     <div class="st-meter">
       <div class="st-bar" aria-hidden="true"><span class="st-zone"></span><span class="st-clip"></span><span class="st-level" id="stLevel"></span><span class="st-peak" id="stPeak" hidden></span></div>
-      <div class="st-scale" aria-hidden="true"><span style="left:0.0%">-60</span><span style="left:20.0%">-48</span><span style="left:40.0%">-36</span><span style="left:60.0%">-24</span><span style="left:80.0%">-12</span><span style="left:90.0%">-6</span><span style="left:100.0%">0 dB</span></div>
+      <div class="st-scale" aria-hidden="true"><span style="left:0.0%">-60</span><span style="left:20.0%">-48</span><span style="left:40.0%">-36</span><span style="left:60.0%">-24</span><span style="left:80.0%">-12</span><span style="left:90.0%" class="st-s6">-6</span><span style="left:100.0%">0 dB</span></div>
     </div>
     <p class="st-hint" id="stHint" role="status"></p>
     <div class="st-wavebox"><canvas class="st-wave" id="stWave" aria-hidden="true"></canvas></div>
     <button class="st-rec" id="stRec" type="button" aria-label="Inizia a registrare"><span class="st-rec-ic" aria-hidden="true"></span></button>
     <span class="st-rec-l" id="stRecL" aria-hidden="true">Registra</span>
-    <p class="st-keys">Barra spaziatrice o R per iniziare e fermare · Esc per uscire</p>
+    <p class="st-keys" id="stKeys">Barra spaziatrice o R per iniziare e fermare · Esc per uscire</p>
     <p class="st-where" id="stWhere"></p>
   </div>
 </dialog>

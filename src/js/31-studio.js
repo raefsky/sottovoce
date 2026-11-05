@@ -35,7 +35,7 @@ function studioRender() {
   $('#stTitle').textContent = rec ? 'Sto registrando' : S.vlen ? 'Pronto per la prossima registrazione' : 'Pronto a registrare';
   $('#stRec').setAttribute('aria-label', rec ? 'Ferma la registrazione' : 'Inizia a registrare');
   $('#stRecL').textContent = rec ? 'Ferma' : 'Registra';
-  $('#stWhere').textContent = 'La registrazione va ' + (REC_WHERE[P.recWhere] || REC_WHERE.end) + (S.vlen ? '; la voce dura ora ' + fmtDur(S.vlen / SR) + '.' : '.');
+  $('#stWhere').textContent = 'La registrazione va ' + (REC_WHERE[P.recWhere] || REC_WHERE.end) + (S.vlen ? '; la voce dura ora ' + fmtDur(S.vlen / SR).replace(' ', '\u00a0') + '.' : '.');
   if (!rec) $('#stTime').textContent = fmtSec(0);
 }
 // verdetto sul livello: si guarda il picco più alto degli ultimi 1,5 s

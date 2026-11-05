@@ -78,6 +78,14 @@ Per la modalità Studio, con il microfono finto di Chromium:
 node strumenti/prova-studio.mjs
 ```
 
+Per telefono e tablet (scorrimento di lato, bersagli da toccare, intestazione, barra degli strumenti, Studio):
+
+```bash
+node strumenti/prova-mobile.mjs
+```
+
+Nelle prove su telefono e tablet niente fotografie a pagina intera prima delle misure: fanno perdere a Chromium l'emulazione del touch.
+
 Il volume di un file mono si misura come se suonasse su due casse, come fa l'app: -16 LUFS su due casse corrisponde a -19 LUFS misurati su un canale solo, la raccomandazione AES per i podcast in mono.
 
 ## Pubblicare
