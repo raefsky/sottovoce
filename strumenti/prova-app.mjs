@@ -56,11 +56,22 @@ check(/Episodio pronto/.test(ep), 'Modalità Podcast: compare «Episodio pronto�
 await page.evaluate(() => document.querySelector('#episode').close());
 check(await page.evaluate(() => window.__studio.S.procActive), 'Modalità Podcast: voce migliorata attiva');
 await page.click('#stepper [data-go="export"]');
+// misuratore del volume finale: dove finirà il file e se va bene per un podcast
+const loud = () => page.evaluate(() => ({ v: document.querySelector('#loudV').textContent, ok: document.querySelector('#loudMeter').dataset.ok, nota: document.querySelector('#loudNote').textContent, ultimo: !document.querySelector('#loudLast').hidden }));
+let lm = await loud();
+check(lm.v === '-16,0 LUFS' && lm.ok === 'true' && /Giusto per pubblicare/.test(lm.nota) && /mono/.test(lm.nota) && !lm.ultimo, 'misuratore: -16 LUFS nella zona giusta, file mono, nessun file ancora (' + lm.v + ')');
+await page.evaluate(() => { window.__studio.P.expTarget = -19; document.querySelector('#pExport').dispatchEvent(new Event('input')); });
+lm = await loud(); check(lm.ok === 'false' && /Più basso del riferimento/.test(lm.nota), 'misuratore: a -19 LUFS spiega che è più basso del riferimento');
+await page.evaluate(() => { window.__studio.P.expNorm = false; document.querySelector('#pExport').dispatchEvent(new Event('change')); });
+lm = await loud(); check(lm.v === 'non regolato' && /Porta il file al volume finale/.test(lm.nota), 'misuratore: senza «Porta il file al volume finale» lo dice');
+await page.evaluate(() => { const P = window.__studio.P; P.expTarget = -16; P.expNorm = true; document.querySelector('#pExport').dispatchEvent(new Event('input')); });
 await page.fill('#pMeta input >> nth=0', 'Prova automatica').catch(() => {});
 const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 180000 }), page.click('#btnExport')]);
 const out = path.join(os.tmpdir(), 'sottovoce-prova-' + process.pid + '.mp3');
 await dl.saveAs(out);
 check(/\.mp3$/i.test(dl.suggestedFilename()), 'esportato un MP3: ' + dl.suggestedFilename());
+lm = await loud(); const ln = await page.textContent('#loudLastNote');
+check(lm.ultimo && /Ultimo file, “voce-prova\.mp3”: -1[56],\d LUFS/.test(ln), 'misuratore: dopo l\'esportazione mostra l\'ultimo file misurato («' + ln + '»)');
 
 // 3. misure dell'MP3
 const buf = fs.readFileSync(out);

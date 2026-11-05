@@ -293,6 +293,17 @@
     <div class="panels">
       <article class="panel neutral" id="pExport"><h2 data-info="Il file usa le stesse regolazioni dell’ascolto. Il volume viene portato all’obiettivo in LUFS e un limitatore impedisce che i picchi distorcano.">Uscita</h2>
         <p class="desc">Il file finale suona come l’ascolto, al volume giusto.</p>
+        <div class="loud" id="loudMeter">
+          <div class="loud-h"><span id="loudT">Volume finale</span><b id="loudV"></b></div>
+          <div class="loud-bar" id="loudBar" role="img">
+            <span class="loud-zone" aria-hidden="true"></span>
+            <span class="loud-mark" id="loudSet" aria-hidden="true"></span>
+            <span class="loud-mark last" id="loudLast" aria-hidden="true" hidden></span>
+          </div>
+          <div class="loud-scale" aria-hidden="true"><span>-24</span><span>-20</span><span>-16</span><span>-12 LUFS</span></div>
+          <p class="loud-note" id="loudNote"></p>
+          <p class="loud-note" id="loudLastNote" hidden></p>
+        </div>
         <div class="body"></div>
         <div class="export-warn" id="exportWarn" role="status" hidden></div>
         <div class="btnrow"><button class="btn primary" id="btnExport" disabled>Esporta</button><button class="btn" id="btnStems" disabled>Tracce separate</button></div>

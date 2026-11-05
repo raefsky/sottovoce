@@ -553,6 +553,21 @@ dialog.voice-ask{width:min(440px,92vw)}
 .style-pv[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:var(--onaccent)}
 .style-pv:disabled{opacity:.45;cursor:default}
 #styleStatus:empty{display:none}
+
+/* misuratore del volume finale (scheda Esporta) */
+.loud{margin:4px 0 14px;padding:12px 14px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
+.loud-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;color:var(--muted)}
+.loud-h b{font-family:var(--f-mono);font-size:18px;font-weight:500;color:var(--ink)}
+.loud[data-ok="true"] .loud-h b{color:var(--ok)}
+.loud-bar{position:relative;height:14px;margin:10px 0 4px;border-radius:999px;background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.loud-zone{position:absolute;top:0;bottom:0;left:58.333%;width:16.667%;border-radius:999px;background:color-mix(in srgb,var(--ok) 45%,transparent)}
+.loud-mark{position:absolute;top:-6px;width:4px;height:26px;margin-left:-2px;border-radius:2px;background:var(--ink)}
+.loud-mark.last{top:-3px;height:20px;width:10px;margin-left:-5px;border-radius:50%;background:var(--accent);border:2px solid var(--panel2)}
+.loud-mark[hidden]{display:none}
+.loud-scale{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.loud-note{margin:8px 0 0;font-size:13px;line-height:1.45;color:var(--muted)}
+.loud[data-ok="true"] #loudNote{color:var(--ink)}
+.loud-note[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -830,6 +845,17 @@ dialog.voice-ask{width:min(440px,92vw)}
     <div class="panels">
       <article class="panel neutral" id="pExport"><h2 data-info="Il file usa le stesse regolazioni dell’ascolto. Il volume viene portato all’obiettivo in LUFS e un limitatore impedisce che i picchi distorcano.">Uscita</h2>
         <p class="desc">Il file finale suona come l’ascolto, al volume giusto.</p>
+        <div class="loud" id="loudMeter">
+          <div class="loud-h"><span id="loudT">Volume finale</span><b id="loudV"></b></div>
+          <div class="loud-bar" id="loudBar" role="img">
+            <span class="loud-zone" aria-hidden="true"></span>
+            <span class="loud-mark" id="loudSet" aria-hidden="true"></span>
+            <span class="loud-mark last" id="loudLast" aria-hidden="true" hidden></span>
+          </div>
+          <div class="loud-scale" aria-hidden="true"><span>-24</span><span>-20</span><span>-16</span><span>-12 LUFS</span></div>
+          <p class="loud-note" id="loudNote"></p>
+          <p class="loud-note" id="loudLastNote" hidden></p>
+        </div>
         <div class="body"></div>
         <div class="export-warn" id="exportWarn" role="status" hidden></div>
         <div class="btnrow"><button class="btn primary" id="btnExport" disabled>Esporta</button><button class="btn" id="btnStems" disabled>Tracce separate</button></div>
@@ -6709,7 +6735,35 @@ async function doExport() {
     toast('Esportazione non riuscita. Se il capitolo è molto lungo, prova a esportarne una parte con “Solo la selezione”.');
   }
 }
+/* ---------- misuratore del volume finale ---------- */
+// Scala da -24 a -12 LUFS, zona verde da -17 a -15 (il riferimento per pubblicare un podcast è -16).
+// La tacca piena è dove finirà il file (Volume finale); quella ambra è l'ultimo file esportato, misurato.
+const LOUD_MIN = -24, LOUD_MAX = -12;
+const loudPos = v => clamp((v - LOUD_MIN) / (LOUD_MAX - LOUD_MIN), 0, 1) * 100 + '%';
+function exportMono() { const hasStereo = !!S.musicId || S.fx.length > 0; return P.expCh === 'mono' || (P.expCh === 'auto' && !hasStereo); }
+function loudVerdict(t) {
+  if (t >= -17 && t <= -15) return { ok: true, text: 'Giusto per pubblicare un podcast: il file suonerà allo stesso volume degli altri.' };
+  if (t < -20) return { ok: false, text: 'Molto basso per un podcast: le app lo alzeranno, oppure suonerà più piano degli altri. Va bene solo se il file andrà ancora mixato.' };
+  if (t < -17) return { ok: false, text: 'Più basso del riferimento per i podcast (-16): va bene se il file andrà ancora mixato o montato altrove.' };
+  return { ok: false, text: 'Più forte del riferimento per i podcast (-16): per arrivarci il limitatore schiaccia i picchi e la voce perde naturalezza.' };
+}
+function updateLoud() {
+  const box = $('#loudMeter'); if (!box) return;
+  const norm = P.expNorm, t = P.expTarget, r = S.lastExport;
+  $('#loudV').textContent = norm ? fmtNum(t, 1) + ' LUFS' : 'non regolato';
+  const set = $('#loudSet'); set.hidden = !norm; set.style.left = loudPos(t);
+  const v = norm ? loudVerdict(t) : null;
+  box.dataset.ok = norm ? String(v.ok) : 'off';
+  $('#loudNote').textContent = !norm
+    ? 'Il file non viene portato a un volume preciso: il volume dipende dal mix. Attiva “Porta il file al volume finale” per arrivare a -16 LUFS.'
+    : v.text + ' Picchi al massimo a ' + fmtNum(P.expCeil, 1) + ' dBTP.' + (exportMono() ? ' Il file sarà mono: il volume è misurato come lo sentirai su due casse.' : '');
+  $('#loudBar').setAttribute('aria-label', 'Volume finale ' + (norm ? fmtNum(t, 1) + ' LUFS, ' + (v.ok ? 'nella zona giusta per i podcast' : 'fuori dalla zona giusta per i podcast, da -17 a -15') : 'non regolato'));
+  const last = $('#loudLast'), ln = $('#loudLastNote');
+  last.hidden = ln.hidden = !r;
+  if (r) { last.style.left = loudPos(r.lufs); ln.textContent = 'Ultimo file, “' + r.name + '”: ' + fmtNum(r.lufs, 1) + ' LUFS, picco ' + fmtDb(r.tp, 1) + ' dBTP.'; }
+}
 function renderReport() {
+  updateLoud();
   const r = S.lastExport, box = $('#reportBody'); if (!r) return;
   box.innerHTML = '';
   const grid = document.createElement('div'); grid.className = 'metrics';
@@ -7802,6 +7856,7 @@ function drawDuckViz() {
     [0, 2, 4, 6].map(t => '<text x="' + X(t) + '" y="' + (H - 2) + '" text-anchor="middle" style="font:11px var(--f-mono);fill:var(--muted)">' + t + ' s</text>').join('');
 }
 function updateStyleCards() {
+  updateLoud();
   STYLE_SETS.forEach(([sel, , list]) => {
     let any = false;
     $$(sel + ' .style').forEach(b => { const st = list.find(x => x.id === b.dataset.style); if (!st.v) return; const on = Object.keys(st.v).every(k => P[k] === st.v[k]); any = any || on; b.setAttribute('aria-pressed', String(on)); const c = b.closest('.style-card'); if (c) c.classList.toggle('on', on); });
@@ -8661,6 +8716,7 @@ function init() {
   on('#abOrig', () => setMode(BL.on ? 'x' : 'orig')); on('#abProc', () => setMode(BL.on ? 'y' : 'proc')); on('#btnBlind', toggleBlind);
   on('#btnApply', improveSources); on('#btnHum', findHum); on('#btnPropose', analyzePropose); on('#btnPodcast', podcastMode); initEpisode(); initEditBar(); on('#btnSilFind', previewSilences); on('#btnSilApply', applySilences);
   $$('[data-spec]').forEach(b => b.addEventListener('click', () => { P.specView = b.dataset.spec; $$('[data-spec]').forEach(o => o.setAttribute('aria-pressed', String(o === b))); scheduleSpec(0); scheduleSave(); })); on('#btnExport', doExport); on('#btnStems', doStems);
+  ['input', 'change'].forEach(ev => $('#pExport').addEventListener(ev, updateLoud));   // misuratore del volume finale
   on('#btnSerieSave', saveSerie); on('#btnSerieImport', () => $('#fileSerie').click()); bindFile('#fileSerie', null, importSerie); renderSerie();
   on('#btnSaveProj', saveProject); on('#btnSaveAs', () => saveProject(null, true)); on('#fileFlag', fileFlagClick);
   on('#btnOpenProj', () => FILE.ok ? openWithPicker() : $('#fileProj').click()); on('#btnNewProj', newProject);

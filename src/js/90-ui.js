@@ -484,6 +484,7 @@ function drawDuckViz() {
     [0, 2, 4, 6].map(t => '<text x="' + X(t) + '" y="' + (H - 2) + '" text-anchor="middle" style="font:11px var(--f-mono);fill:var(--muted)">' + t + ' s</text>').join('');
 }
 function updateStyleCards() {
+  updateLoud();
   STYLE_SETS.forEach(([sel, , list]) => {
     let any = false;
     $$(sel + ' .style').forEach(b => { const st = list.find(x => x.id === b.dataset.style); if (!st.v) return; const on = Object.keys(st.v).every(k => P[k] === st.v[k]); any = any || on; b.setAttribute('aria-pressed', String(on)); const c = b.closest('.style-card'); if (c) c.classList.toggle('on', on); });

@@ -182,7 +182,35 @@ async function doExport() {
     toast('Esportazione non riuscita. Se il capitolo è molto lungo, prova a esportarne una parte con “Solo la selezione”.');
   }
 }
+/* ---------- misuratore del volume finale ---------- */
+// Scala da -24 a -12 LUFS, zona verde da -17 a -15 (il riferimento per pubblicare un podcast è -16).
+// La tacca piena è dove finirà il file (Volume finale); quella ambra è l'ultimo file esportato, misurato.
+const LOUD_MIN = -24, LOUD_MAX = -12;
+const loudPos = v => clamp((v - LOUD_MIN) / (LOUD_MAX - LOUD_MIN), 0, 1) * 100 + '%';
+function exportMono() { const hasStereo = !!S.musicId || S.fx.length > 0; return P.expCh === 'mono' || (P.expCh === 'auto' && !hasStereo); }
+function loudVerdict(t) {
+  if (t >= -17 && t <= -15) return { ok: true, text: 'Giusto per pubblicare un podcast: il file suonerà allo stesso volume degli altri.' };
+  if (t < -20) return { ok: false, text: 'Molto basso per un podcast: le app lo alzeranno, oppure suonerà più piano degli altri. Va bene solo se il file andrà ancora mixato.' };
+  if (t < -17) return { ok: false, text: 'Più basso del riferimento per i podcast (-16): va bene se il file andrà ancora mixato o montato altrove.' };
+  return { ok: false, text: 'Più forte del riferimento per i podcast (-16): per arrivarci il limitatore schiaccia i picchi e la voce perde naturalezza.' };
+}
+function updateLoud() {
+  const box = $('#loudMeter'); if (!box) return;
+  const norm = P.expNorm, t = P.expTarget, r = S.lastExport;
+  $('#loudV').textContent = norm ? fmtNum(t, 1) + ' LUFS' : 'non regolato';
+  const set = $('#loudSet'); set.hidden = !norm; set.style.left = loudPos(t);
+  const v = norm ? loudVerdict(t) : null;
+  box.dataset.ok = norm ? String(v.ok) : 'off';
+  $('#loudNote').textContent = !norm
+    ? 'Il file non viene portato a un volume preciso: il volume dipende dal mix. Attiva “Porta il file al volume finale” per arrivare a -16 LUFS.'
+    : v.text + ' Picchi al massimo a ' + fmtNum(P.expCeil, 1) + ' dBTP.' + (exportMono() ? ' Il file sarà mono: il volume è misurato come lo sentirai su due casse.' : '');
+  $('#loudBar').setAttribute('aria-label', 'Volume finale ' + (norm ? fmtNum(t, 1) + ' LUFS, ' + (v.ok ? 'nella zona giusta per i podcast' : 'fuori dalla zona giusta per i podcast, da -17 a -15') : 'non regolato'));
+  const last = $('#loudLast'), ln = $('#loudLastNote');
+  last.hidden = ln.hidden = !r;
+  if (r) { last.style.left = loudPos(r.lufs); ln.textContent = 'Ultimo file, “' + r.name + '”: ' + fmtNum(r.lufs, 1) + ' LUFS, picco ' + fmtDb(r.tp, 1) + ' dBTP.'; }
+}
 function renderReport() {
+  updateLoud();
   const r = S.lastExport, box = $('#reportBody'); if (!r) return;
   box.innerHTML = '';
   const grid = document.createElement('div'); grid.className = 'metrics';
