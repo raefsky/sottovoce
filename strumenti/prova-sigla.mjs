@@ -81,6 +81,19 @@ check(mix.sig440 > -30 && mix.sig220 < -60, 'nella sigla suona solo la sigla, la
 check(mix.mus220 > -45, 'dopo la sigla parte la musica');
 check(mix.end660 > -30 && mix.end220 < -60, 'nella chiusura suona solo la chiusura, la musica è già finita');
 
+// il disegno della musica segue il suo volume: si contano i pixel del colore della musica nella sua corsia
+const onda = async () => { await page.evaluate(() => { window.__studio.S.fit = true; }); await page.waitForTimeout(400); return page.evaluate(() => {
+  const cv = document.querySelector('#cvBase'), g = cv.getContext('2d'), r = cv.getBoundingClientRect(), dpr = cv.width / r.width;
+  const col = getComputedStyle(document.documentElement).getPropertyValue('--music').trim();
+  const t = document.createElement('canvas').getContext('2d'); t.fillStyle = col; t.fillRect(0, 0, 1, 1); const [cr, cg, cb] = t.getImageData(0, 0, 1, 1).data;
+  const d = g.getImageData(0, 0, cv.width, cv.height).data; let n = 0;
+  for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - cr) < 12 && Math.abs(d[i + 1] - cg) < 12 && Math.abs(d[i + 2] - cb) < 12) n++;
+  return n; }); };
+const scegli = async nome => { await page.click('[data-tab="tracks"]'); await page.locator('#musicStyles button', { hasText: nome }).first().click(); await page.waitForTimeout(300); };
+await scegli('Sottofondo minimo'); const pMin = await onda();
+await scegli('Presente, cinematografico'); const pMax = await onda();
+check(pMax > pMin * 1.2, 'l\'onda della musica cresce con il livello: ' + pMin + ' pixel con «minimo», ' + pMax + ' con «presente»');
+
 // cronologia svuotata: sigla e chiusura restano ancorate
 await page.evaluate(() => window.__studio.collapseHistory());
 await page.evaluate(() => window.__studio.replay());
