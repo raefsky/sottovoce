@@ -4,7 +4,7 @@
 // formato dei progetti e dei preset): così progetti, preset e impostazioni salvati continuano a funzionare.
 const APP_NAME = 'Sottovoce Officina Sonora';
 // numero di versione del programma (anche questo letto da build.py); nei progetti va accanto al numero di formato, che resta 1
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '2.0.0';
 // confronto tra versioni scritte come 1.2.3: positivo se a è più recente di b
 const cmpVersion = (a, b) => { const x = String(a).split('.').map(n => parseInt(n, 10) || 0), y = String(b).split('.').map(n => parseInt(n, 10) || 0); for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) - (y[i] || 0); return 0; };
 // frase di chiarezza, testuale (verificata nel codice: nessuna richiesta di rete, nessun invio di dati, nessuna analisi esterna)

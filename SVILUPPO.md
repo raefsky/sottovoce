@@ -86,6 +86,16 @@ node strumenti/prova-mobile.mjs
 
 Nelle prove su telefono e tablet niente fotografie a pagina intera prima delle misure: fanno perdere a Chromium l'emulazione del touch.
 
+Per la compatibilità con i progetti della versione 1 (salvati con l'app del tag `v1.0.0`):
+
+```bash
+git show v1.0.0:index.html > /tmp/sottovoce-v1.html
+```
+
+```bash
+node strumenti/prova-v1.mjs /tmp/sottovoce-v1.html
+```
+
 Il volume di un file mono si misura come se suonasse su due casse, come fa l'app: -16 LUFS su due casse corrisponde a -19 LUFS misurati su un canale solo, la raccomandazione AES per i podcast in mono.
 
 ## Pubblicare
