@@ -80,6 +80,13 @@ h1{margin:0;font-family:var(--f-serif);font-size:26px;line-height:1.1;font-weigh
 .projbar .dirty{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
 .projbar .dirty::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .projbar .dirty[hidden]{display:none}
+.fileflag{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;color:var(--muted);background:none;border:0;padding:4px 6px;border-radius:var(--r);cursor:pointer;max-width:34ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fileflag::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.fileflag[data-state="pending"]::before,.fileflag[data-state="saving"]::before{background:var(--accent)}
+.fileflag[data-state="perm"],.fileflag[data-state="error"]{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.fileflag[data-state="perm"]::before,.fileflag[data-state="error"]::before{background:var(--bad)}
+.fileflag:disabled{cursor:default}
+.fileflag[hidden]{display:none}
 .tgroup{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .tseg{font:inherit;font-size:13px;font-weight:500;padding:6px 11px;border:0;background:transparent;color:var(--muted);cursor:pointer}
 .tseg:hover:not(:disabled){color:var(--ink)}
@@ -114,7 +121,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 #tipPop{position:fixed;z-index:60;max-width:min(330px,calc(100vw - 16px));padding:9px 12px;border-radius:var(--r);background:var(--ink);color:var(--bg);font-size:13px;line-height:1.45;pointer-events:none}
 
 /* ---------- disposizione: timeline e pannello laterale ---------- */
-.workspace{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;align-items:start}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) clamp(380px,30vw,460px);gap:24px;align-items:start}
 .side{position:sticky;top:calc(var(--st-h) + 12px);max-height:calc(100vh - var(--tp-h) - var(--st-h) - 24px);overflow:auto;padding-right:4px;overscroll-behavior:contain}
 
 /* ---------- montaggio ---------- */
@@ -447,7 +454,10 @@ h2 .info-i,.styles-h .info-i{display:inline-flex;margin-left:8px;vertical-align:
 .st[data-state="done"] .st-chk{stroke-dashoffset:0;opacity:1}
 .st[data-state="done"] .st-line i{width:100%}
 .st[data-state="current"] .st-btn{color:var(--ink)}
-.st[data-state="current"] .st-l{font-weight:600}
+.st[data-open="true"] .st-btn{color:var(--ink);background:color-mix(in srgb,var(--accent) 13%,transparent);padding:0 14px 0 8px}
+.st[data-open="true"] .st-l{font-weight:600}
+.tabs .tab{display:none}
+.tabs{justify-content:flex-end;border-bottom:0}
 .st[data-state="current"] .st-dot{background:var(--accent);border-color:var(--accent);color:var(--onaccent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
 @media (max-width:699px){
   .stepper{margin:0 -14px 12px;padding:4px 10px}
@@ -516,6 +526,110 @@ dialog.episode{width:min(480px,92vw);padding:24px 26px 18px}
 .export-warn .linkbtn{font-size:13.5px;font-weight:600;color:var(--ink)}
 dialog.voice-ask{width:min(440px,92vw)}
 
+
+/* modelli di serie */
+.serie-list{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:8px}
+.serie-item{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2)}
+.serie-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.serie-text b{font-weight:600}
+.serie-text span{font-size:13px;color:var(--muted)}
+.serie-item .btnrow{margin:0}
+.serie-empty{font-size:13px;color:var(--muted)}
+.serie-new{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px;font-size:13.5px}
+.serie-row{display:flex;flex-wrap:wrap;gap:8px}
+.serie-row input{flex:1 1 180px;width:auto;min-width:0}
+
+/* stili come schede: nome e descrizione sempre visibili, bordo colorato sulla scheda scelta */
+.style-grid.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;padding-bottom:0;margin-top:8px}
+.style-card{display:flex;flex-direction:column;border:1.5px solid var(--line);border-radius:10px;background:var(--panel2);transition:border-color .15s ease,background-color .15s ease}
+.style-card:hover{border-color:color-mix(in srgb,var(--c) 55%,var(--line))}
+.style-card.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 11%,var(--panel2))}
+.style-card .style{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;padding:10px 12px 6px;border:0;border-radius:10px 10px 0 0;color:var(--ink)}
+.style-card .style b{font-weight:600}
+.style-card .style span,.style-card .style[aria-pressed="true"] span{display:block;position:static;font-size:12.5px;line-height:1.4;color:var(--muted);white-space:normal;overflow:visible}
+.style-card .style[aria-pressed="true"]{border-bottom-color:transparent}
+.style-pv{align-self:flex-start;margin:2px 12px 10px;font:inherit;font-size:12.5px;font-weight:500;min-height:30px;padding:0 11px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);cursor:pointer}
+.style-pv:hover{border-color:var(--c)}
+.style-pv[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:var(--onaccent)}
+.style-pv:disabled{opacity:.45;cursor:default}
+#styleStatus:empty{display:none}
+
+/* misuratore del volume finale (scheda Esporta) */
+.loud{margin:4px 0 14px;padding:12px 14px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
+.loud-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;color:var(--muted)}
+.loud-h b{font-family:var(--f-mono);font-size:18px;font-weight:500;color:var(--ink)}
+.loud[data-ok="true"] .loud-h b{color:var(--ok)}
+.loud-bar{position:relative;height:14px;margin:10px 0 4px;border-radius:999px;background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.loud-zone{position:absolute;top:0;bottom:0;left:58.333%;width:16.667%;border-radius:999px;background:color-mix(in srgb,var(--ok) 45%,transparent)}
+.loud-mark{position:absolute;top:-6px;width:4px;height:26px;margin-left:-2px;border-radius:2px;background:var(--ink)}
+.loud-mark.last{top:-3px;height:20px;width:10px;margin-left:-5px;border-radius:50%;background:var(--accent);border:2px solid var(--panel2)}
+.loud-mark[hidden]{display:none}
+.loud-scale{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.loud-note{margin:8px 0 0;font-size:13px;line-height:1.45;color:var(--muted)}
+.loud[data-ok="true"] #loudNote{color:var(--ink)}
+.loud-note[hidden]{display:none}
+
+/* Studio: registrare a tutto schermo */
+.studio-btn .recdot{margin-right:6px}
+dialog.studio{width:100vw;height:100vh;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;background:var(--bg);color:var(--ink)}
+dialog.studio::backdrop{background:var(--bg)}
+.st-top{display:flex;justify-content:space-between;align-items:center;padding:16px 24px}
+.st-brand{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-serif);font-size:20px}
+.st-main{display:flex;flex-direction:column;align-items:center;gap:18px;padding:2vh 24px 32px;max-width:760px;margin:0 auto;text-align:center}
+.st-title{margin:0;font-family:var(--f-serif);font-style:italic;font-weight:500;font-size:22px;color:var(--accent)}
+.studio[data-rec="true"] .st-title{color:var(--rec)}
+.st-time{margin:0;font-family:var(--f-mono);font-size:clamp(56px,11vw,96px);line-height:1;letter-spacing:-0.02em;font-variant-numeric:tabular-nums}
+.st-meter{width:100%}
+.st-bar{position:relative;height:22px;border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.st-zone{position:absolute;z-index:1;top:0;bottom:0;left:80%;width:10%;background:color-mix(in srgb,var(--ok) 28%,transparent);border-left:2px solid var(--ok);border-right:2px solid var(--ok)}   /* sopra il livello: la zona giusta resta sempre visibile */
+.st-clip{position:absolute;z-index:1;top:0;bottom:0;left:98.333%;right:0;background:color-mix(in srgb,var(--bad) 55%,transparent)}
+.st-level{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;background:var(--muted)}
+.studio[data-level="ok"] .st-level{background:var(--ok)}
+.studio[data-level="high"] .st-level,.studio[data-level="low"] .st-level{background:var(--accent)}
+.studio[data-level="bad"] .st-level{background:var(--bad)}
+.st-peak{position:absolute;z-index:2;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--ink)}
+.st-peak[hidden]{display:none}
+.st-scale{position:relative;height:16px;margin-top:6px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.st-scale span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.st-scale span:first-child{transform:none}
+.st-scale span:last-child{transform:translateX(-100%)}
+.st-hint{margin:0;min-height:1.5em;font-size:17px;color:var(--muted)}
+.studio[data-level="ok"] .st-hint{color:var(--ok)}
+.studio[data-level="bad"] .st-hint{color:var(--bad)}
+.st-wavebox{width:100%;height:84px;overflow:hidden}   /* altezza fissa: sizeCanvas misura il contenitore */
+.st-wave{display:block}
+.st-rec{width:112px;height:112px;border-radius:50%;border:6px solid color-mix(in srgb,var(--rec) 30%,transparent);background:var(--rec);display:grid;place-items:center;cursor:pointer}
+.st-rec:focus-visible{outline:3px solid var(--focus);outline-offset:4px}
+.st-rec-ic{width:40px;height:40px;border-radius:50%;background:var(--onrec)}
+.studio[data-rec="true"] .st-rec-ic{width:34px;height:34px;border-radius:6px}
+.st-rec-l{margin-top:-8px;font-weight:600}
+.st-keys,.st-where{margin:0;font-size:13.5px;color:var(--muted)}
+@media (max-width:699px){.st-top{padding:12px 14px}.st-main{gap:14px;padding:1vh 14px 24px}.st-rec{width:96px;height:96px}}
+
+.g-short{display:none}
+/* schermi touch (senza mouse): bersagli da almeno 44 pixel, anche per link, menu, caselle e lettere "i" */
+@media (pointer:coarse){
+  .linkbtn{display:inline-flex;align-items:center;min-height:44px}
+  select,input[type=text],input[type=number]{min-height:44px}
+  input[type=checkbox]{width:22px;height:22px}
+  .info-i{position:relative}
+  .info-i::after{content:"";position:absolute;inset:-14px}
+  .style-pv{min-height:44px;padding:0 14px}
+  .fileflag{min-height:40px}
+  .st-keys{display:none}
+}
+/* telefono: intestazione compatta, una riga per tema, Studio e Guida */
+@media (max-width:699px){
+  .slogan{display:none}
+  .look{width:100%;justify-content:flex-start;gap:6px 8px}
+  .look .projbar{flex:1 1 100%}
+  .look .tseg{padding:6px 9px}
+  .look #btnStudio{margin-left:auto}
+  .g-long{display:none}
+  .g-short{display:inline}
+  .st-s6{display:none}
+  #zSel{display:none}            /* sul telefono si ingrandisce con due dita: la barra degli strumenti sta su due righe */
+}
 </style>
 </head>
 <body>
@@ -536,13 +650,13 @@ dialog.voice-ask{width:min(440px,92vw)}
       </div>
     </div>
     <div class="look" aria-label="Aspetto dell’interfaccia">
-      <p class="projbar" id="projBar" role="status" hidden><span id="projName"></span><span class="dirty" id="dirtyFlag" hidden>modifiche non salvate</span></p>
+      <p class="projbar" id="projBar" role="status" hidden><span id="projName"></span><span class="dirty" id="dirtyFlag" hidden>modifiche non salvate</span><button type="button" class="fileflag" id="fileFlag" hidden></button></p>
       <div class="tgroup" role="group" aria-label="Tema">
         <button class="tseg" data-theme-btn="auto" aria-pressed="true">Auto</button>
         <button class="tseg" data-theme-btn="light" aria-pressed="false">Chiaro</button>
         <button class="tseg" data-theme-btn="dark" aria-pressed="false">Scuro</button>
       </div>
-      <button class="btn small" id="btnGuide">Guida rapida</button>
+      <button class="btn small studio-btn" id="btnStudio" type="button"><span class="recdot" aria-hidden="true"></span>Studio</button><button class="btn small" id="btnGuide" aria-label="Guida rapida"><span class="g-long">Guida rapida</span><span class="g-short" aria-hidden="true">Guida</span></button>
     </div>
   </header>
 
@@ -602,7 +716,7 @@ dialog.voice-ask{width:min(440px,92vw)}
       <div class="empty-hint" id="emptyHint">
         <h2>Comincia dalla voce</h2>
         <p>Registra adesso oppure trascina qui un file audio.</p>
-        <div class="btnrow"><button class="btn rec-fill" id="emptyRec" type="button"><span class="recdot" aria-hidden="true"></span>Registra</button><button class="btn" id="emptyImport" type="button">Importa un file</button></div>
+        <div class="btnrow"><button class="btn rec-fill" id="emptyRec" type="button"><span class="recdot" aria-hidden="true"></span>Registra</button><button class="btn" id="emptyStudio" type="button">Apri lo studio</button><button class="btn" id="emptyImport" type="button">Importa un file</button></div>
       </div>
     </div>
     <input type="range" id="hscroll" class="vscroll" min="0" max="1000" value="0" aria-label="Scorri la forma d’onda" disabled>
@@ -638,7 +752,7 @@ dialog.voice-ask{width:min(440px,92vw)}
     <p class="ns-text" id="nsText"></p>
     <div class="ns-actions"><button class="btn primary" id="nsMain" type="button"></button><button class="linkbtn" id="nsAlt" type="button" hidden></button></div>
   </section>
-  <nav class="tabs" role="tablist" aria-label="Fasi del lavoro">
+  <nav class="tabs" aria-label="Livello dei controlli">
     <button class="tab" role="tab" id="tab-rec" aria-controls="pane-rec" data-tab="rec" aria-selected="true"><b>1</b>Voce</button>
     <button class="tab" role="tab" id="tab-improve" aria-controls="pane-improve" data-tab="improve" aria-selected="false"><b>2</b>Migliora</button>
     <button class="tab" role="tab" id="tab-tracks" aria-controls="pane-tracks" data-tab="tracks" aria-selected="false"><b>3</b>Musica</button>
@@ -744,6 +858,21 @@ dialog.voice-ask{width:min(440px,92vw)}
     <div class="styles" id="musicStyles"></div>
     <div class="styles" id="duckReact"></div>
     <div class="panels">
+      <article class="panel sigla" id="pSigla"><h2 data-info="La sigla suona all’inizio e la voce parte dopo; la chiusura suona alla fine, dopo la coda della musica, e si sposta da sola se la voce cambia lunghezza. Il volume si regola da solo al livello della voce.">Sigla e chiusura</h2>
+        <p class="desc">Suonano prima e dopo l’episodio, sempre al loro posto.</p>
+        <label class="slot" id="slotSig" style="--c:var(--fx3)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileSig">
+          <span class="slot-title">Sigla</span>
+          <span class="slot-name" id="nameSig">Trascina qui un file o clicca per sceglierlo</span>
+        </label>
+        <label class="slot" id="slotEnd" style="--c:var(--fx3)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileEnd">
+          <span class="slot-title">Chiusura</span>
+          <span class="slot-name" id="nameEnd">Trascina qui un file o clicca per sceglierlo</span>
+        </label>
+        <p class="status" id="siglaStatus"></p>
+        <div class="btnrow"><button class="btn" id="btnSigRemove" disabled>Togli la sigla</button><button class="btn" id="btnEndRemove" disabled>Togli la chiusura</button></div>
+      </article>
       <article class="panel music" id="pMusic"><h2>Musica</h2>
         <p class="desc">Il sottofondo musicale, al volume giusto da solo.</p>
         <label class="slot" id="slotMusic" style="--c:var(--music)">
@@ -778,6 +907,17 @@ dialog.voice-ask{width:min(440px,92vw)}
     <div class="panels">
       <article class="panel neutral" id="pExport"><h2 data-info="Il file usa le stesse regolazioni dell’ascolto. Il volume viene portato all’obiettivo in LUFS e un limitatore impedisce che i picchi distorcano.">Uscita</h2>
         <p class="desc">Il file finale suona come l’ascolto, al volume giusto.</p>
+        <div class="loud" id="loudMeter">
+          <div class="loud-h"><span id="loudT">Volume finale</span><b id="loudV"></b></div>
+          <div class="loud-bar" id="loudBar" role="img">
+            <span class="loud-zone" aria-hidden="true"></span>
+            <span class="loud-mark" id="loudSet" aria-hidden="true"></span>
+            <span class="loud-mark last" id="loudLast" aria-hidden="true" hidden></span>
+          </div>
+          <div class="loud-scale" aria-hidden="true"><span>-24</span><span>-20</span><span>-16</span><span>-12 LUFS</span></div>
+          <p class="loud-note" id="loudNote"></p>
+          <p class="loud-note" id="loudLastNote" hidden></p>
+        </div>
         <div class="body"></div>
         <div class="export-warn" id="exportWarn" role="status" hidden></div>
         <div class="btnrow"><button class="btn primary" id="btnExport" disabled>Esporta</button><button class="btn" id="btnStems" disabled>Tracce separate</button></div>
@@ -801,10 +941,19 @@ dialog.voice-ask{width:min(440px,92vw)}
   <section class="pane" id="pane-project" role="tabpanel" aria-labelledby="tab-project" hidden>
     <div class="panels">
       <article class="panel neutral" id="pProject"><h2 data-info="“Salva il progetto” crea un file con gli originali e l’elenco delle modifiche. Si riapre anche con una versione nuova del programma o su un altro computer.">Progetto</h2>
-        <p class="desc">Il lavoro si salva da solo in questo browser.</p>
-        <div class="btnrow"><button class="btn primary" id="btnSaveProj" disabled>Salva il progetto</button><button class="btn" id="btnOpenProj">Apri un progetto</button><button class="btn" id="btnNewProj">Nuovo progetto</button></div>
+        <p class="desc" id="projLead">Il lavoro si salva da solo in questo browser.</p>
+        <div class="btnrow"><button class="btn primary" id="btnSaveProj" disabled>Salva il progetto</button><button class="btn" id="btnSaveAs" hidden>Salva con un altro nome</button><button class="btn" id="btnOpenProj">Apri un progetto</button><button class="btn" id="btnNewProj">Nuovo progetto</button></div>
         <input class="vh" type="file" accept=".sottovoce,.zip,application/zip" id="fileProj" tabindex="-1" aria-hidden="true">
         <p class="status" id="projStatus" role="status"></p>
+      </article>
+      <article class="panel neutral" id="pSerie"><h2 data-info="Un modello conserva sigla, chiusura, musica, tutte le regolazioni, autore, nome della serie, anno e copertina. Ogni nuovo episodio parte con tutto al suo posto e con il numero dell’episodio successivo. I modelli restano in questo browser; con “Scarica” li porti su un altro computer.">Modelli di serie</h2>
+        <p class="desc">Ogni episodio nuovo parte già pronto: porti solo la voce.</p>
+        <ul class="serie-list" id="serieList" aria-label="Modelli di serie"></ul>
+        <div class="serie-new"><label for="serieName">Salva questo progetto come modello</label>
+          <div class="serie-row"><input type="text" id="serieName" maxlength="80" placeholder="Nome della serie"><button class="btn" id="btnSerieSave">Salva come modello</button></div></div>
+        <div class="btnrow"><button class="btn" id="btnSerieImport">Aggiungi un modello da file</button></div>
+        <input class="vh" type="file" accept=".serie,.zip,application/zip" id="fileSerie" tabindex="-1" aria-hidden="true">
+        <p class="status" id="serieStatus" role="status"></p>
       </article>
       <article class="panel neutral" id="pPreset"><h2>Preset</h2>
         <p class="desc">Salva le tue regolazioni e richiamale con un clic.</p>
@@ -817,7 +966,7 @@ dialog.voice-ask{width:min(440px,92vw)}
   </div>
 
   <footer class="foot">
-    <span>Sottovoce Officina Sonora 1.0.0. Copyright (c) 2026 Roberto Lanza. Licenza: PolyForm Noncommercial 1.0.0.</span>
+    <span>Sottovoce Officina Sonora 2.0.0. Copyright (c) 2026 Roberto Lanza. Licenza: PolyForm Noncommercial 1.0.0.</span>
     <span>Funziona nel browser, anche senza internet. Strumento gratuito, offerto così com'è, senza garanzie. L'audio non lascia il tuo computer.</span>
     <button class="linkbtn" id="btnInfo">Informazioni e licenze</button>
   </footer>
@@ -855,7 +1004,7 @@ dialog.voice-ask{width:min(440px,92vw)}
   <path d="M346.5 161.7A160 160 0 0 1 346.5 228.3" fill="none" stroke="var(--logo-a)" stroke-width="28" stroke-linecap="round"/>
   <path d="M394.9 44.0A48 48 0 1 0 440.7 109.5A40 40 0 0 1 394.9 44.0Z" fill="var(--logo-b)"/>
   </g></svg><div><h2 id="infoT" style="margin:0">Informazioni e licenze</h2><p class="slogan" style="margin:2px 0 0">Sottovoce. Fai sentire la tua voce, e le tue idee.</p></div></div>
-  <p><b>Sottovoce Officina Sonora</b>, versione 1.0.0, è stato ideato da Roberto Lanza.<br>Copyright (c) 2026 Roberto Lanza. Licenza: PolyForm Noncommercial 1.0.0.</p>
+  <p><b>Sottovoce Officina Sonora</b>, versione 2.0.0, è stato ideato da Roberto Lanza.<br>Copyright (c) 2026 Roberto Lanza. Licenza: PolyForm Noncommercial 1.0.0.</p>
   <h3>Condizioni d’uso</h3>
   <p>Libero per uso personale, didattico e senza scopo di lucro. Non è consentito l’uso commerciale.</p>
   <p class="note">Questo è un riassunto in parole semplici: fa fede il testo ufficiale della licenza, in inglese, qui sotto e su <a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">polyformproject.org/licenses/noncommercial/1.0.0</a>.</p>
@@ -909,6 +1058,34 @@ dialog.voice-ask{width:min(440px,92vw)}
   <form method="dialog" class="dlg-foot"><button class="btn primary">Ho capito</button></form>
 </dialog>
 
+<dialog id="studio" class="studio" aria-labelledby="stTitle" aria-describedby="stHint">
+  <div class="st-top"><span class="st-brand"><span class="recdot" aria-hidden="true"></span>Studio</span><button class="btn" id="stClose" type="button">Esci dallo studio</button></div>
+  <div class="st-main">
+    <h2 class="st-title" id="stTitle">Pronto a registrare</h2>
+    <p class="st-time" id="stTime">0:00,0</p>
+    <div class="st-meter">
+      <div class="st-bar" aria-hidden="true"><span class="st-zone"></span><span class="st-clip"></span><span class="st-level" id="stLevel"></span><span class="st-peak" id="stPeak" hidden></span></div>
+      <div class="st-scale" aria-hidden="true"><span style="left:0.0%">-60</span><span style="left:20.0%">-48</span><span style="left:40.0%">-36</span><span style="left:60.0%">-24</span><span style="left:80.0%">-12</span><span style="left:90.0%" class="st-s6">-6</span><span style="left:100.0%">0 dB</span></div>
+    </div>
+    <p class="st-hint" id="stHint" role="status"></p>
+    <div class="st-wavebox"><canvas class="st-wave" id="stWave" aria-hidden="true"></canvas></div>
+    <button class="st-rec" id="stRec" type="button" aria-label="Inizia a registrare"><span class="st-rec-ic" aria-hidden="true"></span></button>
+    <span class="st-rec-l" id="stRecL" aria-hidden="true">Registra</span>
+    <p class="st-keys" id="stKeys">Barra spaziatrice o R per iniziare e fermare · Esc per uscire</p>
+    <p class="st-where" id="stWhere"></p>
+  </div>
+</dialog>
+<dialog id="musicAsk" class="voice-ask" aria-labelledby="maT" aria-describedby="maText">
+  <h2 id="maT">C’è già una musica</h2>
+  <p id="maText"></p>
+  <p class="note">Sigla e chiusura suonano da sole prima e dopo l’episodio; la musica di sottofondo sta sotto la voce.</p>
+  <div class="ep-foot">
+    <button class="btn cta" id="maSig" type="button">Usalo come sigla</button>
+    <button class="btn" id="maEnd" type="button">Usalo come chiusura</button>
+    <button class="btn" id="maReplace" type="button">Sostituisci la musica</button>
+  </div>
+  <form method="dialog" class="ep-close"><button class="linkbtn">Lascia tutto com’è</button></form>
+</dialog>
 <dialog id="voiceAsk" class="voice-ask" aria-labelledby="vaT" aria-describedby="vaText">
   <h2 id="vaT">Un’altra voce</h2>
   <p id="vaText"></p>
@@ -3079,7 +3256,7 @@ SOFTWARE.
 // formato dei progetti e dei preset): così progetti, preset e impostazioni salvati continuano a funzionare.
 const APP_NAME = 'Sottovoce Officina Sonora';
 // numero di versione del programma (anche questo letto da build.py); nei progetti va accanto al numero di formato, che resta 1
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '2.0.0';
 // confronto tra versioni scritte come 1.2.3: positivo se a è più recente di b
 const cmpVersion = (a, b) => { const x = String(a).split('.').map(n => parseInt(n, 10) || 0), y = String(b).split('.').map(n => parseInt(n, 10) || 0); for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) - (y[i] || 0); return 0; };
 // frase di chiarezza, testuale (verificata nel codice: nessuna richiesta di rete, nessun invio di dati, nessuna analisi esterna)
@@ -3826,7 +4003,7 @@ function applyOp(st, op) {
     case 'fix': { const a = cl(op.a), b = cl(op.b); if (b > a) fadeRange(segs, a, b, 'fix', { sens: op.sens }); break; }
     case 'multi': for (const o of op.ops) applyOp(st, o); return;
     case 'fxadd': { const e = { id: op.id, src: op.src, at: op.at, gainDb: op.gainDb || 0 }; fxApplySet(e, op); st.fx.push(e); break; }   // con i campi facoltativi, se ci sono
-    case 'fxmove': { const e = st.fx.find(x => x.id === op.id); if (e) e.at = op.at; break; }
+    case 'fxmove': { const e = st.fx.find(x => x.id === op.id); if (e && !e.anchor) e.at = op.at; break; }
     case 'fxgain': { const e = st.fx.find(x => x.id === op.id); if (e) e.gainDb = op.gainDb; break; }
     case 'fxdel': st.fx = st.fx.filter(x => x.id !== op.id); break;
     case 'fxedit': { const e = st.fx.find(x => x.id === op.id); if (e) fxApplySet(e, op.set); break; }
@@ -3861,12 +4038,21 @@ function redo() { if (!S.redo.length) return; const op = S.redo.pop(); S.ops.pus
 
 /* ---------- disposizione del mix ---------- */
 // Con la musica, la voce entra dopo l'intro e la musica continua per la coda.
+// Linea del tempo: [sigla] [intro musicale] voce [coda musicale] [chiusura].
+// Sigla e chiusura sono effetti ancorati (anchor 'start' e 'end'): la posizione la decide questa funzione, così
+// la voce parte dopo la sigla e la chiusura segue la fine anche quando la voce cambia lunghezza.
+// La musica di sottofondo suona da mStart (fine della sigla) a mEnd (inizio della chiusura, o fine del mix).
 function layout() {
-  const intro = S.musicId && S.vlen ? Math.round(P.intro * SR) : 0, tail = S.musicId && S.vlen ? Math.round(P.tail * SR) : 0;
+  let sig = 0, hasEnd = false;
+  for (const e of S.fx) { if (e.anchor === 'start') { e.at = 0; sig = Math.max(sig, fxSpan(e)); } else if (e.anchor === 'end') hasEnd = true; }
+  const mi = S.musicId && S.vlen ? Math.round(P.intro * SR) : 0, tail = S.musicId && S.vlen ? Math.round(P.tail * SR) : 0;
+  const intro = sig + mi;
   let total = S.vlen ? intro + S.vlen + tail : 0;
-  if (!S.vlen && S.musicId) total = S.sources.get(S.musicId).len;
+  if (!S.vlen && S.musicId) total = sig + S.sources.get(S.musicId).len;
+  const endAt = S.vlen || S.musicId ? total : sig;
+  if (hasEnd) for (const e of S.fx) if (e.anchor === 'end') e.at = endAt;
   for (const e of S.fx) total = Math.max(total, e.at + fxSpan(e));
-  return { intro, tail, total };
+  return { intro, tail, total, sig, mStart: sig, mEnd: hasEnd ? endAt : total };
 }
 
 /* ---------- lettura della traccia della voce ---------- */
@@ -3987,15 +4173,35 @@ function renderVoiceAll(useProc, onProg) { return renderVoice(0, S.vlen, useProc
 
 /* ---------- picchi per il disegno ---------- */
 const peakCache = new WeakMap();
+// piramide per il disegno, calcolata una volta per ogni originale: per blocchi di 64 e di 2048 campioni il minimo,
+// il massimo e la somma dei quadrati (ss), così picco e volume medio di qualsiasi tratto si leggono in un attimo
 function peaksOf(arr) {
   let p = peakCache.get(arr); if (p) return p;
-  const mk = B => { const n = Math.ceil(arr.length / B), mn = new Float32Array(n), mx = new Float32Array(n);
-    for (let i = 0; i < n; i++) { let lo = 1e9, hi = -1e9; for (let j = i * B, e = Math.min(arr.length, j + B); j < e; j++) { const v = arr[j]; if (v < lo) lo = v; if (v > hi) hi = v; } mn[i] = lo; mx[i] = hi; }
-    return { B, mn, mx }; };
-  const l1 = mk(64);
-  const l2 = { B: 2048, mn: new Float32Array(Math.ceil(l1.mn.length / 32)), mx: new Float32Array(Math.ceil(l1.mn.length / 32)) };
-  for (let i = 0; i < l2.mn.length; i++) { let lo = 1e9, hi = -1e9; for (let j = i * 32, e = Math.min(l1.mn.length, j + 32); j < e; j++) { if (l1.mn[j] < lo) lo = l1.mn[j]; if (l1.mx[j] > hi) hi = l1.mx[j]; } l2.mn[i] = lo; l2.mx[i] = hi; }
+  const B1 = 64, n1 = Math.ceil(arr.length / B1), l1 = { B: B1, mn: new Float32Array(n1), mx: new Float32Array(n1), ss: new Float64Array(n1) };
+  for (let i = 0; i < n1; i++) {
+    let lo = 1e9, hi = -1e9, ss = 0;
+    for (let j = i * B1, e = Math.min(arr.length, j + B1); j < e; j++) { const v = arr[j]; if (v < lo) lo = v; if (v > hi) hi = v; ss += v * v; }
+    l1.mn[i] = lo; l1.mx[i] = hi; l1.ss[i] = ss;
+  }
+  const n2 = Math.ceil(n1 / 32), l2 = { B: 2048, mn: new Float32Array(n2), mx: new Float32Array(n2), ss: new Float64Array(n2) };
+  for (let i = 0; i < n2; i++) {
+    let lo = 1e9, hi = -1e9, ss = 0;
+    for (let j = i * 32, e = Math.min(n1, j + 32); j < e; j++) { if (l1.mn[j] < lo) lo = l1.mn[j]; if (l1.mx[j] > hi) hi = l1.mx[j]; ss += l1.ss[j]; }
+    l2.mn[i] = lo; l2.mx[i] = hi; l2.ss[i] = ss;
+  }
   p = [l1, l2]; peakCache.set(arr, p); return p;
+}
+// somma dei quadrati e numero di campioni di arr tra a e b (per il volume medio nel disegno)
+function sumSq(arr, a, b, res) {
+  a = Math.max(0, Math.floor(a)); b = Math.min(arr.length, Math.ceil(b));
+  let ss = 0, n = 0;
+  if (b - a < 256) { for (let i = a; i < b; i++) ss += arr[i] * arr[i]; n = Math.max(0, b - a); }
+  else {
+    const lv = peaksOf(arr)[b - a > 2048 * 8 ? 1 : 0], i0 = Math.floor(a / lv.B), i1 = Math.min(lv.ss.length - 1, Math.floor((b - 1) / lv.B));
+    for (let i = i0; i <= i1; i++) ss += lv.ss[i];
+    n = Math.min(arr.length, (i1 + 1) * lv.B) - i0 * lv.B;
+  }
+  res[0] = ss; res[1] = n; return res;
 }
 // minimo e massimo di arr tra i campioni a e b
 function minMax(arr, a, b, res) {
@@ -4077,8 +4283,8 @@ function renderMix(t0, n, which, curves, only) {
     const m = S.sources.get(S.musicId), mc = musicChs(), C = curves || musicCurves(which), off = Math.round(P.musicOffset * SR);
     const ml = mc[0], mr = mc[1] || mc[0], len = m.len;
     for (let i = 0; i < n; i++) {
-      const t = t0 + i; if (t < 0 || t >= lay.total) continue;
-      let p = t + off; if (P.loop) p %= len; else if (p >= len) continue;
+      const t = t0 + i; if (t < lay.mStart || t >= lay.mEnd) continue;
+      let p = t - lay.mStart + off; if (P.loop) p %= len; else if (p >= len) continue;
       const q = t / 480, k = Math.min(C.gain.length - 2, Math.floor(q)), f = q - k, gg = C.gain[k] + (C.gain[k + 1] - C.gain[k]) * f;
       Lo[i] += ml[p] * gg; Ro[i] += mr[p] * gg;
     }
@@ -4096,7 +4302,7 @@ function playPos() {
   return Math.min(PB.end, PB.from + Math.max(0, (ACTX.currentTime - PB.startAt)) * SR);
 }
 function startPlayback(from, end) {
-  stopPlayback(true); stopFxPreview();
+  stopPlayback(true); stopFxPreview(); stopStylePreview();
   const c = ctx(), lay = layout();
   if (!lay.total) return;
   PB.from = clamp(Math.round(from), 0, lay.total); PB.end = clamp(Math.round(end == null ? lay.total : end), PB.from, lay.total);
@@ -4261,8 +4467,9 @@ async function toggleRecord() {
     else { REC.mode = 'cursor'; REC.at = vcur; }
   }
   REC.chunks = []; REC.len = 0; REC.pks = []; REC.clips = 0; $('#clipFlag').textContent = '';
-  S.monitoring = false; S.recording = true; REC.t0 = performance.now();
+  S.monitoring = false; S.recording = true; REC.t0 = performance.now(); REC.viewEnd = 0;
   REC.cap.set(true);
+  flowRender(); drawAll();      // anche alla prima registrazione la linea del tempo compare subito, con la forma d'onda in rosso
   $('#recStatus').textContent = 'Registrazione in corso. ' + micNote();
   updateTransport(); startMeter(); requestAnimationFrame(recTick);
 }
@@ -4270,7 +4477,10 @@ function recTick() {
   if (!S.recording) return;
   $('#timeNow').textContent = fmtSec(REC.len);
   const lay = layout(), x0 = REC.at + lay.intro, xe = x0 + REC.len;
-  if (xe > S.view[1]) { const span = S.view[1] - S.view[0]; S.view = [Math.max(0, xe - span * 0.85), Math.max(0, xe - span * 0.85) + span]; S.fit = false; drawBase(); }
+  // vista intera: si allarga a passi mentre la registrazione cresce, così si vede tutto il progetto più la registrazione;
+  // vista ingrandita: scorre per seguire la fine della registrazione
+  if (S.fit) { if (xe > Math.max(lay.total, SR) * 0.92 && xe > REC.viewEnd * 0.92) { REC.viewEnd = Math.max(SR * 10, xe * 1.5); drawBase(); } }
+  else if (xe > S.view[1]) { const span = S.view[1] - S.view[0]; S.view = [Math.max(0, xe - span * 0.85), Math.max(0, xe - span * 0.85) + span]; drawBase(); }
   drawTop(); requestAnimationFrame(recTick);
 }
 async function stopRecording() {
@@ -4339,6 +4549,99 @@ function meterLoop() {
   if (S.playing || S.recording || S.monitoring || METER.db > -96 || now - METER.peakT < 1100) requestAnimationFrame(meterLoop); else METER.running = false;
 }
 
+/* ---- 31-studio.js ---- */
+/* ========================= Studio: registrare a tutto schermo ========================= */
+// Una schermata sola, senza distrazioni: il tempo grande, il livello del microfono con la zona giusta (le parole forti
+// tra -12 e -6 dB) e la saturazione, una frase che dice se il livello va bene, la forma d'onda della registrazione e un
+// solo pulsante. Il microfono si apre entrando (prova del livello), così il livello si vede già prima di registrare.
+// Barra spaziatrice o R: registra e ferma. Esc esce, ma non durante la registrazione.
+const STUDIO = { open: false, raf: 0, db: -90, hold: -90, holdT: 0, lastT: 0, warn: false, clipT: -1e9 };
+const ST_MIN = -60;                                   // fondo della scala del livello, in dB
+const stPos = db => clamp((db - ST_MIN) / -ST_MIN, 0, 1) * 100 + '%';
+async function openStudio() {
+  if (STUDIO.open) return;
+  stopIfPlaying(); stopStylePreview();
+  const d = $('#studio'); STUDIO.open = true; STUDIO.db = STUDIO.hold = -90;
+  if (!d.open) d.showModal();
+  studioRender();
+  if (!S.recording && !S.monitoring) await toggleMonitor();
+  $('#stRec').focus();
+  cancelAnimationFrame(STUDIO.raf); STUDIO.lastT = performance.now(); STUDIO.raf = requestAnimationFrame(studioLoop);
+}
+async function closeStudio() {
+  if (S.recording) { STUDIO.warn = true; return; }
+  STUDIO.open = false; cancelAnimationFrame(STUDIO.raf);
+  if (S.monitoring) await toggleMonitor();
+  const d = $('#studio'); if (d.open) d.close();
+  drawAll();
+}
+async function studioToggleRec() {
+  if (S.recording) { await toggleRecord(); if (STUDIO.open && !S.monitoring) await toggleMonitor(); }
+  else { await toggleRecord(); }
+  studioRender();
+}
+const REC_WHERE = { end: 'in fondo alla voce', cursor: 'nel punto del cursore', replace: 'al posto della selezione', all: 'al posto di tutta la voce' };
+function studioRender() {
+  const rec = S.recording;
+  $('#studio').dataset.rec = String(rec);
+  $('#stTitle').textContent = rec ? 'Sto registrando' : S.vlen ? 'Pronto per la prossima registrazione' : 'Pronto a registrare';
+  $('#stRec').setAttribute('aria-label', rec ? 'Ferma la registrazione' : 'Inizia a registrare');
+  $('#stRecL').textContent = rec ? 'Ferma' : 'Registra';
+  $('#stWhere').textContent = 'La registrazione va ' + (REC_WHERE[P.recWhere] || REC_WHERE.end) + (S.vlen ? '; la voce dura ora ' + fmtDur(S.vlen / SR).replace(' ', '\u00a0') + '.' : '.');
+  if (!rec) $('#stTime').textContent = fmtSec(0);
+}
+// verdetto sul livello: si guarda il picco più alto degli ultimi 1,5 s
+function studioVerdict(db, clipped) {
+  if (clipped) return ['bad', 'Saturazione: abbassa il volume del microfono o allontanati un po’.'];
+  if (db < -50) return ['idle', 'Parla come durante la registrazione per provare il livello.'];
+  if (db < -18) return ['low', 'Basso: avvicinati al microfono o alza il suo volume.'];
+  if (db < -12) return ['low', 'Un po’ basso: avvicinati di qualche centimetro.'];
+  if (db <= -6) return ['ok', 'Livello giusto.'];
+  if (db < -1) return ['high', 'Un po’ forte: allontanati di qualche centimetro.'];
+  return ['bad', 'Troppo forte: abbassa il volume del microfono.'];
+}
+function studioLoop(now) {
+  if (!STUDIO.open) return;
+  const dt = Math.min(0.1, (now - STUDIO.lastT) / 1000); STUDIO.lastT = now;
+  const fresh = performance.now() - (METER.lastT || 0) < 150, pk = fresh ? METER.last || 0 : 0, db = pk > 0 ? 20 * Math.log10(pk) : -90;
+  STUDIO.db = db > STUDIO.db ? db : Math.max(db, STUDIO.db - 24 * dt);          // sale subito, scende di 24 dB al secondo
+  if (STUDIO.db >= STUDIO.hold || now - STUDIO.holdT > 1500) { STUDIO.hold = STUDIO.db; STUDIO.holdT = now; }
+  $('#stLevel').style.width = stPos(STUDIO.db);
+  $('#stPeak').style.left = stPos(STUDIO.hold); $('#stPeak').hidden = STUDIO.hold <= ST_MIN;
+  if (pk >= 0.989) STUDIO.clipT = now;                                          // saturazione: si segnala per 3 s, poi sparisce
+  const [kind, text] = studioVerdict(STUDIO.hold, now - STUDIO.clipT < 3000);
+  const box = $('#studio'); if (box.dataset.level !== kind) box.dataset.level = kind;
+  if (!S.recording) STUDIO.warn = false;
+  const hint = STUDIO.warn ? 'Prima ferma la registrazione, poi esci dallo studio.' : text;
+  if ($('#stHint').textContent !== hint) $('#stHint').textContent = hint;
+  if (S.recording) { $('#stTime').textContent = fmtSec(REC.len); drawStudioWave(); }
+  STUDIO.raf = requestAnimationFrame(studioLoop);
+}
+// forma d'onda della registrazione in corso: gli ultimi 20 secondi, un'asticella ogni blocco del registratore
+function drawStudioWave() {
+  const cv = $('#stWave'), { g, W, H } = sizeCanvas(cv); g.clearRect(0, 0, W, H);
+  const per = 4096 / SR, span = 20, n = Math.ceil(span / per), from = Math.max(0, REC.pks.length - n), bw = W / n;
+  g.fillStyle = cssv('--rec');
+  for (let i = from; i < REC.pks.length; i++) {
+    const h = Math.max(1, clamp(REC.pks[i] * 1.6, 0, 1) * (H / 2 - 2)), x = (i - from) * bw;
+    rrect(g, x, H / 2 - h, Math.max(1, bw - 1), 2 * h, 1); g.fill();
+  }
+}
+function initStudio() {
+  const d = $('#studio');
+  $('#btnStudio').addEventListener('click', openStudio);
+  const e = $('#emptyStudio'); if (e) e.addEventListener('click', openStudio);
+  $('#stRec').addEventListener('click', studioToggleRec);
+  $('#stClose').addEventListener('click', closeStudio);
+  d.addEventListener('cancel', ev => { ev.preventDefault(); closeStudio(); });          // Esc: esce, ma non mentre si registra
+  d.addEventListener('keydown', ev => {
+    if (ev.target && ev.target.tagName === 'SELECT') return;
+    const k = ev.key.toLowerCase();
+    if ((ev.code === 'Space' || k === 'r') && !ev.repeat && !ev.metaKey && !ev.ctrlKey) { ev.preventDefault(); ev.stopPropagation(); studioToggleRec(); }
+  });
+  // la barra spaziatrice sul pulsante non deve farlo scattare una seconda volta al rilascio
+  d.addEventListener('keyup', ev => { if (ev.code === 'Space') ev.preventDefault(); });
+}
 /* ---- 40-view.js ---- */
 /* ========================= Disegno della forma d'onda ========================= */
 const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -4351,12 +4654,19 @@ function sizeCanvas(cv) {
   const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); return { g, W: w, H: h };
 }
 // altezze delle corsie: più basse sul telefono; con la timeline vuota resta un'area per lo stato iniziale
+// altezza della corsia della voce: sugli schermi grandi cresce con la finestra (da 136 a 300 pixel), lasciando in vista
+// la barra di montaggio e i comandi in basso; la musica cresce in proporzione
+function laneHeights(small) {
+  if (small) return { vh: 96, mh: 44 };
+  const vh = Math.round(clamp(136 + (window.innerHeight - 760) * 0.75, 136, 300));
+  return { vh, mh: Math.round(clamp(vh * 0.42, 58, 110)) };
+}
 function geom() {
-  const W = $('#wrap').clientWidth, small = window.innerWidth < 700, gap = 4;
+  const W = $('#wrap').clientWidth, small = window.innerWidth < 700, gap = 4, lh = laneHeights(small);
   // la corsia degli effetti si alza di una fila per ogni livello di sovrapposizione (massimo 4 file)
-  const rows = fxLayout().rows, ruler = small ? 20 : 24, vh = small ? 96 : 136, mh = S.musicId ? (small ? 44 : 58) : 0, fh = (S.fx.length || S.musicId) ? (small ? 32 : 40) + (rows - 1) * (small ? 14 : 18) : 0;
+  const rows = fxLayout().rows, ruler = small ? 20 : 24, vh = lh.vh, mh = S.musicId ? lh.mh : 0, fh = (S.fx.length || S.musicId) ? (small ? 32 : 40) + (rows - 1) * (small ? 14 : 18) : 0;
   let H = ruler + vh + (mh ? gap + mh : 0) + (fh ? gap + fh : 0) + 4;
-  if (!layout().total) H = small ? 180 : 250;
+  if (!layout().total && !S.recording) H = small ? 180 : 250;
   const vy = ruler, my = vy + vh + gap, fy = (mh ? my + mh + gap : vy + vh + gap);
   return { W, H, ruler, vy, vh, my, mh, fy, fh };
 }
@@ -4382,12 +4692,26 @@ function laneLabel(g, x, y, color, name, extra, cLane, cInk, cMut) {
   if (extra) { g.fillStyle = cMut; g.fillText(extra, x + 22 + w1, y); }
 }
 // forma d'onda piena: barre speculari arrotondate, una ogni 3 pixel
+// scala della musica nel disegno. Con la voce: il volume vero della musica nel mix, rispetto ai picchi della voce,
+// su una scala in decibel (0 dB = picchi della voce in cima alla corsia, -MUSIC_DB in fondo): un sottofondo 16 dB
+// sotto la voce resta ben visibile e ogni cambio di livello o il ducking cambiano l'altezza dell'onda.
+// Senza voce: il brano riempie la corsia e si vede solo l'andamento (dissolvenze, ducking degli effetti).
+const MUSIC_DB = 36;
+function musicViewScale(which) {
+  const m = S.sources.get(S.musicId), vg = S.vlen ? voiceGain(which) : 0;
+  if (S.vlen && vg > 0) return { k: vScale(which) / vg / 0.92, base: 1, db: true };
+  return { k: 0.9 / Math.max(1e-6, peaksOfMusic(m)), base: dbToGain(P.musicDb || 0), db: false };
+}
+const musicViewH = (a, db) => !db ? a : a > 0 ? clamp((20 * Math.log10(a) + MUSIC_DB) / MUSIC_DB, 0, 1) : 0;
+// peakAt restituisce il picco del tratto, oppure [picco, volume medio]: in quel caso il picco si disegna chiaro e il
+// volume medio pieno sopra, come in Audacity, così anche nella vista d'insieme si vedono frasi forti, piane e pause
 function drawBars(g, W, cy, half, color, peakAt, x0) {
   g.fillStyle = color; x0 = x0 || 0;
   for (let x = 0; x < W; x += 3) {
-    const a = peakAt(x, x + 3); if (a <= 0) continue;
+    const v = peakAt(x, x + 3), two = Array.isArray(v), a = two ? v[0] : v; if (a <= 0) continue;
     const h = Math.max(1, clamp(a, 0, 1) * half);
-    rrect(g, x0 + x, cy - h, 2, 2 * h, 1); g.fill();
+    if (two) { g.globalAlpha = 0.36; rrect(g, x0 + x, cy - h, 2, 2 * h, 1); g.fill(); g.globalAlpha = 1; const hr = Math.max(1, clamp(v[1], 0, 1) * half); rrect(g, x0 + x, cy - hr, 2, 2 * hr, 1); g.fill(); }
+    else { rrect(g, x0 + x, cy - h, 2, 2 * h, 1); g.fill(); }
   }
 }
 function drawBase() {
@@ -4395,15 +4719,15 @@ function drawBase() {
   const cv = $('#cvBase'), { g, W, H } = sizeCanvas(cv), gm = geom(), lay = layout();
   const cLane = cssv('--lane'), cLane2 = cssv('--lane2'), cMut = cssv('--muted'), cLine = cssv('--line'), cInk = cssv('--ink'), cBg = cssv('--bg');
   g.clearRect(0, 0, W, H);
-  $('#emptyHint').hidden = !!lay.total;
+  $('#emptyHint').hidden = !!lay.total || S.recording;      // mentre si registra si vede la forma d'onda
   if (P.specView !== 'off') scheduleSpec(250);   // ricalcola solo se è cambiato qualcosa, altrimenti ridisegna
-  if (!lay.total) return;
+  if (!lay.total && !S.recording) return;
   // corsie
   g.fillStyle = cLane; rrect(g, 0, gm.vy, W, gm.vh, 4); g.fill();
   if (gm.mh) { rrect(g, 0, gm.my, W, gm.mh, 4); g.fill(); }
   if (gm.fh) { rrect(g, 0, gm.fy, W, gm.fh, 4); g.fill(); }
-  if (S.fit) S.view = [0, Math.max(lay.total, SR)];
-  const sp = span(), v0 = S.view[0], step = niceStep(sp / SR, W), spp = sp / W, r = [0, 0];
+  if (S.fit) S.view = [0, Math.max(lay.total, SR, S.recording ? REC.viewEnd || 0 : 0)];
+  const sp = span(), v0 = S.view[0], step = niceStep(sp / SR, W), spp = sp / W, r = [0, 0], rs = [0, 0];
   // righello dei tempi
   g.font = FONT_MONO; g.lineWidth = 1;
   for (let i = Math.ceil(v0 / SR / step); i * step * SR <= S.view[1]; i++) {
@@ -4425,15 +4749,16 @@ function drawBase() {
     drawBars(g, W, cy, half, cV, (xa, xb) => {
       const ta = v0 + xa * spp - lay.intro, tb = v0 + xb * spp - lay.intro;
       if (tb <= 0 || ta >= S.vlen) return 0;
-      let pk = 0;
+      let pk = 0, ss = 0, nn = 0;
       for (let i = segIndexAt(Math.max(0, ta)); i < S.segs.length && S.segT[i] < tb; i++) {
-        const sgm = S.segs[i], T = S.segT[i]; if (T + sgm.len <= ta || !sgm.src) continue;
+        const sgm = S.segs[i], T = S.segT[i]; if (T + sgm.len <= ta) continue;
         const pa = Math.max(ta, T) - T, pb = Math.min(tb, T + sgm.len) - T;
-        minMax(voiceData(sgm.src, useProc), sgm.s + pa, sgm.s + pb, r);
-        const gg = (sgm.f.length ? fadeGain(sgm.f, (pa + pb) / 2) : 1) * srcGain(sgm.src, useProc);
-        pk = Math.max(pk, -r[0] * gg, r[1] * gg);
+        if (!sgm.src) { nn += pb - pa; continue; }          // silenzio inserito: conta nel volume medio
+        const d = voiceData(sgm.src, useProc), gg = (sgm.f.length ? fadeGain(sgm.f, (pa + pb) / 2) : 1) * srcGain(sgm.src, useProc);
+        minMax(d, sgm.s + pa, sgm.s + pb, r); pk = Math.max(pk, -r[0] * gg, r[1] * gg);
+        sumSq(d, sgm.s + pa, sgm.s + pb, rs); ss += rs[0] * gg * gg; nn += rs[1];
       }
-      return pk * k;
+      return [pk * k, nn > 0 ? Math.sqrt(ss / nn) * k : 0];
     });
   }
   // punti di taglio e silenzi inseriti
@@ -4448,23 +4773,25 @@ function drawBase() {
   // musica: ampiezza con il livello e il ducking, e la linea tratteggiata del volume
   if (gm.mh) {
     const m = S.sources.get(S.musicId), C = musicCurves(which), off = Math.round(P.musicOffset * SR), my = gm.my + gm.mh / 2, mhalf = gm.mh / 2 - 6;
-    const mk = 0.9 / Math.max(1e-6, peaksOfMusic(m)), base = dbToGain(P.musicDb || 0);
+    const { k: mk, base, db: mdb } = musicViewScale(which);
     drawBars(g, W, my, mhalf, cssv('--music'), (xa, xb) => {
-      const ta = v0 + xa * spp, tb = v0 + xb * spp; if (ta >= lay.total || tb <= 0) return 0;
-      let a = ta + off, b = tb + off;
+      const ta = v0 + xa * spp, tb = v0 + xb * spp; if (ta >= lay.mEnd || tb <= lay.mStart) return 0;
+      let a = Math.max(0, ta - lay.mStart) + off, b = Math.max(0, tb - lay.mStart) + off;
       if (P.loop) { a = ((a % m.len) + m.len) % m.len; b = a + (tb - ta); if (b > m.len) b = m.len; } else if (a >= m.len) return 0;
       minMax(m.chs[0], a, b, r);
       const gg = C.gain[Math.min(C.gain.length - 1, Math.max(0, Math.floor((ta + tb) / 2 / 480)))] / base;
-      return Math.max(-r[0], r[1]) * mk * gg;
+      return musicViewH(Math.max(-r[0], r[1]) * mk * gg, mdb);
     });
     g.strokeStyle = cssv('--duck'); g.lineWidth = 1.5; g.setLineDash([5, 3]); g.beginPath();
+    let first = true;                    // solo nel tratto della musica (dopo la sigla, prima della chiusura)
     for (let x = 0; x <= W; x += 2) {
-      const t = v0 + x * spp, db = C.duck[Math.min(C.duck.length - 1, Math.max(0, Math.floor(t / 480)))] + 0;
+      const t = v0 + x * spp; if (t < lay.mStart || t > lay.mEnd) continue;
+      const db = C.duck[Math.min(C.duck.length - 1, Math.max(0, Math.floor(t / 480)))] + 0;
       const y = gm.my + 5 + (gm.mh - 10) * clamp(-db / 30, 0, 1);
-      if (x) g.lineTo(x, y); else g.moveTo(x, y);
+      if (first) { g.moveTo(x, y); first = false; } else g.lineTo(x, y);
     }
     g.stroke(); g.setLineDash([]); g.lineWidth = 1;
-    laneLabel(g, 10, gm.my + 16, cssv('--music'), 'Musica', m.name, cLane, cInk, cMut);
+    laneLabel(g, 10, gm.my + 16, cssv('--music'), 'Musica', m.name + (S.vlen ? ', volume rispetto alla voce' : ''), cLane, cInk, cMut);
   }
   // effetti: blocchi arrotondati con la forma d'onda del tratto usato e il nome; il selezionato ha il bordo e le maniglie
   if (gm.fh) {
@@ -4526,7 +4853,7 @@ function peaksOfMusic(m) { let p = musicPeakCache.get(m); if (p == null) { p = s
 function drawTop() {
   const cv = $('#cvTop'), { g, W, H } = sizeCanvas(cv), gm = geom(), lay = layout();
   g.clearRect(0, 0, W, H);
-  if (!lay.total) return;
+  if (!lay.total && !S.recording) return;
   const lanesH = H - gm.ruler - 4;
   // selezione: riempimento ambra al 16 % e due bordi pieni
   if (S.sel && S.sel[1] > S.sel[0]) {
@@ -4701,14 +5028,15 @@ function initTimeline() {
       // la freccia del mouse mostra cosa succede trascinando
       const { x, y } = pt(e), lay = layout(); if (!lay.total) { top.style.cursor = 'default'; return; }
       const h = laneAt(y) === 'fx' ? fxHit(x, W(), false, y) : null;
-      top.style.cursor = h ? (h.mode === 'move' ? 'grab' : h.mode === 'left' || h.mode === 'right' ? 'col-resize' : h.mode === 'env' ? 'move' : 'ew-resize') : seekZone(x, y, W()) ? 'ew-resize' : 'text';
+      top.style.cursor = h ? (h.mode === 'move' ? (h.e.anchor ? 'pointer' : 'grab') : h.mode === 'left' || h.mode === 'right' ? 'col-resize' : h.mode === 'env' ? 'move' : 'ew-resize') : seekZone(x, y, W()) ? 'ew-resize' : 'text';
       return;
     }
     const { x, y } = pt(e), lay = layout(), t = clamp(Math.round(tOfX(x, W())), 0, lay.total);
     if (DRAG.seek) { S.cur = t; S.anchor = t; drawTop(); updateSelInfo(); return; }
     if (Math.abs(x - DRAG.x0) > 3 || (DRAG.fx && DRAG.fx.mode === 'env' && Math.abs(y - DRAG.y0) > 3)) DRAG.moved = true;   // i punti della curva si spostano anche solo in verticale
     if (!DRAG.moved) return;
-    if (DRAG.fx) { fxDragTo(DRAG.fx, t, y); drawBase(); return; }
+    if (DRAG.fx) { if (DRAG.fx.mode === 'move' && DRAG.fx.start.anchor) return;   // sigla e chiusura non si spostano
+      fxDragTo(DRAG.fx, t, y); drawBase(); return; }
     S.sel = [Math.min(S.anchor, t), Math.max(S.anchor, t)]; S.cur = S.sel[0];
     drawTop(); updateSelInfo();
   });
@@ -5733,7 +6061,7 @@ function voiceEnvelope(which) {
 }
 function musicCurves(which) {
   const lay = layout();
-  const key = [S.version, which, S.procKey, P.match, P.target, P.voiceNorm, P.normEach, P.musicDb, P.fadeIn, P.fadeOut, P.intro, P.tail, P.duckOn, P.duckThrAuto, P.duckThr, P.duckDepth, P.duckAtk, P.duckRel, P.duckHold, P.duckLook, lay.total, P.vadMode === 'ai' ? 'vad' + P.vadSens + (vadReady() ? '' : '-attesa') : '', fxDuckKey()].join('|');
+  const key = [S.version, which, S.procKey, P.match, P.target, P.voiceNorm, P.normEach, P.musicDb, P.fadeIn, P.fadeOut, P.intro, P.tail, P.duckOn, P.duckThrAuto, P.duckThr, P.duckDepth, P.duckAtk, P.duckRel, P.duckHold, P.duckLook, lay.total, lay.mStart, lay.mEnd, P.vadMode === 'ai' ? 'vad' + P.vadSens + (vadReady() ? '' : '-attesa') : '', fxDuckKey()].join('|');
   if (MC.key === key) return MC.val;
   const n = Math.ceil(lay.total / 480) + 2, duck = new Float32Array(n), gain = new Float32Array(n);
   if (S.vlen && P.duckOn) {
@@ -5764,18 +6092,32 @@ function musicCurves(which) {
     let cur = 0;
     for (let j = 0; j < n; j++) { const t = tgt[j + la], c = t < cur ? ca : cr; cur = t + (cur - t) * c; if (cur < duck[j]) duck[j] = cur; }
   }
-  const total = lay.total / 480, fi = P.fadeIn * 100, fo = P.fadeOut * 100;
+  // dissolvenze all'inizio e alla fine del tratto della musica (dopo la sigla, prima della chiusura)
+  const ms = lay.mStart / 480, total = lay.mEnd / 480, fi = P.fadeIn * 100, fo = P.fadeOut * 100;
   for (let j = 0; j < n; j++) {
     let lin = dbToGain(P.musicDb + duck[j]);
-    if (fi > 0 && j < fi) { const x = j / fi; lin *= x * x * (3 - 2 * x); }
+    if (fi > 0 && j - ms < fi) { const x = clamp((j - ms) / fi, 0, 1); lin *= x * x * (3 - 2 * x); }
     if (fo > 0 && j > total - fo) { const x = clamp((total - j) / fo, 0, 1); lin *= x * x * (3 - 2 * x); }
     gain[j] = lin;
   }
   MC.key = key; MC.val = { duck, gain, thr: S.duckThrAutoVal };
   return MC.val;
 }
+// un secondo file nel riquadro della musica: si chiede se è la sigla, la chiusura o la nuova musica di sottofondo
+function askMusicImport(file) {
+  return new Promise(res => {
+    const d = $('#musicAsk'), m = S.sources.get(S.musicId); let v = null;
+    $('#maText').textContent = 'C’è già la musica di sottofondo «' + m.name + '». Cosa fare con «' + file.name + '»?';
+    $('#maSig').onclick = () => { v = 'start'; d.close(); }; $('#maEnd').onclick = () => { v = 'end'; d.close(); }; $('#maReplace').onclick = () => { v = 'replace'; d.close(); };
+    d.addEventListener('close', () => res(v), { once: true }); d.showModal(); $('#maSig').focus();
+  });
+}
 async function importMusic(file) {
   if (!file) return;
+  if (S.musicId && S.sources.has(S.musicId)) {
+    const c = await askMusicImport(file); if (!c) return;
+    if (c !== 'replace') { await importAnchored(file, c); return; }
+  }
   stopIfPlaying(); busy(true, 'Lettura di ' + file.name + '…', 0.2);
   try {
     const d = await decodeFile(file);
@@ -5814,6 +6156,48 @@ async function importFx(file) {
     pushOp({ type: 'fxadd', id: fid, src: id, at, gainDb: 0, fadeIn: FX_FADE_NEW, fadeOut: FX_FADE_NEW, label: 'Effetto “' + file.name + '” a ' + fmtSec(at) });
   } catch { toast('Questo file non si può leggere. Prova con un MP3, WAV, M4A o FLAC.'); }
   finally { busy(false); }
+}
+/* ---------- sigla e chiusura ---------- */
+// Sono effetti ancorati: anchor 'start' (la sigla, all'inizio, con la voce che parte dopo) o 'end' (la chiusura, dopo
+// la coda della musica). La posizione la decide layout(); volume, dissolvenze e taglio si regolano come per ogni effetto.
+const anchoredFx = kind => S.fx.find(e => e.anchor === kind);
+const ANCHOR_NAME = { start: 'Sigla', end: 'Chiusura' };
+// volume che porta il file al livello della voce (obiettivo della voce, in LUFS)
+function anchorGain(chs) {
+  const max = SR * 120, n = chs[0].length, a = n > max ? Math.floor((n - max) / 2) : 0, b = Math.min(n, a + max);
+  const l = lufs(chs.map(c => c.subarray(a, b)), chs.length === 1);
+  return l > -80 ? Math.round(clamp(P.target - l, -30, 12) * 2) / 2 : 0;
+}
+// la base dell'operazione: si usa per un file nuovo e per i modelli di serie
+function anchoredOp(kind, srcId, gainDb, extra) {
+  return Object.assign({ type: 'fxadd', id: uid(), src: srcId, at: 0, anchor: kind, gainDb, fadeIn: FX_FADE_NEW, fadeOut: FX_FADE_NEW, name: ANCHOR_NAME[kind], color: 'fx3' }, extra || {});
+}
+async function importAnchored(file, kind) {
+  if (!file) return;
+  stopIfPlaying(); busy(true, 'Lettura di ' + file.name + '…', 0.3);
+  try {
+    const d = await decodeFile(file);
+    if (d.chs[0].length > SR * 180) toast('Questo file dura più di tre minuti: se è un sottofondo, caricalo come musica.');
+    const id = addSource(file.name, 'effetto', d.chs); saveSource(id);
+    const g = anchorGain(d.chs), add = anchoredOp(kind, id, g), old = anchoredFx(kind), what = (kind === 'start' ? 'Sigla' : 'Chiusura') + ' “' + file.name + '”';
+    S.fxSel = add.id;
+    pushOp(old ? { type: 'multi', ops: [{ type: 'fxdel', id: old.id }, add], label: what + ' al posto di quella di prima' } : Object.assign(add, { label: what }));
+    $('#siglaStatus').textContent = what + ': volume ' + (g >= 0 ? '+' : '') + fmtNum(g, 1) + ' dB per stare al livello della voce.';
+    toast(kind === 'start' ? 'Sigla aggiunta: la voce parte dopo.' : 'Chiusura aggiunta: suona alla fine e si sposta da sola se la voce cambia.');
+  } catch { toast('Questo file non si può leggere. Prova con un MP3, WAV, M4A o FLAC.'); }
+  finally { busy(false); }
+}
+function removeAnchored(kind) {
+  const e = anchoredFx(kind); if (!e) return;
+  stopIfPlaying(); pushOp({ type: 'fxdel', id: e.id, label: kind === 'start' ? 'Tolta la sigla' : 'Tolta la chiusura' });
+}
+function updateAnchoredUI() {
+  const box = $('#pSigla'); if (!box) return;
+  for (const [kind, nm, btn] of [['start', '#nameSig', '#btnSigRemove'], ['end', '#nameEnd', '#btnEndRemove']]) {
+    const e = anchoredFx(kind), src = e && S.sources.get(e.src);
+    $(nm).textContent = src ? src.name + ' (' + fmtDur(fxSpan(e) / SR) + ')' : 'Trascina qui un file o clicca per sceglierlo';
+    $(btn).disabled = !e;
+  }
 }
 // elenco degli effetti (un clic sceglie quello da modificare) e pannello dell'effetto selezionato
 const FX_HELP = {
@@ -5875,6 +6259,7 @@ function fxSlider(id, text, min, max, step, val, fmt, onCommit) {
   return { label, input, out };
 }
 function renderFxList() {
+  updateAnchoredUI();
   const ul = $('#fxList'), box = $('#fxEdit'); ul.innerHTML = ''; box.innerHTML = '';
   if (S.fxSel && !S.fx.some(e => e.id === S.fxSel)) S.fxSel = null;
   if (!S.fx.length) { const li = document.createElement('li'); li.textContent = 'Nessun effetto inserito.'; ul.appendChild(li); return; }
@@ -6358,7 +6743,7 @@ function fxPreview(e) {
 function selectFx(id) { if (S.fxSel === id) return; S.fxSel = id; renderFxList(); drawBase(); }
 
 // campi che una modifica può impostare; null toglie il campo (torna al valore neutro)
-const FX_FIELDS = ['at', 'gainDb', 'in', 'out', 'len', 'loop', 'fadeIn', 'fadeOut', 'env', 'pan', 'rate', 'rev', 'lp', 'name', 'color', 'mute', 'solo', 'duck'];
+const FX_FIELDS = ['anchor', 'at', 'gainDb', 'in', 'out', 'len', 'loop', 'fadeIn', 'fadeOut', 'env', 'pan', 'rate', 'rev', 'lp', 'name', 'color', 'mute', 'solo', 'duck'];
 function fxApplySet(e, set) { for (const k of FX_FIELDS) if (k in set) { if (set[k] == null || set[k] === false || ((k === 'fadeIn' || k === 'fadeOut') && !(set[k] > 0)) || (k === 'env' && !set[k].length) || (k === 'pan' && !set[k]) || (k === 'rate' && set[k] === 1) || (k === 'lp' && !set[k]) || (k === 'name' && !String(set[k]).trim()) || (k === 'color' && set[k] === 'fx') || (k === 'duck' && !(set[k] < 0))) delete e[k]; else e[k] = k === 'env' ? set[k].map(p => p.slice()) : k === 'rev' ? { type: set[k].type, mix: set[k].mix } : set[k]; } if (e.gainDb == null) e.gainDb = 0; }
 
 /* ---- 70-export.js ---- */
@@ -6546,7 +6931,35 @@ async function doExport() {
     toast('Esportazione non riuscita. Se il capitolo è molto lungo, prova a esportarne una parte con “Solo la selezione”.');
   }
 }
+/* ---------- misuratore del volume finale ---------- */
+// Scala da -24 a -12 LUFS, zona verde da -17 a -15 (il riferimento per pubblicare un podcast è -16).
+// La tacca piena è dove finirà il file (Volume finale); quella ambra è l'ultimo file esportato, misurato.
+const LOUD_MIN = -24, LOUD_MAX = -12;
+const loudPos = v => clamp((v - LOUD_MIN) / (LOUD_MAX - LOUD_MIN), 0, 1) * 100 + '%';
+function exportMono() { const hasStereo = !!S.musicId || S.fx.length > 0; return P.expCh === 'mono' || (P.expCh === 'auto' && !hasStereo); }
+function loudVerdict(t) {
+  if (t >= -17 && t <= -15) return { ok: true, text: 'Giusto per pubblicare un podcast: il file suonerà allo stesso volume degli altri.' };
+  if (t < -20) return { ok: false, text: 'Molto basso per un podcast: le app lo alzeranno, oppure suonerà più piano degli altri. Va bene solo se il file andrà ancora mixato.' };
+  if (t < -17) return { ok: false, text: 'Più basso del riferimento per i podcast (-16): va bene se il file andrà ancora mixato o montato altrove.' };
+  return { ok: false, text: 'Più forte del riferimento per i podcast (-16): per arrivarci il limitatore schiaccia i picchi e la voce perde naturalezza.' };
+}
+function updateLoud() {
+  const box = $('#loudMeter'); if (!box) return;
+  const norm = P.expNorm, t = P.expTarget, r = S.lastExport;
+  $('#loudV').textContent = norm ? fmtNum(t, 1) + ' LUFS' : 'non regolato';
+  const set = $('#loudSet'); set.hidden = !norm; set.style.left = loudPos(t);
+  const v = norm ? loudVerdict(t) : null;
+  box.dataset.ok = norm ? String(v.ok) : 'off';
+  $('#loudNote').textContent = !norm
+    ? 'Il file non viene portato a un volume preciso: il volume dipende dal mix. Attiva “Porta il file al volume finale” per arrivare a -16 LUFS.'
+    : v.text + ' Picchi al massimo a ' + fmtNum(P.expCeil, 1) + ' dBTP.' + (exportMono() ? ' Il file sarà mono: il volume è misurato come lo sentirai su due casse.' : '');
+  $('#loudBar').setAttribute('aria-label', 'Volume finale ' + (norm ? fmtNum(t, 1) + ' LUFS, ' + (v.ok ? 'nella zona giusta per i podcast' : 'fuori dalla zona giusta per i podcast, da -17 a -15') : 'non regolato'));
+  const last = $('#loudLast'), ln = $('#loudLastNote');
+  last.hidden = ln.hidden = !r;
+  if (r) { last.style.left = loudPos(r.lufs); ln.textContent = 'Ultimo file, “' + r.name + '”: ' + fmtNum(r.lufs, 1) + ' LUFS, picco ' + fmtDb(r.tp, 1) + ' dBTP.'; }
+}
 function renderReport() {
+  updateLoud();
   const r = S.lastExport, box = $('#reportBody'); if (!r) return;
   box.innerHTML = '';
   const grid = document.createElement('div'); grid.className = 'metrics';
@@ -6623,16 +7036,16 @@ async function importVoice(file, replaceAll) {
 /* ========================= Zip semplice (senza compressione) ========================= */
 const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 function crc32(u8, c) { c = c == null ? 0xFFFFFFFF : c; for (let i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 255] ^ (c >>> 8); return c; }
-function makeZip(entries) {      // entries: [{ name, data: Uint8Array }]
+function makeZip(entries) {      // entries: [{ name, data: Uint8Array }] oppure [{ name, blob, crc, size }] già pronti
   const dt = new Date(), dosTime = (dt.getHours() << 11) | (dt.getMinutes() << 5) | (dt.getSeconds() >> 1);
   const dosDate = ((dt.getFullYear() - 1980) << 9) | ((dt.getMonth() + 1) << 5) | dt.getDate();
   const body = [], central = []; let offset = 0;
   for (const e of entries) {
-    const nm = new TextEncoder().encode(e.name), crc = (crc32(e.data) ^ 0xFFFFFFFF) >>> 0, size = e.data.length;
+    const nm = new TextEncoder().encode(e.name), crc = e.blob ? e.crc : (crc32(e.data) ^ 0xFFFFFFFF) >>> 0, size = e.blob ? e.size : e.data.length;
     const lh = new DataView(new ArrayBuffer(30));
     lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true);
     lh.setUint32(14, crc, true); lh.setUint32(18, size, true); lh.setUint32(22, size, true); lh.setUint16(26, nm.length, true);
-    body.push(lh, nm, e.data);
+    body.push(lh, nm, e.blob || e.data);
     const cd = new DataView(new ArrayBuffer(46));
     cd.setUint32(0, 0x02014b50, true); cd.setUint16(4, 20, true); cd.setUint16(6, 20, true); cd.setUint16(8, 0x0800, true); cd.setUint16(12, dosTime, true); cd.setUint16(14, dosDate, true);
     cd.setUint32(16, crc, true); cd.setUint32(20, size, true); cd.setUint32(24, size, true); cd.setUint16(28, nm.length, true); cd.setUint32(42, offset, true);
@@ -6672,7 +7085,8 @@ function wavFloat(chs) {
 // Impronta del lavoro: montaggio ed effetti (l'elenco delle operazioni), musica, impostazioni, titolo e copertina.
 // Non contano cursore, zoom e vista (vzoom, match, specView) né il microfono scelto. Si confronta con l'impronta
 // dell'ultimo "Salva il progetto" (o dell'apertura di un progetto): se è diversa, ci sono modifiche non salvate su file.
-// Nessun salvataggio automatico su file: l'indicatore e l'avviso all'uscita servono a ricordarlo.
+// Con Chrome ed Edge, dopo il primo "Salva il progetto" il file si aggiorna da solo (81-file.js); con gli altri browser
+// non c'è salvataggio automatico su file: l'indicatore e l'avviso all'uscita servono a ricordarlo.
 let projFileName = '';                                  // nome dell'ultimo file di progetto salvato o aperto
 function projSig() {
   const p = {}; Object.keys(P).forEach(k => { if (!PSKIP.has(k)) p[k] = P[k]; });
@@ -6686,8 +7100,9 @@ function updateDirty() {
   const bar = $('#projBar'); if (!bar) return;
   bar.hidden = !hasWork();
   $('#projName').textContent = META.title || projFileName.replace(/\.sottovoce$/i, '') || 'Progetto senza nome';
-  const d = isDirty(); $('#dirtyFlag').hidden = !d;
+  const d = isDirty(); $('#dirtyFlag').hidden = !d || !!(FILE.handle || FILE.pending);
   bar.title = d ? 'Ci sono modifiche non ancora salvate in un file di progetto. Il browser conserva il lavoro, ma per una copia sicura usa “Salva il progetto” nella scheda Progetto.' : 'Tutto salvato nel file di progetto.';
+  updateFileFlag();
 }
 
 /* ========================= Progetto su file ========================= */
@@ -6701,14 +7116,30 @@ function projectState() {
     cover: META.cover ? 'copertina.jpg' : null
   };
 }
-async function saveProject() {
+// il file di progetto: progetto.json, gli originali in WAV a 32 bit e la copertina. Gli originali non cambiano mai,
+// quindi il loro pezzo di zip si prepara una volta sola (ZIPSRC) e i salvataggi successivi rifanno solo progetto.json
+const ZIPSRC = new Map();
+async function projectBlob(onProg) {
+  const st = projectState(), entries = [{ name: 'progetto.json', data: new TextEncoder().encode(JSON.stringify(st, null, 1)) }];
+  for (let i = 0; i < st.sources.length; i++) {
+    const s = st.sources[i]; let z = ZIPSRC.get(s.id);
+    if (!z) {
+      if (onProg) onProg('Salvataggio di ' + s.name + '…', 0.1 + 0.8 * i / st.sources.length);
+      await yieldUI(); const data = wavFloat(S.sources.get(s.id).chs);
+      z = { blob: new Blob([data]), crc: (crc32(data) ^ 0xFFFFFFFF) >>> 0, size: data.length }; ZIPSRC.set(s.id, z);
+    }
+    entries.push({ name: s.file, blob: z.blob, crc: z.crc, size: z.size });
+  }
+  for (const id of ZIPSRC.keys()) if (!S.sources.has(id)) ZIPSRC.delete(id);
+  if (META.cover) entries.push({ name: 'copertina.jpg', data: META.cover });
+  return makeZip(entries);
+}
+async function saveProject(e, other) {
   if (!S.ops.length && !S.musicId) return;
+  if (FILE.ok) { await saveToFile(!!other); return; }
   stopIfPlaying(); busy(true, 'Preparazione del progetto…', 0.1);
   try {
-    const st = projectState(), entries = [{ name: 'progetto.json', data: new TextEncoder().encode(JSON.stringify(st, null, 1)) }];
-    for (let i = 0; i < st.sources.length; i++) { const s = st.sources[i]; busy(true, 'Salvataggio di ' + s.name + '…', 0.1 + 0.8 * i / st.sources.length); await yieldUI(); entries.push({ name: s.file, data: wavFloat(S.sources.get(s.id).chs) }); }
-    if (META.cover) entries.push({ name: 'copertina.jpg', data: META.cover });
-    const blob = makeZip(entries), name = fileBase('progetto') + '.sottovoce';
+    const blob = await projectBlob((m, p) => busy(true, m, p)), name = fileBase('progetto') + '.sottovoce';
     busy(false); downloadBlob(name, blob); projFileName = name; markSaved(); scheduleSave();
     $('#projStatus').textContent = 'Progetto salvato come “' + name + '” (' + fmtBytes(blob.size) + ') nella cartella dei download.';
   } catch (e) { busy(false); $('#projStatus').textContent = 'Salvataggio non riuscito' + (e && e.message ? ': ' + e.message : '.'); }
@@ -6718,7 +7149,7 @@ function newerNote(st) {
   return st && st.appVersion && cmpVersion(st.appVersion, APP_VERSION) > 0
     ? ' Nota: è stato salvato con la versione ' + st.appVersion + ', più recente di questa (' + APP_VERSION + '). Si apre lo stesso; se qualcosa non torna, usa la versione più recente.' : '';
 }
-async function openProject(file) {
+async function openProject(file, handle) {
   if (!file) return;
   if ((S.ops.length || S.musicId) && !confirm('Aprire il progetto “' + file.name + '”? Il lavoro attuale viene sostituito (resta salvato solo se hai usato “Salva il progetto”).')) return;
   stopIfPlaying(); busy(true, 'Apertura di ' + file.name + '…', 0.1);
@@ -6736,6 +7167,7 @@ async function openProject(file) {
     await loadState(st, sources, st.cover && files[st.cover] ? files[st.cover].slice() : null);
     projFileName = file.name; markSaved();
     busy(false); await clearDb(); await saveAllToDb();
+    await linkFile(handle || null);
     $('#projStatus').textContent = 'Progetto “' + file.name + '” aperto: ' + st.ops.length + ' modifiche, salvato il ' + new Date(st.saved).toLocaleString('it-IT') + '.' + newerNote(st);
     toast(newerNote(st) ? 'Progetto aperto. È stato salvato con una versione più recente: leggi la nota nella scheda Progetto.' : 'Progetto aperto.');
   } catch (e) { busy(false); $('#projStatus').textContent = 'Il progetto non si è aperto: ' + (e && e.message ? e.message : 'file non valido') + '.'; }
@@ -6755,8 +7187,8 @@ async function loadState(st, sources, cover) {
   if (st.procActive && S.vlen) await improveSources();   // i miglioramenti si ricalcolano: nel file ci sono solo gli originali
   flowReset();                    // percorso guidato: il passo si ricalcola senza spostare le schede
 }
-async function newProject() {
-  if ((S.ops.length || S.musicId) && !confirm('Iniziare un progetto nuovo? Il lavoro attuale viene tolto da questo browser. Se ti serve, prima usa “Salva il progetto”.')) return;
+async function newProject(force) {
+  if (force !== true && (S.ops.length || S.musicId) && !confirm('Iniziare un progetto nuovo? Il lavoro attuale viene tolto da questo browser. Se ti serve, prima usa “Salva il progetto”.')) return;
   stopIfPlaying(); if (S.recording) await stopRecording();
   S.sources = new Map(); S.ops = []; S.redo = []; S.improved = new Map(); S.procActive = false; S.procKey = ''; S.mode = 'orig'; S.musicId = null; S.clip = null; VAD.clear(); vadFail = false; fxCachePrune(true);
   META.title = ''; META.album = ''; META.track = ''; META.comment = ''; META.cover = null;
@@ -6764,7 +7196,7 @@ async function newProject() {
   $('#nameVoice').textContent = 'Trascina qui un file o clicca per sceglierlo'; $('#nameMusic').textContent = 'Trascina qui un file o clicca per sceglierlo';
   $('#reportBody').innerHTML = '<p class="status">Ancora nessuna esportazione.</p>';
   syncAll(); showCover(); await clearDb(); afterEdit(null); flowReset(); flowShowTab('rec');
-  projFileName = ''; markSaved();
+  projFileName = ''; await linkFile(null); markSaved();
   $('#projStatus').textContent = 'Nuovo progetto pronto.';
 }
 
@@ -6789,10 +7221,11 @@ let saveT = null;
 function scheduleSave() {
   clearTimeout(saveT);
   saveT = setTimeout(() => {
+    if (typeof STYLE_PV !== 'undefined' && STYLE_PV.busy) { scheduleSave(); return; }   // durante l'anteprima di uno stile le regolazioni sono provvisorie
     // nel salvataggio automatico del browser si ricordano anche l'impronta e il nome dell'ultimo file salvato (non nel file di progetto)
-    const st = projectState(); st.coverBytes = META.cover || null; st.savedSig = S.savedSig || null; st.projFileName = projFileName;
+    const st = projectState(); st.coverBytes = META.cover || null; st.savedSig = S.savedSig || null; st.projFileName = projFileName; st.fileLinked = !!(FILE.handle || FILE.pending);
     idb('kv', 'readwrite', s => s.put(st, 'stato')).catch(() => { });
-    updateDirty();
+    updateDirty(); scheduleFileSave();
     try { localStorage.setItem('sottovoce-studio.impostazioni.v1', JSON.stringify(Object.assign({}, P, { micId: P.micId }))); } catch { }
   }, 600);
 }
@@ -6824,12 +7257,314 @@ async function offerRestore() {
     for (const s of st.sources) { const r = await idb('src', 'readonly', x => x.get(s.id)); if (r) sources.set(s.id, { id: r.id, name: r.name, kind: r.kind, chs: r.chs, len: r.chs[0].length, gain: r.gain }); }
     const missing = st.sources.filter(s => !sources.has(s.id));
     await loadState(st, sources, st.coverBytes || null);
-    S.savedSig = st.savedSig || null; projFileName = st.projFileName || ''; updateDirty();
+    S.savedSig = st.savedSig || null; projFileName = st.projFileName || ''; restoreFileLink(st); updateDirty();
     busy(false);
     toast(missing.length ? 'Lavoro ripreso, ma mancano ' + missing.length + ' originali: il browser non li aveva salvati.' : 'Lavoro ripreso da dove l’avevi lasciato.' + newerNote(st));
   } catch { busy(false); toast('Non è stato possibile riprendere il lavoro salvato. Prova ad aprire un progetto.'); }
 }
 
+/* ---- 81-file.js ---- */
+/* ========================= Progetto collegato a un file ========================= */
+// Con Chrome ed Edge (File System Access) il progetto si collega a un file scelto da chi lavora: "Salva il progetto"
+// lo scrive, e da lì ogni modifica si salva da sola nello stesso file, qualche secondo dopo l'ultima modifica.
+// Con gli altri browser resta lo scaricamento di sempre. Il collegamento si ricorda nel browser, in un database a parte
+// (sottovoce-file). Dopo una ricarica si rilegge solo con un clic sull'indicatore in alto, che serve comunque al browser
+// per ridare il permesso di scrittura: così un eventuale difetto del browser nel rileggerlo non blocca l'avvio
+// (nel Chromium delle prove automatiche rileggere un collegamento a un file OPFS fa crollare il browser).
+const FILE = {
+  ok: typeof window.showSaveFilePicker === 'function' && typeof window.showOpenFilePicker === 'function',
+  handle: null,        // il file collegato
+  pending: '',         // dopo una ripresa: nome del file collegato, da ricollegare con un clic
+  perm: false,         // permesso di scrittura concesso in questa sessione
+  saving: false, again: false, timer: null,
+  last: 0,             // ora dell'ultimo salvataggio riuscito
+  error: ''
+};
+const FILE_WAIT = 4000;        // si salva quando non si tocca nulla da 4 s
+const FILE_GAP = 20000;        // e comunque non più spesso di una volta ogni 20 s
+const PICK_TYPES = [{ description: 'Progetto di ' + APP_NAME, accept: { 'application/zip': ['.sottovoce'] } }];
+
+// database a parte per il collegamento al file
+function fileDb(mode, fn) {
+  return new Promise((res, rej) => {
+    if (!window.indexedDB) { rej(new Error('IndexedDB non disponibile')); return; }
+    const r = indexedDB.open('sottovoce-file', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('h');
+    r.onerror = () => rej(r.error);
+    r.onsuccess = () => { const d = r.result, tx = d.transaction('h', mode), q = fn(tx.objectStore('h')); tx.oncomplete = () => { d.close(); res(q && q.result); }; tx.onerror = tx.onabort = () => { d.close(); rej(tx.error); }; };
+  });
+}
+async function canWrite(h, ask) {
+  if (!h || typeof h.queryPermission !== 'function') return !!h;
+  try {
+    if (await h.queryPermission({ mode: 'readwrite' }) === 'granted') return true;
+    return ask ? (await h.requestPermission({ mode: 'readwrite' })) === 'granted' : false;
+  } catch { return false; }
+}
+// collega (o scollega, con null) il file e lo ricorda nel browser
+async function linkFile(h) {
+  FILE.handle = h; FILE.pending = ''; FILE.perm = h ? await canWrite(h, false) : false; FILE.error = ''; clearTimeout(FILE.timer);
+  try { await fileDb('readwrite', s => h ? s.put(h, 'file') : s.delete('file')); } catch { }
+  updateFileFlag(); updateProjText();
+}
+// alla ripresa del lavoro: si ricorda solo il nome; il collegamento si rilegge al clic (fileFlagClick)
+function restoreFileLink(st) {
+  FILE.handle = null; FILE.perm = false; FILE.pending = FILE.ok && st && st.fileLinked && st.projFileName ? st.projFileName : '';
+  updateFileFlag(); updateProjText();
+}
+// "Salva il progetto": la prima volta (o con "Salva con un altro nome") si sceglie il file
+async function saveToFile(other) {
+  if (!other && !FILE.handle && FILE.pending) { await fileFlagClick(); if (FILE.handle) return; }   // dopo una ripresa: il file di prima
+  let h = FILE.handle;
+  if (!h || other) {
+    try { h = await window.showSaveFilePicker({ suggestedName: fileBase('progetto') + '.sottovoce', types: PICK_TYPES }); }
+    catch (e) { if (e && e.name !== 'AbortError') $('#projStatus').textContent = 'Non è stato possibile scegliere il file: ' + (e.message || e.name) + '.'; return; }
+    await linkFile(h);
+  }
+  if (!await canWrite(h, true)) { FILE.perm = false; updateFileFlag(); $('#projStatus').textContent = 'Il browser non ha dato il permesso di scrivere nel file. Riprova con “Salva il progetto”.'; return; }
+  FILE.perm = true;
+  const done = await writeFile(true);
+  if (done) {
+    $('#projStatus').textContent = 'Progetto salvato in “' + h.name + '”. Da ora le modifiche si salvano da sole in questo file.';
+    toast('Progetto salvato. Da ora le modifiche si salvano da sole in “' + h.name + '”.');
+  }
+}
+// scrive il progetto nel file collegato; shown: con la barra di avanzamento (salvataggio chiesto a mano)
+async function writeFile(shown) {
+  const h = FILE.handle; if (!h || !FILE.perm) return false;
+  if (FILE.saving) { FILE.again = true; return false; }
+  FILE.saving = true; FILE.error = ''; updateFileFlag();
+  const sig = projSig();                     // le modifiche fatte durante la scrittura restano "da salvare"
+  if (shown) { stopIfPlaying(); busy(true, 'Salvataggio del progetto…', 0.1); }
+  try {
+    const blob = await projectBlob(shown ? (m, p) => busy(true, m, p) : null);
+    if (shown) busy(true, 'Scrittura di “' + h.name + '”…', 0.95);
+    const w = await h.createWritable(); await w.write(blob); await w.close();
+    projFileName = h.name; S.savedSig = sig; FILE.last = Date.now();
+    return true;
+  } catch (e) {
+    FILE.error = (e && e.name === 'NotAllowedError') ? 'permesso' : (e && e.message) || 'errore';
+    if (FILE.error === 'permesso') FILE.perm = false;
+    $('#projStatus').textContent = 'Salvataggio in “' + h.name + '” non riuscito: ' + (FILE.error === 'permesso' ? 'il browser non dà più il permesso di scrivere. Clicca l’indicatore in alto per riprenderlo.' : FILE.error + '.');
+    return false;
+  } finally {
+    if (shown) busy(false);
+    FILE.saving = false; updateDirty(); scheduleSave();
+    if (FILE.again) { FILE.again = false; scheduleFileSave(); }
+  }
+}
+// salvataggio automatico: dopo FILE_WAIT di calma, mai durante registrazione o ascolto
+function scheduleFileSave() {
+  if (!FILE.handle || !FILE.perm || !isDirty()) return;
+  clearTimeout(FILE.timer);
+  const wait = Math.max(FILE_WAIT, FILE.last + FILE_GAP - Date.now());
+  FILE.timer = setTimeout(() => {
+    if (S.recording || S.playing || $('#busy').classList.contains('on')) { scheduleFileSave(); return; }
+    writeFile(false);
+  }, wait);
+}
+// "Apri un progetto" con Chrome ed Edge: il file aperto resta collegato
+async function openWithPicker() {
+  let h; try { [h] = await window.showOpenFilePicker({ types: PICK_TYPES, multiple: false }); }
+  catch (e) { if (e && e.name !== 'AbortError') $('#fileProj').click(); return; }
+  const file = await h.getFile();
+  await canWrite(h, true);                    // si chiede subito, finché il clic è recente; se no si chiederà al primo salvataggio
+  await openProject(file, h);
+}
+// indicatore in alto, accanto al nome del progetto
+function updateFileFlag() {
+  const f = $('#fileFlag'); if (!f) return;
+  const h = FILE.handle || (FILE.pending ? { name: FILE.pending } : null);
+  if (!h || !hasWork()) { f.hidden = true; return; }
+  f.hidden = false; f.disabled = FILE.perm && !FILE.error;
+  const at = FILE.last ? new Date(FILE.last).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : '';
+  f.dataset.state = FILE.saving ? 'saving' : !FILE.perm ? 'perm' : FILE.error ? 'error' : isDirty() ? 'pending' : 'saved';
+  f.textContent = FILE.saving ? 'salvataggio…'
+    : !FILE.perm ? 'riprendi il salvataggio in “' + h.name + '”'
+    : FILE.error ? 'salvataggio non riuscito: riprova'
+    : isDirty() ? 'modifiche da salvare in “' + h.name + '”'
+    : 'salvato in “' + h.name + '”' + (at ? ' alle ' + at : '');
+}
+async function fileFlagClick() {
+  if (!FILE.handle && FILE.pending) {
+    let h = null; try { h = await fileDb('readonly', s => s.get('file')); } catch { }
+    if (!h) { FILE.pending = ''; updateFileFlag(); updateProjText(); toast('Il collegamento al file non c’è più. Usa “Salva il progetto” per sceglierlo di nuovo.'); return; }
+    FILE.handle = h; FILE.pending = '';
+  }
+  if (!FILE.handle) return;
+  FILE.perm = await canWrite(FILE.handle, true); FILE.error = ''; updateFileFlag(); updateProjText();
+  if (FILE.perm) { if (isDirty()) writeFile(false); else { FILE.last = FILE.last || Date.now(); updateFileFlag(); } }
+}
+// testi della scheda Progetto, secondo il browser e il collegamento
+function updateProjText() {
+  const lead = $('#projLead'), as = $('#btnSaveAs');
+  if (as) as.hidden = !FILE.ok || !FILE.handle;
+  if (!lead) return;
+  lead.textContent = !FILE.ok ? 'Il lavoro si salva da solo in questo browser. Per una copia sicura usa “Salva il progetto”: il file finisce nella cartella dei download.'
+    : FILE.pending ? 'Il progetto era collegato al file “' + FILE.pending + '”. Per continuare a salvarlo lì, clicca “riprendi il salvataggio” in alto.'
+    : FILE.handle ? 'Il progetto è collegato al file “' + FILE.handle.name + '”: ogni modifica si salva da sola lì, qualche secondo dopo.'
+    : 'Il lavoro si salva da solo in questo browser. Con “Salva il progetto” scegli un file sul computer: da lì ogni modifica si salva da sola in quel file.';
+}
+/* ---- 82-serie.js ---- */
+/* ========================= Modelli di serie ========================= */
+// Un modello conserva ciò che si ripete in ogni episodio di una serie: sigla e chiusura (con volume, dissolvenze e
+// taglio), musica di sottofondo, tutte le regolazioni, autore, nome della serie, anno e copertina, e il numero del
+// prossimo episodio. "Nuovo episodio" crea un progetto con tutto già al suo posto: manca solo la voce.
+// I modelli stanno nel browser (database sottovoce-modelli) e si possono scaricare come file .serie
+// (uno zip come il progetto: modello.json, gli originali in WAV a 32 bit, la copertina).
+const SERIE_EXT = '.serie';
+const SERIE_FX = ['gainDb', 'in', 'out', 'len', 'loop', 'fadeIn', 'fadeOut', 'env', 'pan', 'rate', 'rev', 'lp', 'name', 'color', 'mute', 'duck'];
+const SERIE_META = ['artist', 'album', 'year'];
+
+function serieDb(mode, fn) {
+  return new Promise((res, rej) => {
+    if (!window.indexedDB) { rej(new Error('il browser non permette di salvare i modelli')); return; }
+    const r = indexedDB.open('sottovoce-modelli', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('m', { keyPath: 'id' });
+    r.onerror = () => rej(r.error);
+    r.onsuccess = () => { const d = r.result, tx = d.transaction('m', mode), q = fn(tx.objectStore('m')); tx.oncomplete = () => { d.close(); res(q && q.result); }; tx.onerror = tx.onabort = () => { d.close(); rej(tx.error); }; };
+  });
+}
+const serieAll = () => serieDb('readonly', s => s.getAll()).then(a => (a || []).sort((x, y) => x.name.localeCompare(y.name, 'it')));
+const serieGet = id => serieDb('readonly', s => s.get(id));
+const seriePut = m => serieDb('readwrite', s => s.put(m));
+const serieDel = id => serieDb('readwrite', s => s.delete(id));
+
+// cosa c'è nel progetto aperto che vale la pena tenere in un modello
+function serieContent() {
+  const sig = anchoredFx('start'), end = anchoredFx('end');
+  return { sig, end, music: S.musicId ? S.sources.get(S.musicId) : null, meta: SERIE_META.some(k => META[k]) || !!META.cover };
+}
+function serieSummary(j) {
+  const p = [j.sigla && 'sigla', j.music && 'musica', j.chiusura && 'chiusura', j.cover && 'copertina'].filter(Boolean);
+  return (p.length ? p.join(', ') + ' e regolazioni' : 'regolazioni') + (j.META && j.META.album ? ' · ' + j.META.album : '') + ' · prossimo episodio: ' + j.nextTrack;
+}
+const trackNum = t => { const m = String(t || '').match(/^\s*(\d+)/); return m ? +m[1] : 0; };
+
+// crea il modello (zip) dal progetto aperto
+async function buildSerie(name, onProg) {
+  const c = serieContent(), src = new Map(), used = [c.sig && c.sig.src, c.end && c.end.src, c.music && c.music.id].filter(Boolean);
+  const pick = e => { const o = { src: e.src }; for (const k of SERIE_FX) if (e[k] != null) o[k] = e[k]; return o; };
+  const p = {}; Object.keys(P).forEach(k => { if (!PSKIP.has(k) && k !== 'micId' && k !== 'expSelOnly') p[k] = P[k]; });
+  const meta = {}; SERIE_META.forEach(k => { meta[k] = META[k]; });
+  const j = {
+    app: 'sottovoce-studio', kind: 'modello', version: 1, appVersion: APP_VERSION, name, saved: new Date().toISOString(),
+    P: p, META: meta, nextTrack: trackNum(META.track) + 1, cover: META.cover ? 'copertina.jpg' : null,
+    sigla: c.sig ? pick(c.sig) : null, chiusura: c.end ? pick(c.end) : null, music: c.music ? { src: c.music.id } : null, sources: []
+  };
+  const entries = [];
+  for (let i = 0; i < used.length; i++) {
+    const s = S.sources.get(used[i]); if (!s || src.has(s.id)) continue; src.set(s.id, 1);
+    if (onProg) onProg('Preparazione di ' + s.name + '…', 0.1 + 0.8 * i / used.length); await yieldUI();
+    j.sources.push({ id: s.id, name: s.name, nch: s.chs.length, len: s.len, file: 'originali/' + s.id + '.wav' });
+    entries.push({ name: 'originali/' + s.id + '.wav', data: wavFloat(s.chs) });
+  }
+  entries.unshift({ name: 'modello.json', data: new TextEncoder().encode(JSON.stringify(j, null, 1)) });
+  if (META.cover) entries.push({ name: 'copertina.jpg', data: META.cover });
+  return { j, blob: makeZip(entries) };
+}
+// legge un modello (zip) e controlla che sia valido
+async function readSerie(blob) {
+  let files; try { files = readZip(await blob.arrayBuffer()); } catch { throw new Error('non è un file di modello (.serie)'); }
+  if (!files['modello.json']) throw new Error('non è un modello di serie');
+  let j; try { j = JSON.parse(new TextDecoder().decode(files['modello.json'])); } catch { throw new Error('il file modello.json al suo interno è rovinato'); }
+  if (j.app !== 'sottovoce-studio' || j.kind !== 'modello') throw new Error('non è un modello di ' + APP_NAME);
+  for (const s of j.sources) if (!files[s.file]) throw new Error('manca l’originale ' + s.name);
+  return { j, files };
+}
+
+// "Salva come modello di serie"
+async function saveSerie() {
+  const c = serieContent();
+  if (!c.sig && !c.end && !c.music && !c.meta) { toast('Per un modello servono almeno una sigla, una chiusura, una musica o i dati della serie.'); return; }
+  const name = ($('#serieName').value || '').trim() || META.album || 'La mia serie';
+  stopIfPlaying(); busy(true, 'Preparazione del modello…', 0.1);
+  try {
+    const { j, blob } = await buildSerie(name, (m, p) => busy(true, m, p));
+    const all = await serieAll(), same = all.find(m => m.name === name);
+    const rec = { id: same ? same.id : uid(), name, saved: j.saved, nextTrack: j.nextTrack, summary: serieSummary(j), blob };
+    await seriePut(rec);
+    busy(false); $('#serieName').value = '';
+    $('#serieStatus').textContent = 'Modello “' + name + '” ' + (same ? 'aggiornato' : 'salvato') + ' (' + fmtBytes(blob.size) + '): ' + rec.summary + '.';
+    renderSerie();
+  } catch (e) { busy(false); $('#serieStatus').textContent = 'Il modello non si è salvato: ' + (e && e.message ? e.message : 'errore') + '.'; }
+}
+// "Nuovo episodio": un progetto nuovo con tutto ciò che il modello contiene
+async function newEpisode(id) {
+  const rec = await serieGet(id); if (!rec) { renderSerie(); return; }
+  if (hasWork() && isDirty() && !confirm('Iniziare un nuovo episodio di “' + rec.name + '”? Il lavoro attuale viene tolto da questo browser. Se ti serve, prima usa “Salva il progetto”.')) return;
+  stopIfPlaying(); if (S.recording) await stopRecording();
+  try {
+    busy(true, 'Preparazione dell’episodio…', 0.1);
+    const { j, files } = await readSerie(rec.blob);
+    j.nextTrack = rec.nextTrack || j.nextTrack || 1;     // il numero aggiornato sta nel browser, non nel file
+    await newProject(true);
+    // regolazioni (solo quelle che questa versione conosce, dello stesso tipo)
+    Object.keys(j.P || {}).forEach(k => { if (k in P && typeof j.P[k] === typeof P[k]) P[k] = j.P[k]; });
+    const map = new Map();
+    for (const s of j.sources) { const w = decodeWav(files[s.file].slice().buffer); const nid = addSource(s.name, s.id === (j.music && j.music.src) ? 'musica' : 'effetto', w.chs); map.set(s.id, nid); saveSource(nid); }
+    SERIE_META.forEach(k => { if (j.META && j.META[k] != null) META[k] = j.META[k]; });
+    META.title = ''; META.comment = ''; META.track = String(j.nextTrack || 1);
+    META.cover = j.cover && files[j.cover] ? files[j.cover].slice() : null;
+    if (j.music && map.has(j.music.src)) { S.musicId = map.get(j.music.src); const m = S.sources.get(S.musicId); $('#nameMusic').textContent = m.name + ' (' + fmtDur(m.len / SR) + (m.chs.length > 1 ? ', stereo' : ', mono') + ')'; await updateCarve(); }
+    const ops = [];
+    for (const [kind, f] of [['start', j.sigla], ['end', j.chiusura]]) if (f && map.has(f.src)) { const e = Object.assign({}, f); delete e.src; ops.push(anchoredOp(kind, map.get(f.src), f.gainDb || 0, e)); }
+    syncAll(); showCover();
+    if (ops.length) pushOp({ type: 'multi', ops, label: 'Dal modello “' + rec.name + '”: ' + ops.map(o => o.anchor === 'start' ? 'sigla' : 'chiusura').join(' e ') });
+    else afterEdit(null);
+    S.fit = true; drawAll(); markSaved(); scheduleSave();
+    rec.nextTrack = (j.nextTrack || 1) + 1; j.nextTrack = rec.nextTrack; rec.summary = serieSummary(j);
+    await seriePut(rec).catch(() => { });
+    busy(false); renderSerie(); flowShowTab('rec');
+    $('#projStatus').textContent = 'Episodio ' + META.track + ' di “' + rec.name + '” pronto.';
+    toast('Episodio ' + META.track + ' di “' + rec.name + '” pronto: ' + serieSummary(j).split(' · ')[0] + ' sono al loro posto. Ora registra o importa la voce.');
+  } catch (e) { busy(false); toast('Il nuovo episodio non si è creato: ' + (e && e.message ? e.message : 'errore') + '.'); }
+}
+// il file scaricato porta il nome e il numero del prossimo episodio di adesso
+async function downloadSerie(id) {
+  const rec = await serieGet(id); if (!rec) return;
+  try {
+    const { j, files } = await readSerie(rec.blob);
+    j.nextTrack = rec.nextTrack || j.nextTrack || 1; j.name = rec.name;
+    const entries = [{ name: 'modello.json', data: new TextEncoder().encode(JSON.stringify(j, null, 1)) }];
+    Object.keys(files).forEach(n => { if (n !== 'modello.json') entries.push({ name: n, data: files[n] }); });
+    downloadBlob(rec.name.replace(/[\\/:*?"<>|]+/g, '').trim() + SERIE_EXT, makeZip(entries));
+  } catch (e) { $('#serieStatus').textContent = 'Non è stato possibile scaricare il modello: ' + (e && e.message ? e.message : 'errore') + '.'; }
+}
+async function deleteSerie(id) {
+  const rec = await serieGet(id); if (!rec) return;
+  if (!confirm('Eliminare il modello “' + rec.name + '” da questo browser? Gli episodi già fatti non cambiano.')) return;
+  await serieDel(id); renderSerie(); $('#serieStatus').textContent = 'Modello “' + rec.name + '” eliminato.';
+}
+// "Aggiungi un modello da file"
+async function importSerie(file) {
+  if (!file) return;
+  try {
+    const { j } = await readSerie(file);
+    const all = await serieAll(); let name = j.name || file.name.replace(/\.[^.]+$/, ''), n = 2;
+    while (all.some(m => m.name === name)) name = (j.name || 'Modello') + ' (' + n++ + ')';
+    await seriePut({ id: uid(), name, saved: j.saved, nextTrack: j.nextTrack || 1, summary: serieSummary(j), blob: file });
+    $('#serieStatus').textContent = 'Modello “' + name + '” aggiunto.'; renderSerie();
+  } catch (e) { $('#serieStatus').textContent = 'Questo file non è un modello valido: ' + (e && e.message ? e.message : 'errore') + '.'; }
+}
+async function renderSerie() {
+  const ul = $('#serieList'); if (!ul) return;
+  let all = []; try { all = await serieAll(); } catch { }
+  ul.innerHTML = '';
+  if (!all.length) { const li = document.createElement('li'); li.className = 'serie-empty'; li.textContent = 'Ancora nessun modello. Prepara un episodio con sigla, musica, chiusura e copertina, poi salvalo come modello.'; ul.appendChild(li); }
+  for (const m of all) {
+    const li = document.createElement('li'); li.className = 'serie-item';
+    const t = document.createElement('div'); t.className = 'serie-text';
+    const b = document.createElement('b'); b.textContent = m.name; const s = document.createElement('span'); s.textContent = m.summary;
+    t.append(b, s);
+    const row = document.createElement('div'); row.className = 'btnrow';
+    const mk = (txt, cls, fn) => { const x = document.createElement('button'); x.type = 'button'; x.className = 'btn' + (cls ? ' ' + cls : ''); x.textContent = txt; x.addEventListener('click', fn); row.appendChild(x); return x; };
+    mk('Nuovo episodio', 'primary', () => newEpisode(m.id)).setAttribute('aria-label', 'Nuovo episodio di ' + m.name);
+    mk('Scarica', '', () => downloadSerie(m.id)).setAttribute('aria-label', 'Scarica il modello ' + m.name);
+    mk('Elimina', '', () => deleteSerie(m.id)).setAttribute('aria-label', 'Elimina il modello ' + m.name);
+    li.append(t, row); ul.appendChild(li);
+  }
+}
 /* ---- 90-ui.js ---- */
 /* ========================= Spiegazioni delle opzioni (la lettera i) ========================= */
 const HELP = {
@@ -7265,17 +8000,29 @@ const DUCK_REACT = [
 const STYLE_SETS = [['#voiceStyles', 'voice', VOICE_STYLES, 'Stile della voce', 'Scegli uno stile e premi Applica. Poi rifinisci con i cursori.', '--voice', 'Se la voce suona metallica, abbassa “Attenua il metallico”. Se rimbomba, alza “Riduci l’eco della stanza”.'],
   ['#musicStyles', 'music', MUSIC_STYLES, 'Livello della musica', 'Se copre le parole, scegli un’opzione più bassa.', '--music', 'Il volume si ricalcola da solo sul brano, in LUFS.'],
   ['#duckReact', 'react', DUCK_REACT, 'Reazione della musica', 'Quanto in fretta la musica scende e risale.', '--duck']];
+// Stili della voce e livelli della musica: schede con nome e descrizione sempre visibili; gli stili della voce hanno
+// anche "Ascolta 10 s" (91-anteprima.js). La reazione della musica resta una fila compatta.
 function buildStyles() {
   STYLE_SETS.forEach(([sel, kind, list, title, hint, col, tip]) => {
-    const box = $(sel); box.innerHTML = '<h2 class="styles-h"></h2><p class="styles-d"></p><div class="style-grid" role="group"></div>';
+    const cards = kind === 'voice' || kind === 'music', box = $(sel);
+    box.innerHTML = '<h2 class="styles-h"></h2><p class="styles-d"></p><div class="style-grid' + (cards ? ' cards' : '') + '" role="group"></div>' + (kind === 'voice' ? '<p class="status" id="styleStatus" role="status"></p>' : '');
     $('.styles-h', box).textContent = title; $('.styles-d', box).textContent = hint; $('.style-grid', box).setAttribute('aria-label', title);
     if (tip) $('.styles-h', box).appendChild(makeInfo(tip, title));
     list.forEach(st => {
-      const b = document.createElement('button'); b.className = 'style'; b.dataset.style = st.id; b.setAttribute('aria-pressed', 'false'); b.style.setProperty('--c', 'var(' + col + ')');
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'style'; b.dataset.style = st.id; b.setAttribute('aria-pressed', 'false'); b.style.setProperty('--c', 'var(' + col + ')');
       const t = document.createElement('b'); t.textContent = st.name; const d = document.createElement('span'); d.textContent = st.desc;
-      b.append(t, d); b.addEventListener('click', () => applyStyle(kind, st)); $('.style-grid', box).appendChild(b);
+      b.append(t, d); b.addEventListener('click', () => applyStyle(kind, st));
+      if (!cards) { $('.style-grid', box).appendChild(b); return; }
+      const card = document.createElement('div'); card.className = 'style-card'; card.style.setProperty('--c', 'var(' + col + ')'); card.appendChild(b);
+      if (kind === 'voice') {
+        const pv = document.createElement('button'); pv.type = 'button'; pv.className = 'style-pv'; pv.dataset.style = st.id; pv.textContent = 'Ascolta 10 s';
+        pv.setAttribute('aria-label', 'Ascolta 10 secondi della tua voce con lo stile ' + st.name); pv.setAttribute('aria-pressed', 'false');
+        pv.addEventListener('click', () => stylePreview(st)); card.appendChild(pv);
+      }
+      $('.style-grid', box).appendChild(card);
     });
   });
+  updatePvButtons();
 }
 // Schema del ducking: due frasi su 6 secondi con una pausa breve. È un'illustrazione del comportamento, non l'anteprima esatta.
 // Modello: la musica è abbassata se c'è una frase tra inizio meno anticipo e fine più tenuta; discesa e risalita sono rampe lineari.
@@ -7305,9 +8052,10 @@ function drawDuckViz() {
     [0, 2, 4, 6].map(t => '<text x="' + X(t) + '" y="' + (H - 2) + '" text-anchor="middle" style="font:11px var(--f-mono);fill:var(--muted)">' + t + ' s</text>').join('');
 }
 function updateStyleCards() {
+  updateLoud();
   STYLE_SETS.forEach(([sel, , list]) => {
     let any = false;
-    $$(sel + ' .style').forEach(b => { const st = list.find(x => x.id === b.dataset.style); if (!st.v) return; const on = Object.keys(st.v).every(k => P[k] === st.v[k]); any = any || on; b.setAttribute('aria-pressed', String(on)); });
+    $$(sel + ' .style').forEach(b => { const st = list.find(x => x.id === b.dataset.style); if (!st.v) return; const on = Object.keys(st.v).every(k => P[k] === st.v[k]); any = any || on; b.setAttribute('aria-pressed', String(on)); const c = b.closest('.style-card'); if (c) c.classList.toggle('on', on); });
     // "Personalizzata" si accende da sola quando i valori non corrispondono a nessun preset
     const cu = $(sel + ' .style[data-style="custom"]'); if (cu) cu.setAttribute('aria-pressed', String(!any));
   });
@@ -7463,7 +8211,7 @@ function afterEdit() {
   const lay = layout();
   S.cur = clamp(S.cur, 0, lay.total);
   if (S.sel) { S.sel = [clamp(S.sel[0], 0, lay.total), clamp(S.sel[1], 0, lay.total)]; if (S.sel[1] - S.sel[0] < 1) S.sel = null; }
-  drawAll(); updateButtons(); updateTransport(); updateLegend(); renderHistory(); renderFxList(); updateApplyStatus(); scheduleDiag(); scheduleSave(); updateLevelStatus();
+  drawAll(); updateButtons(); updateTransport(); updateLegend(); renderHistory(); renderFxList(); updatePvButtons(); updateApplyStatus(); scheduleDiag(); scheduleSave(); updateLevelStatus();
   flowUpdate();
 }
 
@@ -7556,8 +8304,11 @@ function initHelp() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') hideTip(); });
   window.addEventListener('scroll', () => { if (cur) hideTip(); }, { passive: true, capture: true });
 }
+// una sola navigazione: i passi in alto. Il passo aperto ha lo sfondo evidenziato; i cerchi dicono il progresso
+// (spunta: fatto; ambra: da fare adesso). Le vecchie schede restano nascoste solo come etichette dei pannelli.
 function showTab(name) {
   $$('.tab').forEach(b => { const on = b.dataset.tab === name; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
+  $$('#stepper .st').forEach(li => { const b = li.querySelector('.st-btn'), on = b.dataset.go === name; li.dataset.open = String(on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   $$('.pane').forEach(p => { p.hidden = p.id !== 'pane-' + name; });
   if (name === 'improve') scheduleDiag();
   if (name === 'rec') fillMics();
@@ -7632,6 +8383,61 @@ function openInfo() {
   $('#info').showModal();
 }
 
+/* ---- 91-anteprima.js ---- */
+/* ========================= Ascolta 10 s: anteprima di uno stile della voce ========================= */
+// Prende 10 secondi della voce montata (dal cursore, se è dentro la voce; altrimenti dall'inizio del parlato),
+// li passa nella catena di miglioramento con le regolazioni dello stile e li fa ascoltare, portati al volume
+// dell'obiettivo della voce: così tutti gli stili si confrontano allo stesso volume. Lo stile non viene applicato.
+// La catena legge le regolazioni globali (P): durante il calcolo si cambiano e poi si rimettono com'erano;
+// intanto il salvataggio automatico aspetta (STYLE_PV.busy), così non si salvano regolazioni provvisorie.
+const STYLE_PV = { busy: false, node: null, id: null, cache: new Map() };
+const PV_LEN = 10;
+function pvStart() {
+  const lay = layout(), n = PV_LEN * SR, cur = S.cur - lay.intro;
+  if (cur > 0.2 * SR && cur < S.vlen - SR) return Math.round(Math.min(cur, Math.max(0, S.vlen - n)));
+  // dall'inizio del parlato: il primo tratto di 50 ms sopra -45 dBFS, meno mezzo secondo
+  const x = renderVoice(0, Math.min(S.vlen, 60 * SR), false), w = SR / 20;
+  for (let i = 0; i + w <= x.length; i += w) { let e = 0; for (let k = i; k < i + w; k++) e += x[k] * x[k]; if (e / w > 3.2e-5) return Math.max(0, Math.min(i - SR / 2, S.vlen - n)); }
+  return 0;
+}
+function stopStylePreview() {
+  if (STYLE_PV.node) { try { STYLE_PV.node.onended = null; STYLE_PV.node.stop(); } catch { } STYLE_PV.node.disconnect(); }
+  STYLE_PV.node = null; STYLE_PV.id = null; updatePvButtons();
+}
+function updatePvButtons() {
+  $$('.style-pv').forEach(b => {
+    const on = b.dataset.style === STYLE_PV.id;
+    b.textContent = on ? 'Ferma' : 'Ascolta 10 s'; b.setAttribute('aria-pressed', String(on));
+    b.disabled = !S.vlen || S.recording || (STYLE_PV.busy && !on);
+  });
+}
+async function stylePreview(st) {
+  if (STYLE_PV.id === st.id) { stopStylePreview(); return; }
+  if (!S.vlen || STYLE_PV.busy) return;
+  stopIfPlaying(); stopStylePreview(); stopFxPreview();
+  const a = pvStart(), n = Math.min(PV_LEN * SR, S.vlen - a), key = [st.id, a, n, S.version, improveKey()].join('|');
+  let y = STYLE_PV.cache.get(key);
+  if (!y) {
+    STYLE_PV.busy = true; updatePvButtons();
+    const old = {}; Object.keys(st.v).forEach(k => { old[k] = P[k]; P[k] = st.v[k]; });
+    try {
+      busy(true, 'Anteprima dello stile “' + st.name + '”…', 0);
+      const x = renderVoice(a, n, false);
+      y = await processSource(x, f => busy(true, 'Anteprima dello stile “' + st.name + '”…', f));
+      const l = lufs(y, true); if (l > -90) y = scaleArr(y, dbToGain(P.target - l));
+      const pk = y.reduce((m, v) => Math.max(m, Math.abs(v)), 0); if (pk > 0.98) y = scaleArr(y, 0.98 / pk);
+      if (STYLE_PV.cache.size > 8) STYLE_PV.cache.delete(STYLE_PV.cache.keys().next().value);
+      STYLE_PV.cache.set(key, y);
+    } catch (e) { toast('Anteprima non riuscita' + (e && e.message ? ': ' + e.message : '.')); return; }
+    finally { Object.assign(P, old); STYLE_PV.busy = false; busy(false); updatePvButtons(); }
+  }
+  const c = ctx(), buf = c.createBuffer(1, y.length, SR); buf.copyToChannel(y, 0);
+  const node = c.createBufferSource(); node.buffer = buf; node.connect(c.destination);
+  node.onended = () => { if (STYLE_PV.node === node) { STYLE_PV.node = null; STYLE_PV.id = null; updatePvButtons(); } };
+  if (c.state === 'suspended') await c.resume();
+  node.start(); STYLE_PV.node = node; STYLE_PV.id = st.id; updatePvButtons();
+  $('#styleStatus').textContent = 'Ascolti “' + st.name + '” su ' + fmtDur(n / SR) + ' della tua voce, da ' + fmtSec(a) + '. Per sceglierlo, clicca la scheda e poi “Applica i miglioramenti”.';
+}
 /* ---- 92-flow.js ---- */
 /* ========================= Percorso guidato (un passo alla volta) ========================= */
 // Il lavoro è un percorso in cinque passi: Voce, Migliora, Musica, Esporta, Progetto.
@@ -7681,7 +8487,7 @@ function flowTarget(step) {
 // testi e pulsanti della barra "Prossimo passo"
 function flowCard(step) {
   const n = { voce: 1, migliora: 2, musica: 3, esporta: 4, fatto: 5 }[step];
-  const kicker = n ? 'Passo ' + n + ' di 5' : 'Tutto fatto';
+  const kicker = n ? 'Da fare adesso · ' + n + ' ' + ['', 'Voce', 'Migliora', 'Musica', 'Esporta', 'Progetto'][n] : 'Tutto fatto';
   if (step === 'voce') return { kicker, text: 'Comincia dalla voce: registra con il pulsante rosso in basso, oppure importa un file audio.', main: ['Importa un file', () => { flowShowTab('rec'); $('#fileVoice').click(); }], alt: ['Registra adesso', toggleRecord] };
   if (step === 'migliora') return FLOW.analyzed
     ? { kicker, text: 'L’analisi è pronta. Con un clic si applicano tutti i suggerimenti, poi ascolti e confronti con l’originale.', main: ['Applica tutti i suggerimenti', () => { flowShowTab('improve'); applyAllSuggestions(); }], alt: ['Rivedi l’analisi', () => { flowShowTab('improve'); flowFocus('#proposeBox'); }] }
@@ -7701,18 +8507,18 @@ function flowRender() {
   // barra del percorso e schede: passi fatti, in corso, da fare ('fatto' è il passo Progetto, 'finito' li completa tutti)
   const cur = FLOW_ORDER.indexOf(step);
   ['voce', 'migliora', 'musica', 'esporta', 'fatto'].forEach((s, i) => {
-    const st = i < cur ? 'done' : i === cur ? 'current' : 'upcoming', word = st === 'done' ? 'fatto' : st === 'current' ? 'in corso' : 'da fare';
+    const st = i < cur ? 'done' : i === cur ? 'current' : 'upcoming', word = st === 'done' ? 'fatto' : st === 'current' ? 'da fare adesso' : 'da fare dopo';
     const t = $('#tab-' + FLOW_TAB[s]); t.dataset.flow = st; t.setAttribute('aria-description', st === 'done' ? 'passo fatto' : st === 'current' ? 'passo attuale' : 'passo successivo');
     const li = $$('#stepper .st')[i], b = li.querySelector('.st-btn');
     li.dataset.state = st; b.setAttribute('aria-label', 'Passo ' + (i + 1) + ', ' + li.querySelector('.st-l').textContent + ': ' + word);
-    if (st === 'current') b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    b.title = word.charAt(0).toUpperCase() + word.slice(1);
   });
   $$('.next-action').forEach(el => el.classList.remove('next-action'));
   const tsel = flowTarget(step), tg = tsel && $(tsel); if (tg) tg.classList.add('next-action');
   // un solo pulsante pieno alla volta: "Applica i miglioramenti" ed "Esporta" lo sono solo quando sono il passo da fare
   ['#btnApply', '#btnExport'].forEach(sel => $(sel).classList.toggle('primary', flowTarget(step) === sel));
   // meno elementi a schermo finché non c'è niente da montare
-  $('#app').classList.toggle('is-empty', !layout().total);
+  $('#app').classList.toggle('is-empty', !layout().total && !S.recording);
 }
 // chiamata dopo ogni cambiamento del lavoro: aggiorna la barra e, al passaggio di passo, guida verso il successivo
 function flowUpdate() {
@@ -7777,10 +8583,20 @@ function setAdvGroup(open) {
 const applyAdvGroup = () => setAdvGroup(advOpen != null ? advOpen : !$('#app').classList.contains('simple'));
 // un clic su un passo della barra apre la sua scheda; su schermi stretti la porta anche in vista
 function initStepper() {
-  $$('#stepper .st-btn').forEach(b => b.addEventListener('click', () => {
-    flowShowTab(b.dataset.go); flowRender();
-    if (window.matchMedia('(max-width:1099px)').matches) $('.side').scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
-  }));
+  const btns = $$('#stepper .st-btn');
+  btns.forEach((b, i) => {
+    b.addEventListener('click', () => {
+      flowShowTab(b.dataset.go); flowRender();
+      if (window.matchMedia('(max-width:1099px)').matches) $('.side').scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
+    });
+    // frecce sinistra e destra: passo precedente o successivo, come prima tra le schede
+    b.addEventListener('keydown', e => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault(); e.stopPropagation();
+      const n = btns[(i + (e.key === 'ArrowRight' ? 1 : btns.length - 1)) % btns.length];
+      n.focus(); flowShowTab(n.dataset.go); flowRender();
+    });
+  });
 }
 function initFlow() {
   initCollapsibles();
@@ -8065,7 +8881,7 @@ async function studioTest() {
   return { superati: R.length - bad.length, totale: R.length, falliti: bad, risultati: R };
 }
 window.studioTest = studioTest;
-window.__studio = { S, P, META, podcastResult, FXPK, FXB, fxBase, fxLongRange, fxIsLong, fxLayout, fxBox, voicePauseEdges, FXPV, duplicateFx, fxSpan, fxRender, FXR, SPEC, findSilences, measureSib, diagnose, levelSlow, deClick, lowerBreaths, analyzeVad, dePlosive, detectHum, humBuild, renderChain, musicCurves, voiceVad, ensureVad, vadReady, VAD, doStems, clearHistory, collapseHistory, REC, METER, actx: () => ACTX, pushOp, undo, redo, replay, layout, renderVoice, renderMix, lufs, truePeakDb, importVoice, importMusic, importFx, improveSources, doExport, saveProject, openProject, selectAll, setMode, togglePlay, decodeWav, readZip, id3Tag };
+window.__studio = { S, P, META, musicViewScale, sumSq, peaksOf, STYLE_PV, stylePreview, VOICE_STYLES, improveKey, podcastResult, FXPK, FXB, fxBase, fxLongRange, fxIsLong, fxLayout, fxBox, voicePauseEdges, FXPV, duplicateFx, fxSpan, fxRender, FXR, SPEC, findSilences, measureSib, diagnose, levelSlow, deClick, lowerBreaths, analyzeVad, dePlosive, detectHum, humBuild, renderChain, musicCurves, voiceVad, ensureVad, vadReady, VAD, doStems, clearHistory, collapseHistory, REC, METER, actx: () => ACTX, pushOp, undo, redo, replay, layout, renderVoice, renderMix, lufs, truePeakDb, importVoice, importMusic, importFx, improveSources, doExport, saveProject, openProject, selectAll, setMode, togglePlay, decodeWav, readZip, id3Tag };
 
 /* ---- 99-main.js ---- */
 /* ========================= Avvio ========================= */
@@ -8081,7 +8897,7 @@ function init() {
   DEFAULTS = Object.assign({}, P);
   try { const saved = JSON.parse(localStorage.getItem('sottovoce-studio.impostazioni.v1') || 'null'); if (saved) Object.keys(saved).forEach(k => { if (k in P && typeof saved[k] === typeof P[k]) P[k] = saved[k]; }); } catch { }
   buildPanels(); markAdvanced(); buildStyles(); buildPresetUI(); bindControls(); syncAll();
-  initHelp(); initTabs(); initLook(); initTimeline(); initKeys(); initMenus(); initWelcome(); initFlow();
+  initHelp(); initTabs(); initLook(); initTimeline(); initKeys(); initStudio(); initMenus(); initWelcome(); initFlow();
   const on = (id, fn) => $(id).addEventListener('click', fn);
   on('#tUndo', undo); on('#tRedo', redo); on('#tCut', doCut); on('#tCopy', () => doCopy()); on('#tPaste', doPaste); on('#tDel', doDelete); on('#tSil', doSilence);
   on('#tFadeIn', () => doFade('in')); on('#tFadeOut', () => doFade('out')); on('#tAll', selectAll);
@@ -8096,17 +8912,22 @@ function init() {
   on('#abOrig', () => setMode(BL.on ? 'x' : 'orig')); on('#abProc', () => setMode(BL.on ? 'y' : 'proc')); on('#btnBlind', toggleBlind);
   on('#btnApply', improveSources); on('#btnHum', findHum); on('#btnPropose', analyzePropose); on('#btnPodcast', podcastMode); initEpisode(); initEditBar(); on('#btnSilFind', previewSilences); on('#btnSilApply', applySilences);
   $$('[data-spec]').forEach(b => b.addEventListener('click', () => { P.specView = b.dataset.spec; $$('[data-spec]').forEach(o => o.setAttribute('aria-pressed', String(o === b))); scheduleSpec(0); scheduleSave(); })); on('#btnExport', doExport); on('#btnStems', doStems);
-  on('#btnSaveProj', saveProject); on('#btnOpenProj', () => $('#fileProj').click()); on('#btnNewProj', newProject);
+  ['input', 'change'].forEach(ev => $('#pExport').addEventListener(ev, updateLoud));   // misuratore del volume finale
+  on('#btnSerieSave', saveSerie); on('#btnSerieImport', () => $('#fileSerie').click()); bindFile('#fileSerie', null, importSerie); renderSerie();
+  on('#btnSaveProj', saveProject); on('#btnSaveAs', () => saveProject(null, true)); on('#fileFlag', fileFlagClick);
+  on('#btnOpenProj', () => FILE.ok ? openWithPicker() : $('#fileProj').click()); on('#btnNewProj', newProject);
   on('#btnMusicRemove', removeMusic); on('#btnCover', () => $('#fileCover').click()); on('#btnCoverDel', () => { META.cover = null; showCover(); scheduleSave(); });
   on('#btnInfo', openInfo); on('#btnGuide', () => $('#guide').showModal());
   bindFile('#fileVoice', '#slotVoice', importVoice); bindFile('#fileMusic', '#slotMusic', importMusic); bindFile('#fileFx', '#slotFx', importFx);
+  bindFile('#fileSig', '#slotSig', f => importAnchored(f, 'start')); bindFile('#fileEnd', '#slotEnd', f => importAnchored(f, 'end'));
+  on('#btnSigRemove', () => removeAnchored('start')); on('#btnEndRemove', () => removeAnchored('end'));
   bindFile('#fileReplace', null, f => importVoice(f, true));
   on('#btnReplaceVoice', () => $('#fileReplace').click());
   bindFile('#fileProj', null, openProject); bindFile('#fileCover', null, pickCover);
   ['dragover', 'drop'].forEach(ev => window.addEventListener(ev, e => e.preventDefault()));
   // avviso prima di chiudere o ricaricare: durante la registrazione e quando ci sono modifiche non salvate in un file di progetto
   window.addEventListener('beforeunload', e => { if (S.recording || isDirty()) { e.preventDefault(); e.returnValue = ''; } });
-  replay(); afterEdit(null); showCover(); renderReport(); startMeter();
+  replay(); afterEdit(null); showCover(); renderReport(); startMeter(); updateProjText();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => drawAll());   // ridisegna la timeline quando i caratteri sono pronti
   offerRestore().then(maybeWelcome, maybeWelcome);   // prima l'eventuale ripresa del lavoro, poi il benvenuto
 }

@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sottovoce v2 · Prova della pulizia</title>
+<style>
+:root{--bg:#16120E;--panel:#1D1813;--panel2:#241E18;--line:#2E2620;--line2:#3A3029;--text:#F3EBE1;--muted:#B8AA99;--dim:#9C8F80;--accent:#E8A23A;--onaccent:#1A140E;--teal:#5CC2AC;--red:#E5534B}
+@media (prefers-color-scheme: light){:root{--bg:#FAF6F0;--panel:#FFFFFF;--panel2:#F3ECE2;--line:#E6DCCF;--line2:#D8CBBB;--text:#1F1A15;--muted:#5E5348;--dim:#6E6257;--accent:#B8741A;--onaccent:#FFFFFF;--teal:#1F7F6C;--red:#C0392B}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:28px;margin:0 0 4px}
+h2{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:21px;margin:0 0 10px}
+p{margin:0 0 10px}
+.sub{color:var(--muted);margin-bottom:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+.drop{border:1.5px dashed var(--line2);border-radius:14px;padding:26px;text-align:center}
+.drop.over{border-color:var(--accent)}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;min-height:42px;padding:0 16px;border-radius:999px;border:1px solid var(--line2);background:transparent}
+button.main{background:var(--accent);color:var(--onaccent);border:0;font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+button[aria-pressed="true"]{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select{min-height:42px;padding:0 10px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.muted{color:var(--muted)} .dim{color:var(--dim);font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:6px}
+.bar>span{display:block;height:100%;width:0;background:var(--accent)}
+.ab{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.ab button{min-height:64px;border-radius:14px;font-size:18px;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.verdict{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.reveal{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--panel2)}
+.err{color:var(--red)}
+.wrap{overflow-x:auto}
+</style>
+</head>
+<body>
+<main>
+  <h1>Prova della pulizia</h1>
+  <p class="sub">Prototipo per Sottovoce v2. Confronta la pulizia di oggi (RNNoise, la stessa dell'app) con DeepFilterNet3, ascoltando alla cieca e allo stesso volume. L'audio non lascia il tuo computer.</p>
+
+  <section class="card" aria-labelledby="h-carica">
+    <h2 id="h-carica">1. Carica le registrazioni</h2>
+    <div class="drop" id="drop">
+      <p><b>Trascina qui uno o più file audio</b></p>
+      <p class="dim">WAV, MP3, M4A o FLAC. Meglio pezzi da 1 a 5 minuti, con il rumore che vuoi mettere alla prova.</p>
+      <label class="row" style="justify-content:center"><input type="file" id="files" accept="audio/*,.wav,.mp3,.m4a,.flac" multiple></label>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <label for="atten">Quanto può togliere DeepFilterNet</label>
+      <select id="atten">
+        <option value="100">Tutto il rumore che trova (predefinito)</option>
+        <option value="30">Al massimo 30 dB, più naturale</option>
+        <option value="18">Al massimo 18 dB, molto delicato</option>
+      </select>
+    </div>
+    <p class="dim" style="margin-top:8px">RNNoise lavora al 100 %, come nell'app. La prima volta il browser scarica DeepFilterNet (circa 34 MB), poi lo tiene in memoria.</p>
+    <p id="loadStatus" class="dim" role="status"></p>
+  </section>
+
+  <section class="card" aria-labelledby="h-file">
+    <h2 id="h-file">2. Le registrazioni</h2>
+    <div class="wrap">
+      <table>
+        <thead><tr><th>File</th><th>Durata</th><th>RNNoise</th><th>DeepFilterNet</th><th>Stato</th></tr></thead>
+        <tbody id="list"><tr><td colspan="5" class="dim">Nessun file ancora.</td></tr></tbody>
+      </table>
+    </div>
+    <p class="dim" style="margin-top:8px">Il tempo indica quante volte più veloce del tempo reale: "20×" vuol dire che 1 minuto di audio si pulisce in 3 secondi.</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-ascolto" id="listenCard" hidden>
+    <h2 id="h-ascolto">3. Ascolto alla cieca</h2>
+    <p class="muted" id="listenName"></p>
+    <p class="dim">A e B sono le due pulizie, in ordine casuale e portate allo stesso volume percepito. Passando dall'una all'altra l'ascolto continua dallo stesso punto.</p>
+    <div class="ab" role="group" aria-label="Versione da ascoltare">
+      <button type="button" data-v="orig" aria-pressed="false">Originale</button>
+      <button type="button" data-v="A" aria-pressed="true">A</button>
+      <button type="button" data-v="B" aria-pressed="false">B</button>
+    </div>
+    <div class="row">
+      <button type="button" class="main" id="play" style="min-width:120px">Riproduci</button>
+      <span class="mono" id="time">0:00 / 0:00</span>
+    </div>
+    <label class="dim" style="display:block;margin-top:10px">Posizione<input type="range" id="seek" min="0" max="1000" value="0"></label>
+    <p style="margin-top:14px;font-weight:600">Quale preferisci?</p>
+    <div class="verdict">
+      <button type="button" data-pick="A">Preferisco A</button>
+      <button type="button" data-pick="B">Preferisco B</button>
+      <button type="button" data-pick="=">Non sento differenza</button>
+    </div>
+    <div class="reveal" id="reveal" hidden></div>
+    <div class="row" style="margin-top:14px">
+      <button type="button" id="dlR">Scarica la versione RNNoise</button>
+      <button type="button" id="dlD">Scarica la versione DeepFilterNet</button>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="h-ris">
+    <h2 id="h-ris">4. Risultati</h2>
+    <div class="wrap"><table><thead><tr><th>File</th><th>Hai preferito</th><th>Cioè</th></tr></thead><tbody id="results"><tr><td colspan="3" class="dim">Ancora nessun ascolto.</td></tr></tbody></table></div>
+    <p id="score" style="margin-top:10px"></p>
+    <button type="button" id="copy">Copia i risultati</button>
+    <span class="dim" id="copyStatus" role="status"></span>
+    <p class="dim" style="margin-top:8px">Puoi incollarli nella chat con Claude per decidere insieme se DeepFilterNet entra nella v2.</p>
+  </section>
+</main>
+
+<script src="lib/rnnoise-sottovoce.js"></script>
+<script type="module">
+const DFN_URL = 'https://cdn.jsdelivr.net/npm/@lofcz/deepfilternet-web@0.1.0/dist/index.js';
+const SR = 48000;
+// RNNoise ritarda di 480 campioni (misurato per Sottovoce 1.0.0). Il ritardo di DeepFilterNet si misura
+// su ogni file, confrontando l'uscita con l'ingresso: così l'allineamento non dipende da un numero scritto a mano.
+const RN_DELAY = 480;
+const DF_PAD = 4800;      // margine in coda per raccogliere tutta l'uscita, fino a 100 ms di ritardo
+const REF_LUFS = -19;
+
+const $ = s => document.querySelector(s);
+const yieldUI = () => new Promise(r => setTimeout(r, 0));
+const fmt = t => { t = Math.max(0, t); const m = Math.floor(t / 60), s = Math.floor(t % 60); return m + ':' + String(s).padStart(2, '0'); };
+const fmtX = x => (x >= 10 ? Math.round(x) : x.toFixed(1).replace('.', ',')) + '×';
+
+let ctx = null;
+const audioCtx = () => ctx || (ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SR }));
+
+/* ---------- lettura del file: mono a 48 kHz ---------- */
+async function decodeFile(file) {
+  const buf = await file.arrayBuffer();
+  const ab = await audioCtx().decodeAudioData(buf);
+  let x;
+  if (ab.numberOfChannels === 1) x = new Float32Array(ab.getChannelData(0));
+  else { x = new Float32Array(ab.length); for (let c = 0; c < ab.numberOfChannels; c++) { const d = ab.getChannelData(c); for (let i = 0; i < x.length; i++) x[i] += d[i] / ab.numberOfChannels; } }
+  if (ab.sampleRate !== SR) x = await resample(x, ab.sampleRate);
+  return x;
+}
+async function resample(x, from) {
+  const len = Math.round(x.length * SR / from);
+  const off = new OfflineAudioContext(1, len, SR);
+  const b = off.createBuffer(1, x.length, from); b.copyToChannel(x, 0);
+  const s = off.createBufferSource(); s.buffer = b; s.connect(off.destination); s.start();
+  return (await off.startRendering()).getChannelData(0).slice();
+}
+
+/* ---------- volume percepito (ITU-R BS.1770, a 48 kHz) ---------- */
+function biquad(x, b, a) {
+  const y = new Float32Array(x.length); let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+  for (let i = 0; i < x.length; i++) { const v = b[0] * x[i] + b[1] * x1 + b[2] * x2 - a[1] * y1 - a[2] * y2; x2 = x1; x1 = x[i]; y2 = y1; y1 = v; y[i] = v; }
+  return y;
+}
+function lufs(x) {
+  let k = biquad(x, [1.53512485958697, -2.69169618940638, 1.19839281085285], [1, -1.69065929318241, 0.73248077421585]);
+  k = biquad(k, [1, -2, 1], [1, -1.99004745483398, 0.99007225036621]);
+  const B = 19200, H = 4800, blocks = [];
+  for (let s = 0; s + B <= k.length; s += H) { let e = 0; for (let i = s; i < s + B; i++) e += k[i] * k[i]; blocks.push(e / B); }
+  const L = e => -0.691 + 10 * Math.log10(e + 1e-20);
+  let g = blocks.filter(e => L(e) > -70); if (!g.length) return -70;
+  const rel = L(g.reduce((a, b) => a + b, 0) / g.length) - 10;
+  g = g.filter(e => L(e) > rel); if (!g.length) return -70;
+  return L(g.reduce((a, b) => a + b, 0) / g.length);
+}
+function toRef(x) { const l = lufs(x), g = Math.pow(10, (REF_LUFS - l) / 20); const y = new Float32Array(x.length); for (let i = 0; i < x.length; i++) y[i] = x[i] * g; return y; }
+
+/* ---------- RNNoise, come in Sottovoce 1.0.0 ---------- */
+let RN = null;
+async function loadRnnoise() {
+  if (RN) return RN;
+  const bin = atob(RNNOISE_WASM_B64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  RN = await createRNNWasmModule({ wasmBinary: u });
+  return RN;
+}
+async function runRnnoise(x, prog) {
+  const M = await loadRnnoise(), st = M._rnnoise_create(0), ptr = M._malloc(480 * 4), off = ptr >> 2;
+  const n = x.length, frames = Math.ceil((n + RN_DELAY) / 480), wet = new Float32Array(frames * 480);
+  for (let f = 0; f < frames; f++) {
+    const s = f * 480, H = M.HEAPF32;
+    for (let j = 0; j < 480; j++) H[off + j] = (s + j < n ? x[s + j] : 0) * 32768;
+    M._rnnoise_process_frame(st, ptr, ptr);
+    const H2 = M.HEAPF32; for (let j = 0; j < 480; j++) wet[s + j] = H2[off + j] / 32768;
+    if ((f & 511) === 511) { prog(f / frames); await yieldUI(); }
+  }
+  M._rnnoise_destroy(st); M._free(ptr);
+  return wet.slice(RN_DELAY, RN_DELAY + n);
+}
+
+/* ---------- DeepFilterNet3 ---------- */
+let DFmod = null;
+async function runDfn(x, atten, prog) {
+  if (!DFmod) DFmod = await import(DFN_URL);
+  const df = await DFmod.DeepFilter.create({ attenuationLimit: atten });
+  const L = df.frameLength, n = x.length, frames = Math.ceil((n + DF_PAD) / L), wet = new Float32Array(frames * L), fr = new Float32Array(L);
+  for (let f = 0; f < frames; f++) {
+    const s = f * L;
+    for (let j = 0; j < L; j++) fr[j] = s + j < n ? x[s + j] : 0;
+    wet.set(df.process(fr), s);
+    if ((f & 127) === 127) { prog(f / frames); await yieldUI(); }
+  }
+  df.destroy();
+  const d = await measureDelay(x, wet, DF_PAD);
+  lastDfDelay = d;
+  return wet.slice(d, d + n);
+}
+// ritardo dell'uscita y rispetto all'ingresso x, in campioni (0…max): correlazione su 2 s del tratto più forte
+let lastDfDelay = null;
+async function measureDelay(x, y, max) {
+  const W = 2 * SR, step = SR / 10; let best0 = 0, be = -1;
+  for (let s = 0; s + W + max < x.length; s += step) { let e = 0; for (let i = s; i < s + W; i += 8) e += x[i] * x[i]; if (e > be) { be = e; best0 = s; } }
+  let best = 0, bv = -Infinity;
+  for (let d = 0; d <= max; d++) {
+    let v = 0; for (let i = best0; i < best0 + W; i += 2) v += x[i] * y[i + d];
+    if (v > bv) { bv = v; best = d; }
+    if ((d & 255) === 255) await yieldUI();
+  }
+  return best;
+}
+
+/* ---------- elenco dei file ---------- */
+const items = [];
+let cur = null;
+function renderList() {
+  const tb = $('#list'); tb.innerHTML = '';
+  if (!items.length) { tb.innerHTML = '<tr><td colspan="5" class="dim">Nessun file ancora.</td></tr>'; return; }
+  items.forEach(it => {
+    const tr = document.createElement('tr');
+    const td = t => { const d = document.createElement('td'); d.textContent = t; tr.appendChild(d); return d; };
+    td(it.name); td(it.x ? fmt(it.x.length / SR) : '…');
+    td(it.rnX ? fmtX(it.rnX) : '…'); td(it.dfX ? fmtX(it.dfX) : '…');
+    const st = td('');
+    if (it.error) { st.textContent = it.error; st.className = 'err'; }
+    else if (it.ready) { const b = document.createElement('button'); b.type = 'button'; b.textContent = it.pick ? 'Riascolta' : 'Ascolta'; b.onclick = () => openListen(it); st.appendChild(b); }
+    else { st.textContent = it.stage || 'In coda'; const bar = document.createElement('div'); bar.className = 'bar'; const sp = document.createElement('span'); sp.style.width = Math.round((it.p || 0) * 100) + '%'; bar.appendChild(sp); st.appendChild(bar); }
+    tb.appendChild(tr);
+  });
+}
+let queue = Promise.resolve();
+function addFiles(list) {
+  [...list].forEach(file => {
+    const it = { name: file.name, file, stage: 'In coda', p: 0, aIs: Math.random() < 0.5 ? 'rn' : 'df' };
+    items.push(it); renderList();
+    queue = queue.then(() => processItem(it));
+  });
+}
+async function processItem(it) {
+  try {
+    it.stage = 'Lettura'; renderList();
+    it.x = await decodeFile(it.file); const dur = it.x.length / SR;
+    it.stage = 'RNNoise'; renderList();
+    let t0 = performance.now();
+    const rn = await runRnnoise(it.x, p => { it.p = p; renderList(); });
+    it.rnX = dur / ((performance.now() - t0) / 1000);
+    it.stage = 'DeepFilterNet'; it.p = 0; renderList();
+    if (!DFmod) $('#loadStatus').textContent = 'Scarico DeepFilterNet (circa 34 MB), solo la prima volta…';
+    t0 = performance.now();
+    const df = await runDfn(it.x, +$('#atten').value, p => { it.p = p; renderList(); });
+    it.dfX = dur / ((performance.now() - t0) / 1000); it.dfDelay = lastDfDelay;
+    $('#loadStatus').textContent = '';
+    it.orig = toRef(it.x); it.rn = toRef(rn); it.df = toRef(df);
+    it.raw = { rn, df };
+    it.ready = true; renderList();
+    if (!cur) openListen(it);
+  } catch (e) {
+    console.error(e);
+    it.error = 'Non riuscito: ' + (e && e.message ? e.message : e);
+    if (String(e).includes('import') || String(e).includes('fetch')) it.error += '. Serve internet la prima volta, per scaricare DeepFilterNet.';
+    renderList();
+  }
+}
+
+/* ---------- ascolto ---------- */
+let src = null, startedAt = 0, offset = 0, playing = false, which = 'A', raf = 0;
+const bufFor = v => {
+  const x = v === 'orig' ? cur.orig : (v === 'A') === (cur.aIs === 'rn') ? cur.rn : cur.df;
+  const b = audioCtx().createBuffer(1, x.length, SR); b.copyToChannel(x, 0); return b;
+};
+const pos = () => playing ? Math.min(cur.x.length / SR, offset + audioCtx().currentTime - startedAt) : offset;
+function stop() { if (src) { src.onended = null; try { src.stop(); } catch (e) {} src.disconnect(); src = null; } }
+function start() {
+  stop(); const c = audioCtx(); if (c.state === 'suspended') c.resume();
+  src = c.createBufferSource(); src.buffer = bufFor(which); src.connect(c.destination);
+  if (offset >= src.buffer.duration - 0.05) offset = 0;
+  src.start(0, offset); startedAt = c.currentTime; playing = true;
+  src.onended = () => { if (playing) { playing = false; offset = 0; updateUI(); } };
+  updateUI(); tick();
+}
+function tick() { cancelAnimationFrame(raf); const f = () => { updateTime(); if (playing) raf = requestAnimationFrame(f); }; raf = requestAnimationFrame(f); }
+function updateTime() {
+  if (!cur) return; const d = cur.x.length / SR, p = pos();
+  $('#time').textContent = fmt(p) + ' / ' + fmt(d);
+  if (document.activeElement !== $('#seek')) $('#seek').value = Math.round(p / d * 1000);
+}
+function updateUI() {
+  $('#play').textContent = playing ? 'Pausa' : 'Riproduci';
+  document.querySelectorAll('.ab button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === which)));
+  updateTime();
+}
+function openListen(it) {
+  if (playing) { offset = pos(); stop(); playing = false; }
+  cur = it; offset = 0; which = 'A';
+  $('#listenCard').hidden = false; $('#listenName').textContent = it.name;
+  showReveal(); updateUI();
+  $('#listenCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+document.querySelectorAll('.ab button').forEach(b => b.onclick = () => {
+  const was = playing; offset = pos(); which = b.dataset.v; if (was) start(); else updateUI();
+});
+$('#play').onclick = () => { if (!cur) return; if (playing) { offset = pos(); stop(); playing = false; updateUI(); } else start(); };
+$('#seek').oninput = e => { if (!cur) return; offset = e.target.value / 1000 * cur.x.length / SR; if (playing) start(); else updateTime(); };
+
+const engineName = k => k === 'rn' ? 'RNNoise (oggi)' : 'DeepFilterNet3';
+function showReveal() {
+  const r = $('#reveal');
+  if (!cur.pick) { r.hidden = true; return; }
+  r.hidden = false;
+  const bIs = cur.aIs === 'rn' ? 'df' : 'rn';
+  r.innerHTML = '';
+  const p = document.createElement('p'); p.style.margin = '0';
+  p.textContent = 'A era ' + engineName(cur.aIs) + ', B era ' + engineName(bIs) + '. ' + (cur.pick === '=' ? 'Per te si equivalgono.' : 'Hai preferito ' + engineName(cur.pick === 'A' ? cur.aIs : bIs) + '.');
+  r.appendChild(p);
+}
+document.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => { if (!cur) return; cur.pick = b.dataset.pick; showReveal(); renderResults(); renderList(); });
+function renderResults() {
+  const done = items.filter(i => i.pick), tb = $('#results'); tb.innerHTML = '';
+  if (!done.length) { tb.innerHTML = '<tr><td colspan="3" class="dim">Ancora nessun ascolto.</td></tr>'; $('#score').textContent = ''; return; }
+  let rn = 0, df = 0, eq = 0;
+  done.forEach(i => {
+    const bIs = i.aIs === 'rn' ? 'df' : 'rn', w = i.pick === '=' ? null : (i.pick === 'A' ? i.aIs : bIs);
+    if (w === 'rn') rn++; else if (w === 'df') df++; else eq++;
+    const tr = document.createElement('tr');
+    [i.name, i.pick === '=' ? 'Nessuna differenza' : i.pick, w ? engineName(w) : '—'].forEach(t => { const d = document.createElement('td'); d.textContent = t; tr.appendChild(d); });
+    tb.appendChild(tr);
+  });
+  $('#score').textContent = 'DeepFilterNet ' + df + ', RNNoise ' + rn + ', pari ' + eq + '.';
+}
+$('#copy').onclick = async () => {
+  const lines = ['Prova della pulizia, Sottovoce v2', 'Limite DeepFilterNet: ' + $('#atten').selectedOptions[0].textContent];
+  items.forEach(i => {
+    const bIs = i.aIs === 'rn' ? 'df' : 'rn', w = !i.pick ? 'non ascoltato' : i.pick === '=' ? 'nessuna differenza' : engineName(i.pick === 'A' ? i.aIs : bIs);
+    lines.push('- ' + i.name + (i.x ? ' (' + fmt(i.x.length / SR) + ')' : '') + ': preferito ' + w + '; velocità RNNoise ' + (i.rnX ? fmtX(i.rnX) : '?') + ', DeepFilterNet ' + (i.dfX ? fmtX(i.dfX) : '?') + (i.dfDelay != null ? ' (ritardo ' + (i.dfDelay / 48).toFixed(1) + ' ms)' : ''));
+  });
+  lines.push($('#score').textContent, 'Browser: ' + navigator.userAgent);
+  try { await navigator.clipboard.writeText(lines.join('\n')); $('#copyStatus').textContent = ' Copiati.'; }
+  catch (e) { $('#copyStatus').textContent = ' Non riesco a copiare: seleziona il testo dei risultati a mano.'; }
+};
+
+/* ---------- scaricare un WAV ---------- */
+function wav(x) {
+  const n = x.length, b = new ArrayBuffer(44 + n * 2), v = new DataView(b), w = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, SR, true); v.setUint32(28, SR * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, x[i])) * 32767, true);
+  return new Blob([b], { type: 'audio/wav' });
+}
+function download(x, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(wav(x)); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+const base = () => cur.name.replace(/\.[^.]+$/, '');
+$('#dlR').onclick = () => cur && download(cur.raw.rn, base() + '-rnnoise.wav');
+$('#dlD').onclick = () => cur && download(cur.raw.df, base() + '-deepfilternet.wav');
+
+/* ---------- caricamento ---------- */
+$('#files').onchange = e => { addFiles(e.target.files); e.target.value = ''; };
+const drop = $('#drop');
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+
+// per il banco di prova automatico
+window.SV = { decodeFile, runRnnoise, runDfn, lufs, measureDelay, items, SR, get lastDfDelay() { return lastDfDelay; } };
+</script>
+</body>
+</html>

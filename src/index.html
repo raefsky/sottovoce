@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sottovoce Officina Sonora. Fai sentire la tua voce, e le tue idee.</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJTb3R0b3ZvY2U6IG1pY3JvZm9ubyBjb24gb25kZSBzb25vcmUgY2hlIHNpIGFiYmFzc2FubyBlIHVuYSBtZXp6YWx1bmEiPgogIDx0aXRsZT5Tb3R0b3ZvY2U8L3RpdGxlPgogIDxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSIjMTAxNTFDIi8+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44KSB0cmFuc2xhdGUoLTI1NiAtMjI2KSI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTIxIDM5KSI+CiAgPHJlY3QgeD0iMTQ4IiB5PSIxMDgiIHdpZHRoPSI4NCIgaGVpZ2h0PSIxNzYiIHJ4PSI0MiIgZmlsbD0iI0YyQzE0RSIvPgogIDxwYXRoIGQ9Ik0xMjQgMjI2QTY2IDY2IDAgMCAwIDI1NiAyMjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRGRDFDNSIgc3Ryb2tlLXdpZHRoPSIyOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTE5MCAyOTJWMzY0TTEzOCAzNzZIMjQyIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RkQxQzUiIHN0cm9rZS13aWR0aD0iMjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0yODMuNSAxNDEuMEExMDggMTA4IDAgMCAxIDI4My41IDI0OS4wIiBmaWxsPSJub25lIiBzdHJva2U9IiNGMkMxNEUiIHN0cm9rZS13aWR0aD0iMjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0zNDYuNSAxNjEuN0ExNjAgMTYwIDAgMCAxIDM0Ni41IDIyOC4zIiBmaWxsPSJub25lIiBzdHJva2U9IiNGMkMxNEUiIHN0cm9rZS13aWR0aD0iMjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0zOTQuOSA0NC4wQTQ4IDQ4IDAgMSAwIDQ0MC43IDEwOS41QTQwIDQwIDAgMCAxIDM5NC45IDQ0LjBaIiBmaWxsPSIjNEZEMUM1Ii8+CiAgPC9nPgogIDwvZz4KPC9zdmc+">
+<meta name="author" content="Roberto Lanza">
+<meta name="copyright" content="Copyright (c) 2026 Roberto Lanza. Licenza: PolyForm Noncommercial 1.0.0.">
+<!--
+  Sottovoce Officina Sonora: registra, monta e migliora la voce, con musica ed effetti.
+  Ideato da Roberto Lanza. Copyright (c) 2026 Roberto Lanza. Licenza: PolyForm Noncommercial 1.0.0.
+  Libero per uso personale, didattico e senza scopo di lucro; non è consentito l’uso commerciale. Fa fede il testo ufficiale
+  della licenza, in inglese, nel blocco id="lic-polyform" e su https://polyformproject.org/licenses/noncommercial/1.0.0
+  Componenti di terze parti, inclusi senza modifiche in blocchi separati:
+  RNNoise (BSD-3-Clause) compilato in WebAssembly da @jitsi/rnnoise-wasm (Apache-2.0);
+  lamejs 1.2.1 (LGPL-3.0), porting JavaScript di LAME. Vedi "Informazioni e licenze" nell’applicazione.
+-->
+<style>@@include css/caratteri.css@@@@include css/app.css@@</style>
+</head>
+<body>
+<div class="app simple" id="app">
+  <header class="masthead">
+    <div class="brand">
+      <svg class="logo" viewBox="84 72 352 362" aria-hidden="true" focusable="false"><g transform="translate(-21 39)">
+  <rect x="148" y="108" width="84" height="176" rx="42" fill="var(--logo-a)"/>
+  <path d="M124 226A66 66 0 0 0 256 226" fill="none" stroke="var(--logo-b)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M190 292V364M138 376H242" fill="none" stroke="var(--logo-b)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M283.5 141.0A108 108 0 0 1 283.5 249.0" fill="none" stroke="var(--logo-a)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M346.5 161.7A160 160 0 0 1 346.5 228.3" fill="none" stroke="var(--logo-a)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M394.9 44.0A48 48 0 1 0 440.7 109.5A40 40 0 0 1 394.9 44.0Z" fill="var(--logo-b)"/>
+  </g></svg>
+      <div>
+        <h1>Sottovoce Officina Sonora</h1>
+        <p class="slogan">Fai sentire la tua voce, e le tue idee.</p>
+      </div>
+    </div>
+    <div class="look" aria-label="Aspetto dell’interfaccia">
+      <p class="projbar" id="projBar" role="status" hidden><span id="projName"></span><span class="dirty" id="dirtyFlag" hidden>modifiche non salvate</span><button type="button" class="fileflag" id="fileFlag" hidden></button></p>
+      <div class="tgroup" role="group" aria-label="Tema">
+        <button class="tseg" data-theme-btn="auto" aria-pressed="true">Auto</button>
+        <button class="tseg" data-theme-btn="light" aria-pressed="false">Chiaro</button>
+        <button class="tseg" data-theme-btn="dark" aria-pressed="false">Scuro</button>
+      </div>
+      <button class="btn small studio-btn" id="btnStudio" type="button"><span class="recdot" aria-hidden="true"></span>Studio</button><button class="btn small" id="btnGuide" aria-label="Guida rapida"><span class="g-long">Guida rapida</span><span class="g-short" aria-hidden="true">Guida</span></button>
+    </div>
+  </header>
+
+  <!-- barra del percorso: sempre visibile in alto, dice dove sei, cosa hai fatto e cosa viene dopo -->
+  <nav class="stepper" id="stepper" aria-label="Percorso di lavoro">
+    <ol>
+      <li class="st" data-step="voce" data-state="upcoming"><button class="st-btn" type="button" data-go="rec"><span class="st-dot"><span class="st-n">1</span><svg class="st-chk" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l2.9 2.9 6-6.3"/></svg></span><span class="st-l">Voce</span></button><span class="st-line" aria-hidden="true"><i></i></span></li>
+      <li class="st" data-step="migliora" data-state="upcoming"><button class="st-btn" type="button" data-go="improve"><span class="st-dot"><span class="st-n">2</span><svg class="st-chk" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l2.9 2.9 6-6.3"/></svg></span><span class="st-l">Migliora</span></button><span class="st-line" aria-hidden="true"><i></i></span></li>
+      <li class="st" data-step="musica" data-state="upcoming"><button class="st-btn" type="button" data-go="tracks"><span class="st-dot"><span class="st-n">3</span><svg class="st-chk" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l2.9 2.9 6-6.3"/></svg></span><span class="st-l">Musica</span></button><span class="st-line" aria-hidden="true"><i></i></span></li>
+      <li class="st" data-step="esporta" data-state="upcoming"><button class="st-btn" type="button" data-go="export"><span class="st-dot"><span class="st-n">4</span><svg class="st-chk" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l2.9 2.9 6-6.3"/></svg></span><span class="st-l">Esporta</span></button><span class="st-line" aria-hidden="true"><i></i></span></li>
+      <li class="st" data-step="progetto" data-state="upcoming"><button class="st-btn" type="button" data-go="project"><span class="st-dot"><span class="st-n">5</span><svg class="st-chk" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.4l2.9 2.9 6-6.3"/></svg></span><span class="st-l">Progetto</span></button></li>
+    </ol>
+  </nav>
+
+  <div class="workspace">
+  <section class="editor" aria-label="Montaggio">
+    <div class="tools" role="toolbar" aria-label="Strumenti di montaggio">
+      <div class="tgrp" role="group" aria-label="Cronologia">
+        <button class="btn icon" id="tUndo" disabled aria-label="Annulla" data-k="⌘Z" data-kpc="Ctrl+Z"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M9 14l-4 -4l4 -4" /> <path d="M5 10h11a4 4 0 1 1 0 8h-1" /> </svg></button>
+        <button class="btn icon" id="tRedo" disabled aria-label="Ripeti" data-k="⇧⌘Z" data-kpc="Ctrl+Y"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M15 14l4 -4l-4 -4" /> <path d="M19 10h-11a4 4 0 1 0 0 8h1" /> </svg></button>
+      </div>
+      <div class="tgrp" role="group" aria-label="Modifica">
+        <button class="btn icon" id="tCut" disabled aria-label="Taglia" data-k="⌘X" data-kpc="Ctrl+X"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M3 7a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M3 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M8.6 8.6l10.4 10.4" /> <path d="M8.6 15.4l10.4 -10.4" /> </svg></button>
+        <button class="btn icon" id="tCopy" disabled aria-label="Copia" data-k="⌘C" data-kpc="Ctrl+C"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666" /> <path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1" /> </svg></button>
+        <button class="btn icon" id="tPaste" disabled aria-label="Incolla" data-k="⌘V" data-kpc="Ctrl+V"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" /> <path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2" /> </svg></button>
+        <button class="btn icon" id="tDel" disabled aria-label="Elimina" data-k="⌫" data-kpc="Canc"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M4 7l16 0" /> <path d="M10 11l0 6" /> <path d="M14 11l0 6" /> <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /> <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /> </svg></button>
+        <button class="btn icon" id="tSil" disabled aria-label="Silenzio" data-k="⌘L" data-kpc="Ctrl+L"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M15 8a5 5 0 0 1 1.912 4.934m-1.377 2.602a5 5 0 0 1 -.535 .464" /> <path d="M17.7 5a9 9 0 0 1 2.362 11.086m-1.676 2.299a9 9 0 0 1 -.686 .615" /> <path d="M9.069 5.054l.431 -.554a.8 .8 0 0 1 1.5 .5v2m0 4v8a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l1.294 -1.664" /> <path d="M3 3l18 18" /> </svg></button>
+      </div>
+      <div class="tgrp fade" role="group" aria-label="Dissolvenza">
+        <span class="tlab">Dissolvenza</span>
+        <button class="btn" id="tFadeIn" disabled aria-label="Dissolvenza in entrata">Entrata</button>
+        <button class="btn" id="tFadeOut" disabled aria-label="Dissolvenza in uscita">Uscita</button>
+      </div>
+      <span class="grow"></span>
+      <div class="tgrp" role="group" aria-label="Zoom">
+        <button class="btn icon" id="zOut" disabled aria-label="Riduci" data-k="−"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /> <path d="M7 10l6 0" /> <path d="M21 21l-6 -6" /> </svg></button>
+        <button class="btn icon" id="zIn" disabled aria-label="Ingrandisci" data-k="+"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /> <path d="M7 10l6 0" /> <path d="M10 7l0 6" /> <path d="M21 21l-6 -6" /> </svg></button>
+        <button class="btn icon" id="zSel" disabled aria-label="Zoom sulla selezione"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /> <path d="M17 17l-2.5 -2.5" /> <path d="M10 4l2 -2l2 2" /> <path d="M20 10l2 2l-2 2" /> <path d="M4 10l-2 2l2 2" /> <path d="M10 20l2 2l2 -2" /> </svg></button>
+        <button class="btn icon" id="zFit" disabled aria-label="Vista intera"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M7 8l-4 4l4 4" /> <path d="M17 8l4 4l-4 4" /> <path d="M3 12l18 0" /> </svg></button>
+      </div>
+      <div class="more">
+        <button class="btn icon" id="btnMore" aria-label="Altro" aria-haspopup="true" aria-expanded="false" aria-controls="morePanel"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> <path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> <path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> </svg></button>
+        <div class="more-panel" id="morePanel" role="group" aria-label="Altre funzioni" hidden>
+          <button class="btn" id="tAll" disabled>Seleziona tutto <span class="k" data-pc="Ctrl+A">⌘A</span></button>
+          <button class="btn" id="tNone" disabled>Togli la selezione <span class="k">esc</span></button>
+          <label class="lab more-row">Altezza della forma d’onda <select id="vzoom" aria-label="Altezza della forma d’onda">
+            <option value="0">Automatica</option><option value="1">× 1</option><option value="2">× 2</option><option value="4">× 4</option><option value="8">× 8</option><option value="16">× 16</option>
+          </select></label>
+          <button class="btn" id="btnBlind" disabled>Ascolto alla cieca</button>
+          <button class="btn" id="btnWelcome">Primi passi</button>
+        </div>
+      </div>
+    </div>
+    <div class="timeline" id="wrap" style="height:250px">
+      <canvas id="cvBase" aria-hidden="true"></canvas>
+      <canvas id="cvTop" tabindex="0" role="slider" aria-label="Forma d’onda. Frecce per spostare il cursore, Maiusc e frecce per selezionare. Trascinando la riga dei tempi in alto si sposta il cursore." aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></canvas>
+      <div class="empty-hint" id="emptyHint">
+        <h2>Comincia dalla voce</h2>
+        <p>Registra adesso oppure trascina qui un file audio.</p>
+        <div class="btnrow"><button class="btn rec-fill" id="emptyRec" type="button"><span class="recdot" aria-hidden="true"></span>Registra</button><button class="btn" id="emptyStudio" type="button">Apri lo studio</button><button class="btn" id="emptyImport" type="button">Importa un file</button></div>
+      </div>
+    </div>
+    <input type="range" id="hscroll" class="vscroll" min="0" max="1000" value="0" aria-label="Scorri la forma d’onda" disabled>
+    <div class="editbar" id="editBar" role="toolbar" aria-label="Modifica della selezione">
+      <div class="eb-top"><p class="eb-state" id="ebState" aria-live="polite">Seleziona una porzione della registrazione per modificarla.</p>
+        <div class="eb-undo"><button class="btn" id="ebUndo" type="button" disabled><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M9 14l-4 -4l4 -4" /> <path d="M5 10h11a4 4 0 1 1 0 8h-1" /> </svg><span>Annulla</span></button><button class="btn" id="ebRedo" type="button" disabled><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M15 14l4 -4l-4 -4" /> <path d="M19 10h-11a4 4 0 1 0 0 8h1" /> </svg><span>Ripristina</span></button></div></div>
+      <div class="eb-tools" id="ebTools">
+        <button class="btn eb-main" id="ebFix" type="button" disabled><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l11-11M14 4v2M19 9h2M17.5 5.5l1.5-1.5M10 4.5l.5 1.5M19.5 13l-1.5.5"/><path d="M13 8l3 3"/></svg><span>Correggi selezione</span></button>
+        <button class="btn" id="ebPlay" type="button" disabled><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" >  <path d="M6 4v16a1 1 0 0 0 1.524 .852l13 -8a1 1 0 0 0 0 -1.704l-13 -8a1 1 0 0 0 -1.524 .852z" /> </svg><span>Ascolta selezione</span></button>
+        <button class="btn" id="ebCut" type="button" disabled><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M3 7a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M3 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M8.6 8.6l10.4 10.4" /> <path d="M8.6 15.4l10.4 -10.4" /> </svg><span>Taglia</span></button>
+        <button class="btn" id="ebDel" type="button" disabled><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M4 7l16 0" /> <path d="M10 11l0 6" /> <path d="M14 11l0 6" /> <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /> <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /> </svg><span>Elimina</span></button>
+        <button class="btn" id="ebSil" type="button" disabled><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M15 8a5 5 0 0 1 1.912 4.934m-1.377 2.602a5 5 0 0 1 -.535 .464" /> <path d="M17.7 5a9 9 0 0 1 2.362 11.086m-1.676 2.299a9 9 0 0 1 -.686 .615" /> <path d="M9.069 5.054l.431 -.554a.8 .8 0 0 1 1.5 .5v2m0 4v8a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l1.294 -1.664" /> <path d="M3 3l18 18" /> </svg><span>Crea silenzio</span></button>
+        <button class="btn" id="ebBreath" type="button" disabled><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h11a3 3 0 1 0-3-3M3 13h15a3 3 0 1 1-3 3M3 17h7"/></svg><span>Riduci respiro</span></button>
+        <button class="btn" id="ebClick" type="button" disabled><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-35 12 12)"/><path d="M10.6 11.4h.01M13.4 12.6h.01M11.4 13.4h.01M12.6 10.6h.01"/></svg><span>Ripara click</span></button>
+      </div>
+      <div class="eb-report" id="ebReport" aria-live="polite" hidden></div>
+    </div>
+    <div class="lanes-info">
+      <div id="selInfo" aria-live="polite"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="specbar"><span class="specbar-l">Frequenze</span><div class="specsel" role="group" aria-label="Vista in frequenza">
+      <button class="seg" type="button" data-spec="off" aria-pressed="true">Spente</button><button class="seg" type="button" data-spec="mean" aria-pressed="false">Spettro medio</button><button class="seg" type="button" data-spec="gram" aria-pressed="false">Spettrogramma</button></div></div>
+    <div class="spec" id="specBox" hidden>
+      <div class="specwrap"><canvas id="cvSpec" role="img" aria-label="Vista in frequenza della voce, originale e migliorata a confronto"></canvas></div>
+      <p class="note" id="specNote"></p>
+    </div>
+  </section>
+
+  <aside class="side" aria-label="Schede di lavoro">
+  <section class="nextstep" id="nextStep" aria-labelledby="nsKicker" aria-live="polite">
+    <p class="ns-kicker" id="nsKicker">Passo 1 di 5</p>
+    <p class="ns-text" id="nsText"></p>
+    <div class="ns-actions"><button class="btn primary" id="nsMain" type="button"></button><button class="linkbtn" id="nsAlt" type="button" hidden></button></div>
+  </section>
+  <nav class="tabs" aria-label="Livello dei controlli">
+    <button class="tab" role="tab" id="tab-rec" aria-controls="pane-rec" data-tab="rec" aria-selected="true"><b>1</b>Voce</button>
+    <button class="tab" role="tab" id="tab-improve" aria-controls="pane-improve" data-tab="improve" aria-selected="false"><b>2</b>Migliora</button>
+    <button class="tab" role="tab" id="tab-tracks" aria-controls="pane-tracks" data-tab="tracks" aria-selected="false"><b>3</b>Musica</button>
+    <button class="tab" role="tab" id="tab-export" aria-controls="pane-export" data-tab="export" aria-selected="false"><b>4</b>Esporta</button>
+    <button class="tab" role="tab" id="tab-project" aria-controls="pane-project" data-tab="project" aria-selected="false"><b>5</b>Progetto</button>
+    <div class="mode" role="group" aria-label="Livello dei controlli">
+      <button class="seg" data-mode="simple" aria-pressed="true">Semplice</button>
+      <button class="seg" data-mode="adv" aria-pressed="false">Avanzata</button>
+    </div>
+  </nav>
+
+  <section class="pane" id="pane-rec" role="tabpanel" aria-labelledby="tab-rec">
+    <div class="panels">
+      <article class="panel rec" id="pRec"><h2 data-info="Il programma registra in alta qualità, senza compressione (48 kHz), e spegne i filtri automatici del browser: niente cancellazione dell’eco, riduzione del rumore o volume automatico. La voce arriva come la sente il microfono, e la migliori tu dopo.">Registrazione</h2>
+        <p class="desc">Registra la voce così com’è, in alta qualità.</p>
+        <div class="body"></div>
+        <div class="btnrow"><button class="btn" id="btnMonitor">Prova il livello</button></div>
+        <p class="status" id="recStatus" role="status"></p>
+      </article>
+      <article class="panel voice" id="pImport"><h2>Importa un file</h2>
+        <p class="desc">Usa una registrazione già fatta: WAV, MP3, M4A o FLAC.</p>
+        <label class="slot" id="slotVoice" style="--c:var(--voice)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileVoice">
+          <span class="slot-title">Voce</span>
+          <span class="slot-name" id="nameVoice">Trascina qui un file o clicca per sceglierlo</span>
+        </label>
+        <div class="btnrow"><button class="btn" id="btnReplaceVoice" disabled>Sostituisci tutta la voce</button></div>
+        <input class="vh" type="file" accept="audio/*,video/*" id="fileReplace" tabindex="-1" aria-hidden="true">
+        <p class="note">Per una nuova versione della voce. Musica, effetti e titolo restano.</p>
+        <div class="body"></div>
+      </article>
+      <article class="panel neutral" id="pSil"><h2 data-info="Una pausa è un tratto senza voce per RNNoise e con un livello basso: servono tutte e due le condizioni, così il taglio non entra mai in una parola. Di ogni pausa lunga si tiene l’inizio e la fine e si toglie il centro, con la dissolvenza sui tagli. Gli effetti restano nel punto in cui sono.">Silenzi lunghi</h2>
+        <p class="desc">Pause più brevi, parlato più scorrevole.</p>
+        <div class="body"></div>
+        <div class="btnrow"><button class="btn" id="btnSilFind" disabled>Cerca le pause</button><button class="btn primary" id="btnSilApply" disabled>Accorcia le pause</button></div>
+        <p class="status" id="silStatus" role="status"></p>
+      </article>
+      <article class="panel neutral" id="pHist"><h2 data-info="Le modifiche si applicano in ordine quando ascolti ed esporti. Il file originale non viene mai toccato, quindi ogni passo si può annullare.">Cronologia</h2>
+        <p class="desc">Ogni modifica, in ordine. L’originale resta intatto.</p>
+        <ol class="list" id="histList"></ol>
+        <div class="btnrow"><button class="btn" id="btnClearHist" disabled>Svuota la cronologia</button></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-improve" role="tabpanel" aria-labelledby="tab-improve" hidden>
+    <!-- miglioramento in un clic: analisi, riepilogo in parole semplici, poi "Applica tutti i suggerimenti" -->
+    <section class="assist" id="assist" aria-labelledby="assistT">
+      <h2 id="assistT" class="assist-h">Migliora la voce in un clic</h2>
+      <p class="assist-lead">Sottovoce analizza la registrazione e la prepara da sola per il tuo podcast: rumore, volume e chiarezza della voce.</p>
+      <button class="btn cta" id="btnPodcast" type="button" disabled><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v4M8.5 21.5h7"/></svg><span>Modalità Podcast</span></button>
+      <p class="assist-alt">Preferisci decidere tu? <button class="linkbtn" id="btnPropose" type="button" disabled>Analizza e proponi</button> mostra i suggerimenti prima di applicarli.</p>
+      <p class="note assist-refined">La voce è segnata come già rifinita: la Modalità Podcast prepara solo il volume per la pubblicazione.</p>
+      <div class="assist-prog" id="assistProg" role="progressbar" aria-labelledby="assistMsg" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
+        <div class="assist-track"><i id="assistBar"></i></div>
+        <p class="assist-msg" id="assistMsg" aria-live="polite"></p>
+      </div>
+      <div class="assist-report" id="proposeBox" aria-live="polite" hidden></div>
+    </section>
+    <!-- tutto il resto, per chi vuole regolare a mano -->
+    <section class="adv-group" id="advGroup" aria-labelledby="advToggle">
+      <button class="adv-toggle" id="advToggle" type="button" aria-expanded="false" aria-controls="advBody"><span>Regolazioni avanzate</span><i aria-hidden="true"></i></button>
+      <p class="note adv-sub">Stile della voce, volume, pulizia, timbro, dinamica e misure, per chi vuole regolare a mano.</p>
+      <div class="pc-wrap" id="advBody"><div class="pc-inner">
+    <div class="styles" id="voiceStyles"></div>
+    <div class="applybar"><button class="btn" id="btnApply" disabled>Applica i miglioramenti</button><span id="applyStatus" class="status" role="status"></span></div>
+    <div class="panels">
+      <article class="panel voice" id="pLevel"><h2 data-info="Il LUFS misura il volume come lo sente l’orecchio, secondo la norma BS.1770, con lo stesso criterio di Sottovoce: una voce mono conta come due canali. Le registrazioni originali non cambiano.">Volume della voce</h2>
+        <p class="desc">La voce sempre allo stesso volume, misurato in LUFS.</p>
+        <div class="body"></div>
+        <p class="status" id="levelStatus" role="status"></p>
+      </article>
+      <article class="panel voice" id="pNR"><h2 data-info="La pulizia usa RNNoise, un modello di intelligenza artificiale scelto con l’ascolto alla cieca. Toglie il rumore di fondo; per il rimbombo della stanza c’è il cursore “Riduci l’eco della stanza”.">Pulizia del rumore</h2>
+        <p class="desc">Attenua i rumori di fondo: fruscio, ventole, ronzio, rimbombo.</p>
+        <div class="body"></div>
+      </article>
+      <article class="panel voice" id="pTone"><h2 data-info="Il timbro è il carattere della voce. Ogni cursore agisce su una zona di suoni, dai gravi agli acuti, indicata tra parentesi. Bastano piccoli ritocchi, da 1 a 3 dB.">Timbro</h2>
+        <p class="desc">Modifica il carattere della voce: più chiara, calda o morbida.</p>
+        <div class="body"></div>
+      </article>
+      <article class="panel voice" id="pDeess"><h2 data-info="Il de-esser abbassa solo le sibilanti, cioè “s”, “z” e “sc”, nell’istante in cui compaiono. Il resto della voce non cambia.">De-esser</h2>
+        <p class="desc">Rende meno fastidiose le “s” troppo forti.</p>
+        <div class="body"></div>
+      </article>
+      <article class="panel voice" id="pMouth"><h2>Respiri e click</h2>
+        <p class="desc">Respiri più discreti e niente schiocchi di bocca.</p>
+        <div class="body"></div>
+      </article>
+      <article class="panel voice" id="pDyn"><h2 data-info="La dinamica è la differenza tra parti forti e deboli. Il livellatore pareggia le frasi, il compressore i suoni dentro le frasi, il gate abbassa il rumore nelle pause.">Dinamica</h2>
+        <p class="desc">Rende la voce più uniforme, senza sbalzi di volume.</p>
+        <div class="body"></div>
+      </article>
+      <article class="panel neutral" id="pDiag"><h2>Misure della voce</h2>
+        <p class="desc">Come sta la voce, prima e dopo, in numeri.</p>
+        <div id="diagBody"><p class="status">Registra o importa la voce per vedere le misure.</p></div>
+      </article>
+    </div>
+      </div></div>
+    </section>
+  </section>
+
+  <section class="pane" id="pane-tracks" role="tabpanel" aria-labelledby="tab-tracks" hidden>
+    <div class="styles" id="musicStyles"></div>
+    <div class="styles" id="duckReact"></div>
+    <div class="panels">
+      <article class="panel sigla" id="pSigla"><h2 data-info="La sigla suona all’inizio e la voce parte dopo; la chiusura suona alla fine, dopo la coda della musica, e si sposta da sola se la voce cambia lunghezza. Il volume si regola da solo al livello della voce.">Sigla e chiusura</h2>
+        <p class="desc">Suonano prima e dopo l’episodio, sempre al loro posto.</p>
+        <label class="slot" id="slotSig" style="--c:var(--fx3)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileSig">
+          <span class="slot-title">Sigla</span>
+          <span class="slot-name" id="nameSig">Trascina qui un file o clicca per sceglierlo</span>
+        </label>
+        <label class="slot" id="slotEnd" style="--c:var(--fx3)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileEnd">
+          <span class="slot-title">Chiusura</span>
+          <span class="slot-name" id="nameEnd">Trascina qui un file o clicca per sceglierlo</span>
+        </label>
+        <p class="status" id="siglaStatus"></p>
+        <div class="btnrow"><button class="btn" id="btnSigRemove" disabled>Togli la sigla</button><button class="btn" id="btnEndRemove" disabled>Togli la chiusura</button></div>
+      </article>
+      <article class="panel music" id="pMusic"><h2>Musica</h2>
+        <p class="desc">Il sottofondo musicale, al volume giusto da solo.</p>
+        <label class="slot" id="slotMusic" style="--c:var(--music)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileMusic">
+          <span class="slot-title">Musica</span>
+          <span class="slot-name" id="nameMusic">Trascina qui un file o clicca per sceglierlo</span>
+        </label>
+        <div class="body"></div>
+        <p class="status" id="musicStatus"></p>
+        <div class="btnrow"><button class="btn" id="btnMusicRemove" disabled>Togli la musica</button></div>
+      </article>
+      <article class="panel duck" id="pDuck"><h2 data-info="Funziona come in Sottovoce: la musica si abbassa da sola quando parli e risale nelle pause. La soglia che riconosce la voce si regola da sola.">Ducking automatico</h2>
+        <p class="desc">La musica scende quando parli e risale nelle pause.</p>
+        <figure class="duckviz"><svg id="duckViz" viewBox="0 0 380 124" role="img" aria-label="Schema: la linea del volume della musica scende durante le due frasi della voce e risale nella pausa"></svg>
+          <figcaption class="note">Illustrazione del comportamento su due frasi, non l’anteprima esatta del mix.</figcaption></figure>
+        <div class="body"></div>
+      </article>
+      <article class="panel fx" id="pFx"><h2>Effetti</h2>
+        <p class="desc">Suoni brevi come un gong, da trascinare dove servono.</p>
+        <label class="slot" id="slotFx" style="--c:var(--fx)">
+          <input class="vh" type="file" accept="audio/*,video/*" id="fileFx">
+          <span class="slot-title">Effetto</span>
+          <span class="slot-name">Trascina qui un file o clicca: va nel punto del cursore</span>
+        </label>
+        <ul class="list" id="fxList" aria-label="Effetti inseriti"></ul>
+        <div class="fxedit" id="fxEdit" aria-label="Effetto selezionato"></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-export" role="tabpanel" aria-labelledby="tab-export" hidden>
+    <div class="panels">
+      <article class="panel neutral" id="pExport"><h2 data-info="Il file usa le stesse regolazioni dell’ascolto. Il volume viene portato all’obiettivo in LUFS e un limitatore impedisce che i picchi distorcano.">Uscita</h2>
+        <p class="desc">Il file finale suona come l’ascolto, al volume giusto.</p>
+        <div class="loud" id="loudMeter">
+          <div class="loud-h"><span id="loudT">Volume finale</span><b id="loudV"></b></div>
+          <div class="loud-bar" id="loudBar" role="img">
+            <span class="loud-zone" aria-hidden="true"></span>
+            <span class="loud-mark" id="loudSet" aria-hidden="true"></span>
+            <span class="loud-mark last" id="loudLast" aria-hidden="true" hidden></span>
+          </div>
+          <div class="loud-scale" aria-hidden="true"><span>-24</span><span>-20</span><span>-16</span><span>-12 LUFS</span></div>
+          <p class="loud-note" id="loudNote"></p>
+          <p class="loud-note" id="loudLastNote" hidden></p>
+        </div>
+        <div class="body"></div>
+        <div class="export-warn" id="exportWarn" role="status" hidden></div>
+        <div class="btnrow"><button class="btn primary" id="btnExport" disabled>Esporta</button><button class="btn" id="btnStems" disabled>Tracce separate</button></div>
+        <p class="status" id="exportStatus" role="status"></p>
+      </article>
+      <article class="panel neutral" id="pMeta"><h2 data-info="Nell’MP3 vanno tutti i dati e la copertina. Nel WAV solo titolo, autore e commento.">Titolo, autore e copertina</h2>
+        <p class="desc">Li mostrano le app dei podcast e i lettori musicali.</p>
+        <div class="body"></div>
+        <div class="cover"><div class="ph" id="coverPh">Nessuna copertina</div><img id="coverImg" alt="Copertina scelta" hidden>
+          <div class="btnrow" style="margin:0"><button class="btn" id="btnCover">Scegli l’immagine</button><button class="btn" id="btnCoverDel" hidden>Togli</button></div>
+          <input class="vh" type="file" accept="image/*" id="fileCover" tabindex="-1" aria-hidden="true"></div>
+        <p class="note">Meglio un’immagine quadrata. Viene ridotta a 1400 × 1400 pixel.</p>
+      </article>
+      <article class="panel neutral" id="pReport"><h2>Ultima esportazione</h2>
+        <p class="desc">Le misure del file appena creato.</p>
+        <div id="reportBody"><p class="status">Ancora nessuna esportazione.</p></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-project" role="tabpanel" aria-labelledby="tab-project" hidden>
+    <div class="panels">
+      <article class="panel neutral" id="pProject"><h2 data-info="“Salva il progetto” crea un file con gli originali e l’elenco delle modifiche. Si riapre anche con una versione nuova del programma o su un altro computer.">Progetto</h2>
+        <p class="desc" id="projLead">Il lavoro si salva da solo in questo browser.</p>
+        <div class="btnrow"><button class="btn primary" id="btnSaveProj" disabled>Salva il progetto</button><button class="btn" id="btnSaveAs" hidden>Salva con un altro nome</button><button class="btn" id="btnOpenProj">Apri un progetto</button><button class="btn" id="btnNewProj">Nuovo progetto</button></div>
+        <input class="vh" type="file" accept=".sottovoce,.zip,application/zip" id="fileProj" tabindex="-1" aria-hidden="true">
+        <p class="status" id="projStatus" role="status"></p>
+      </article>
+      <article class="panel neutral" id="pSerie"><h2 data-info="Un modello conserva sigla, chiusura, musica, tutte le regolazioni, autore, nome della serie, anno e copertina. Ogni nuovo episodio parte con tutto al suo posto e con il numero dell’episodio successivo. I modelli restano in questo browser; con “Scarica” li porti su un altro computer.">Modelli di serie</h2>
+        <p class="desc">Ogni episodio nuovo parte già pronto: porti solo la voce.</p>
+        <ul class="serie-list" id="serieList" aria-label="Modelli di serie"></ul>
+        <div class="serie-new"><label for="serieName">Salva questo progetto come modello</label>
+          <div class="serie-row"><input type="text" id="serieName" maxlength="80" placeholder="Nome della serie"><button class="btn" id="btnSerieSave">Salva come modello</button></div></div>
+        <div class="btnrow"><button class="btn" id="btnSerieImport">Aggiungi un modello da file</button></div>
+        <input class="vh" type="file" accept=".serie,.zip,application/zip" id="fileSerie" tabindex="-1" aria-hidden="true">
+        <p class="status" id="serieStatus" role="status"></p>
+      </article>
+      <article class="panel neutral" id="pPreset"><h2>Preset</h2>
+        <p class="desc">Salva le tue regolazioni e richiamale con un clic.</p>
+        <div class="body"></div>
+      </article>
+    </div>
+  </section>
+
+  </aside>
+  </div>
+
+  <footer class="foot">
+    <span>Sottovoce Officina Sonora 2.0.0. Copyright (c) 2026 Roberto Lanza. Licenza: PolyForm Noncommercial 1.0.0.</span>
+    <span>Funziona nel browser, anche senza internet. Strumento gratuito, offerto così com'è, senza garanzie. L'audio non lascia il tuo computer.</span>
+    <button class="linkbtn" id="btnInfo">Informazioni e licenze</button>
+  </footer>
+</div>
+
+<div class="transport" id="transport" role="region" aria-label="Ascolto e registrazione">
+  <div class="transport-in">
+    <div class="tp-nav" role="group" aria-label="Spostati nella registrazione">
+      <button class="btn icon" id="btnHome" disabled aria-label="Vai all’inizio" data-k="Home"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M20 5v14l-12 -7l12 -7" /> <path d="M4 5l0 14" /> </svg></button>
+      <div class="tp-extra" id="tpExtra">
+        <button class="btn icon" id="btnBack" disabled aria-label="Indietro di 5 secondi" data-k="←"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M15 18a6 6 0 1 0 0 -12h-11" /> <path d="M7 9l-3 -3l3 -3" /> <path d="M8 20h2a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-2v-3h3" /> </svg></button>
+        <button class="btn icon" id="btnFwd" disabled aria-label="Avanti di 5 secondi" data-k="→"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M9 18a6 6 0 1 1 0 -12h11" /> <path d="M13 20h2a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-2v-3h3" /> <path d="M17 9l3 -3l-3 -3" /> </svg></button>
+        <button class="btn icon" id="btnEnd" disabled aria-label="Vai alla fine" data-k="Fine"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M4 5v14l12 -7l-12 -7" /> <path d="M20 5l0 14" /> </svg></button>
+        <label class="toggle"><input type="checkbox" data-p="match" id="matchBox">Stesso volume</label>
+      </div>
+    </div>
+    <button class="btn primary play" id="btnPlay" disabled data-k="spazio"><span class="i-play"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" >  <path d="M6 4v16a1 1 0 0 0 1.524 .852l13 -8a1 1 0 0 0 0 -1.704l-13 -8a1 1 0 0 0 -1.524 .852z" /> </svg></span><span class="i-pause"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" >  <path d="M9 4h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h2a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2z" /> <path d="M17 4h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h2a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2z" /> </svg></span><span id="playLabel">Riproduci</span></button>
+    <button class="btn rec" id="btnRec" data-k="R"><span class="recdot" aria-hidden="true"></span><span id="recLabel">Registra</span></button>
+    <span class="time" aria-live="off"><span id="timeNow">0:00,0</span> <span class="dim">/ <span id="timeTotal">0:00,0</span></span></span>
+    <div class="tgroup ab" role="group" aria-label="Cosa ascoltare">
+      <button class="tseg" id="abOrig" aria-pressed="true" disabled>Originale</button>
+      <button class="tseg" id="abProc" aria-pressed="false" disabled>Migliorata</button>
+    </div>
+    <button class="btn icon tp-more" id="tpMore" aria-label="Altri comandi di ascolto" aria-expanded="false" aria-controls="tpExtra"><svg class="ico" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" >  <path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> <path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> <path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> </svg></button>
+    <div class="meterbox"><canvas id="meter" width="160" height="12" aria-hidden="true"></canvas><span id="meterTxt" role="status">-inf dB</span><span class="clipflag" id="clipFlag" role="alert"></span></div>
+  </div>
+</div>
+
+<dialog id="info" aria-labelledby="infoT">
+  <div class="info-head"><svg class="logo" viewBox="84 72 352 362" aria-hidden="true" focusable="false"><g transform="translate(-21 39)">
+  <rect x="148" y="108" width="84" height="176" rx="42" fill="var(--logo-a)"/>
+  <path d="M124 226A66 66 0 0 0 256 226" fill="none" stroke="var(--logo-b)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M190 292V364M138 376H242" fill="none" stroke="var(--logo-b)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M283.5 141.0A108 108 0 0 1 283.5 249.0" fill="none" stroke="var(--logo-a)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M346.5 161.7A160 160 0 0 1 346.5 228.3" fill="none" stroke="var(--logo-a)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M394.9 44.0A48 48 0 1 0 440.7 109.5A40 40 0 0 1 394.9 44.0Z" fill="var(--logo-b)"/>
+  </g></svg><div><h2 id="infoT" style="margin:0">Informazioni e licenze</h2><p class="slogan" style="margin:2px 0 0">Sottovoce. Fai sentire la tua voce, e le tue idee.</p></div></div>
+  <p><b>Sottovoce Officina Sonora</b>, versione 2.0.0, è stato ideato da Roberto Lanza.<br>Copyright (c) 2026 Roberto Lanza. Licenza: PolyForm Noncommercial 1.0.0.</p>
+  <h3>Condizioni d’uso</h3>
+  <p>Libero per uso personale, didattico e senza scopo di lucro. Non è consentito l’uso commerciale.</p>
+  <p class="note">Questo è un riassunto in parole semplici: fa fede il testo ufficiale della licenza, in inglese, qui sotto e su <a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">polyformproject.org/licenses/noncommercial/1.0.0</a>.</p>
+  <details id="licPolyform"><summary>Licenza PolyForm Noncommercial 1.0.0 (testo ufficiale, in inglese)</summary><pre></pre></details>
+  <p><b>Strumento gratuito, offerto così com'è, senza garanzie. L'audio non lascia il tuo computer.</b></p>
+  <p>Il programma funziona interamente nel browser e non usa internet: registrazioni, file e progetti restano sul tuo computer.</p>
+  <p>Segnalazioni e suggerimenti: [CONTATTO DA INSERIRE]</p>
+  <h3>Componenti di terze parti</h3>
+  <p>I componenti di terze parti incorporati (RNNoise, lamejs, icone, caratteri) restano sotto le loro licenze, riportate qui sotto.</p>
+  <p><b>RNNoise</b> (Xiph.Org Foundation, Jean-Marc Valin, Mozilla e altri), licenza BSD a tre clausole, compilato in WebAssembly dal pacchetto <b>@jitsi/rnnoise-wasm</b>, licenza Apache 2.0.
+     Sorgenti: <a href="https://gitlab.xiph.org/xiph/rnnoise" target="_blank" rel="noopener">gitlab.xiph.org/xiph/rnnoise</a> e <a href="https://github.com/jitsi/rnnoise-wasm" target="_blank" rel="noopener">github.com/jitsi/rnnoise-wasm</a>.</p>
+  <p><b>lamejs</b> 1.2.1 di Alex Zhukov, porting JavaScript di <b>LAME</b>, licenza <b>GNU LGPL 3.0</b>. Sorgente: <a href="https://github.com/zhuker/lamejs" target="_blank" rel="noopener">github.com/zhuker/lamejs</a>. Sito di LAME: <a href="https://lame.sourceforge.net/" target="_blank" rel="noopener">lame.sourceforge.net</a>.</p>
+  <p>Entrambi sono inclusi senza modifiche, in blocchi separati di questo file (<code>script id="rnnoise-glue"</code>, <code>script id="rnnoise-wasm"</code> e <code>script id="lamejs-lgpl"</code>): puoi sostituirli con altre versioni compatibili. Qui sotto trovi i testi completi delle licenze.</p>
+  <p><b>Icone</b>: Tabler Icons di Paweł Kuna, licenza <b>MIT</b>, incluse come disegni SVG nel file.</p>
+  <details id="licMit"><summary>Licenza MIT (icone Tabler)</summary><pre></pre></details>
+  <p><b>Caratteri</b>: Fraunces (The Fraunces Project Authors), IBM Plex Sans e IBM Plex Mono (IBM Corp.), licenza <b>SIL Open Font License 1.1</b>, inclusi senza modifiche nel sottoinsieme latino distribuito da Fontsource.</p>
+  <details id="licOfl"><summary>Licenza SIL Open Font License 1.1 (caratteri)</summary><pre></pre></details>
+  <details id="licBsd"><summary>Licenza di RNNoise (BSD a tre clausole)</summary><pre></pre></details>
+  <details id="licApache"><summary>Licenza Apache 2.0 (compilazione WebAssembly di RNNoise)</summary><pre></pre></details>
+  <details id="licLgpl"><summary>Licenza GNU LGPL 3.0 (lamejs)</summary><pre></pre></details>
+  <details id="licGpl"><summary>Licenza GNU GPL 3.0 (richiamata dalla LGPL)</summary><pre></pre></details>
+  <form method="dialog" class="dlg-foot"><button class="btn primary">Chiudi</button></form>
+</dialog>
+
+<dialog id="guide" aria-labelledby="guideT">
+  <h2 id="guideT">Guida rapida</h2>
+  <ol class="steps">
+    <li><b>Registra</b> con il pulsante rosso in basso, oppure <b>importa</b> un file nella scheda 1. Prima di registrare usa “Prova il livello”: le parole forti devono stare tra -12 e -6 dB, senza la scritta rossa di saturazione.</li>
+    <li><b>Monta.</b> Trascina sulla forma d’onda per selezionare. Poi taglia, copia, incolla, elimina o metti silenzio. Sui tagli il programma aggiunge da solo una dissolvenza brevissima, così non si sentono clic. Tutto si può annullare.</li>
+    <li><b>Migliora</b> nella scheda 2: scegli uno stile e premi “Applica i miglioramenti”. Confronta Originale e Migliorata in basso, con “Stesso volume” attivo, o alla cieca.</li>
+    <li><b>Aggiungi musica ed effetti</b> nella scheda 3, se servono. La musica scende da sola quando parli.</li>
+    <li><b>Esporta</b> nella scheda 4: WAV a 24 bit per lavorare ancora, MP3 con titolo, autore e copertina per pubblicare.</li>
+  </ol>
+  <h3>Tastiera e mouse</h3>
+  <table class="keys">
+    <tr><td><kbd>Spazio</kbd></td><td>Riproduci o pausa (con una selezione, ascolti solo quella)</td></tr>
+    <tr><td><kbd>R</kbd></td><td>Registra o ferma la registrazione</td></tr>
+    <tr><td><kbd data-pc="Ctrl">⌘</kbd> <kbd>Z</kbd> e <kbd data-pc="Maiusc">⇧</kbd> <kbd data-pc="Ctrl">⌘</kbd> <kbd>Z</kbd></td><td>Annulla e ripeti, senza limiti<span data-pc=" (per ripetere va bene anche Ctrl Y)"></span></td></tr>
+    <tr><td><kbd data-pc="Ctrl">⌘</kbd> <kbd>X</kbd> / <kbd>C</kbd> / <kbd>V</kbd></td><td>Taglia, copia, incolla</td></tr>
+    <tr><td><kbd data-pc="Canc">⌫</kbd></td><td>Elimina la selezione</td></tr>
+    <tr><td><kbd data-pc="Ctrl">⌘</kbd> <kbd>L</kbd></td><td>Silenzio al posto della selezione</td></tr>
+    <tr><td><kbd data-pc="Ctrl">⌘</kbd> <kbd>A</kbd></td><td>Seleziona tutto</td></tr>
+    <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Sposta il cursore di un secondo, con <kbd data-pc="Maiusc">⇧</kbd> allarga la selezione</td></tr>
+    <tr><td><kbd>Home</kbd> <kbd>Fine</kbd></td><td>Vai all’inizio o alla fine</td></tr>
+    <tr><td>Clic sulla forma d’onda</td><td>Sposta il cursore. Trascinando selezioni un tratto, con <kbd data-pc="Maiusc">⇧</kbd> allarghi la selezione.</td></tr>
+    <tr><td>Trascinare la riga dei tempi o la linea del cursore</td><td>Sposta il cursore avanti e indietro senza selezionare. Se stai ascoltando, l’ascolto riparte da lì.</td></tr>
+    <tr><td>Doppio clic</td><td>Seleziona il pezzo tra due tagli.</td></tr>
+    <tr><td><kbd data-pc="Ctrl">⌘</kbd> + rotellina, o pizzico sul trackpad</td><td>Zoom sulla forma d’onda. La rotellina da sola fa scorrere la pagina.</td></tr>
+  </table>
+  <p class="note">Passa il mouse sulla lettera <span class="info-i demo" aria-hidden="true">i</span> accanto a ogni opzione per leggerne la spiegazione. Con la tastiera raggiungila con Tab, sul telefono toccala.</p>
+  <form method="dialog" class="dlg-foot"><button class="btn primary">Ho capito</button></form>
+</dialog>
+
+<dialog id="studio" class="studio" aria-labelledby="stTitle" aria-describedby="stHint">
+  <div class="st-top"><span class="st-brand"><span class="recdot" aria-hidden="true"></span>Studio</span><button class="btn" id="stClose" type="button">Esci dallo studio</button></div>
+  <div class="st-main">
+    <h2 class="st-title" id="stTitle">Pronto a registrare</h2>
+    <p class="st-time" id="stTime">0:00,0</p>
+    <div class="st-meter">
+      <div class="st-bar" aria-hidden="true"><span class="st-zone"></span><span class="st-clip"></span><span class="st-level" id="stLevel"></span><span class="st-peak" id="stPeak" hidden></span></div>
+      <div class="st-scale" aria-hidden="true"><span style="left:0.0%">-60</span><span style="left:20.0%">-48</span><span style="left:40.0%">-36</span><span style="left:60.0%">-24</span><span style="left:80.0%">-12</span><span style="left:90.0%" class="st-s6">-6</span><span style="left:100.0%">0 dB</span></div>
+    </div>
+    <p class="st-hint" id="stHint" role="status"></p>
+    <div class="st-wavebox"><canvas class="st-wave" id="stWave" aria-hidden="true"></canvas></div>
+    <button class="st-rec" id="stRec" type="button" aria-label="Inizia a registrare"><span class="st-rec-ic" aria-hidden="true"></span></button>
+    <span class="st-rec-l" id="stRecL" aria-hidden="true">Registra</span>
+    <p class="st-keys" id="stKeys">Barra spaziatrice o R per iniziare e fermare · Esc per uscire</p>
+    <p class="st-where" id="stWhere"></p>
+  </div>
+</dialog>
+<dialog id="musicAsk" class="voice-ask" aria-labelledby="maT" aria-describedby="maText">
+  <h2 id="maT">C’è già una musica</h2>
+  <p id="maText"></p>
+  <p class="note">Sigla e chiusura suonano da sole prima e dopo l’episodio; la musica di sottofondo sta sotto la voce.</p>
+  <div class="ep-foot">
+    <button class="btn cta" id="maSig" type="button">Usalo come sigla</button>
+    <button class="btn" id="maEnd" type="button">Usalo come chiusura</button>
+    <button class="btn" id="maReplace" type="button">Sostituisci la musica</button>
+  </div>
+  <form method="dialog" class="ep-close"><button class="linkbtn">Lascia tutto com’è</button></form>
+</dialog>
+<dialog id="voiceAsk" class="voice-ask" aria-labelledby="vaT" aria-describedby="vaText">
+  <h2 id="vaT">Un’altra voce</h2>
+  <p id="vaText"></p>
+  <p class="note">Sostituendo, musica, effetti, titolo e regolazioni restano. Per tornare alla voce di prima basta il pulsante Annulla della barra di modifica.</p>
+  <div class="ep-foot">
+    <button class="btn cta" id="vaReplace" type="button">Sostituisci la voce</button>
+    <button class="btn" id="vaAppend" type="button">Aggiungi in fondo</button>
+  </div>
+  <form method="dialog" class="ep-close"><button class="linkbtn">Lascia la voce com’è</button></form>
+</dialog>
+<dialog id="episode" class="episode" aria-labelledby="episodeT" aria-describedby="epLead">
+  <div class="ep-head"><svg class="ep-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10.5"/><path d="M7.4 12.4l3.1 3.1 6.1-6.5"/></svg><h2 id="episodeT">Episodio pronto</h2></div>
+  <p class="ep-lead" id="epLead"></p>
+  <p class="ep-score" id="epScore" data-level="0">Qualità della registrazione: <b id="epScoreV"></b><span class="ep-meter" aria-hidden="true"><i></i><i></i><i></i></span></p>
+  <ul class="ar-rows" id="epRows"></ul>
+  <div class="ep-tips" id="epTips" hidden><h3>Un consiglio per la prossima registrazione</h3><ul id="epTipList"></ul></div>
+  <div class="ep-foot">
+    <button class="btn cta" id="epExport" type="button">Esporta MP3</button>
+    <button class="btn" id="epAdv" type="button">Apri regolazioni avanzate</button>
+  </div>
+  <form method="dialog" class="ep-close"><button class="linkbtn">Chiudi e ascolta prima il risultato</button></form>
+</dialog>
+<dialog id="welcome" aria-labelledby="welcomeT">
+  <h2 id="welcomeT">Benvenuto in Sottovoce Officina Sonora</h2>
+  <p>Dalla voce registrata al file pronto da pubblicare, in cinque passi.</p>
+  <ol class="steps">
+    <li><b>Carica o registra</b> la voce: trascina un file audio nella pagina, oppure premi Registra.</li>
+    <li><b>Ascolta</b> con il pulsante Riproduci in basso, o con la barra spaziatrice.</li>
+    <li>Nella scheda Migliora premi <b>Modalità Podcast</b>: il programma sistema la voce da solo. Se preferisci scegliere tu, c’è <b>Analizza e proponi</b>.</li>
+    <li><b>Ascolta</b> il risultato e confronta Originale e Migliorata in basso.</li>
+    <li>Nella scheda Esporta premi <b>Esporta</b>: MP3 per pubblicare, WAV per continuare a lavorare.</li>
+  </ol>
+  <p><b>Strumento gratuito, offerto così com'è, senza garanzie. L'audio non lascia il tuo computer.</b></p>
+  <p class="note">Puoi rivedere questa finestra dal menu con i tre puntini, sopra la forma d’onda, alla voce “Primi passi”.</p>
+  <form method="dialog" class="dlg-foot welcome-foot">
+    <label class="chk"><input type="checkbox" id="welcomeNoMore" checked><span>Non mostrarla più all’apertura</span></label>
+    <button class="btn primary" id="welcomeOk">Comincia</button>
+  </form>
+</dialog>
+
+<dialog id="stemsDlg" aria-labelledby="stemsT">
+  <h2 id="stemsT">Tracce separate</h2>
+  <p id="stemsInfo"></p>
+  <p class="note">Il browser permette un solo download per clic: scarica i file uno alla volta, oppure tutti insieme in uno zip.</p>
+  <ul class="list" id="stemsList" aria-label="Tracce da scaricare"></ul>
+  <div class="dlg-foot"><button class="btn" id="stemsZip" type="button">Scarica tutto in uno zip</button><form method="dialog" style="margin:0"><button class="btn primary">Chiudi</button></form></div>
+</dialog>
+
+<dialog id="errDlg" aria-labelledby="errT">
+  <h2 id="errT">Il microfono non si è aperto</h2>
+  <p id="errMsg"></p>
+  <p class="note" id="errTech"></p>
+  <form method="dialog" class="dlg-foot"><button class="btn primary">Chiudi</button></form>
+</dialog>
+
+<dialog id="restoreDlg" aria-labelledby="restoreT">
+  <h2 id="restoreT">Riprendere il lavoro?</h2>
+  <p id="restoreMsg">In questo browser c’è il lavoro della volta scorsa.</p>
+  <div class="dlg-foot"><button class="btn" id="restoreNo">Inizia da capo</button><button class="btn primary" id="restoreYes">Riprendi</button></div>
+</dialog>
+
+<div class="scrim" id="busy" role="alertdialog" aria-modal="true" aria-labelledby="busyMsg">
+  <div class="dialog"><p id="busyMsg">Un momento…</p><div class="bar" role="progressbar" aria-labelledby="busyMsg" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="busyBarBox"><i id="busyBar"></i></div></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div id="tipPop" role="tooltip" hidden></div>
+
+<script type="text/plain" id="lic-polyform">@@include licenze/polyform-noncommercial.txt@@</script>
+<!-- Componente di terze parti, non modificato: RNNoise (BSD-3-Clause) compilato in WebAssembly da @jitsi/rnnoise-wasm (Apache-2.0). Sorgenti: https://gitlab.xiph.org/xiph/rnnoise e https://github.com/jitsi/rnnoise-wasm -->
+<script id="rnnoise-glue">@@include terze-parti/rnnoise-glue.js@@</script>
+<script type="text/plain" id="rnnoise-wasm">@@include terze-parti/rnnoise-wasm.b64@@</script>
+<script type="text/plain" id="lic-bsd">@@include licenze/bsd-3-rnnoise.txt@@</script>
+<script type="text/plain" id="lic-apache">@@include licenze/apache-2.0.txt@@</script>
+<!-- Libreria di terze parti, non modificata: lamejs 1.2.1 (Alex Zhukov), porting JavaScript di LAME, licenza LGPL-3.0. Sorgente: https://github.com/zhuker/lamejs -->
+<script id="lamejs-lgpl">@@include terze-parti/lame.min.js@@</script>
+<script type="text/plain" id="lic-lgpl">@@include licenze/lgpl-3.0.txt@@</script>
+<script type="text/plain" id="lic-gpl">@@include licenze/gpl-3.0.txt@@</script>
+<script type="text/plain" id="lic-ofl">@@include licenze/ofl-1.1.txt@@</script>
+<script type="text/plain" id="lic-mit-tabler">@@include licenze/mit-tabler.txt@@</script>
+<script>@@app@@</script>
+</body>
+</html>
