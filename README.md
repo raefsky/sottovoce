@@ -77,6 +77,10 @@ Così, a un certo punto, mi sono chiesto: perché non costruirla io, con l'aiuto
 
 Roberto Lanza. Insegno scienze, racconto storie in un podcast e mi diverto a costruire gli strumenti per farlo.
 
+## Contatti
+
+Segnalazioni e suggerimenti: [kenoma.records@gmail.com](mailto:kenoma.records@gmail.com)
+
 ## Per chi sviluppa
 
 L'app pubblicata è un file solo, `index.html`, montato dai sorgenti in `src/`. Come montarla e provarla è spiegato in [SVILUPPO.md](SVILUPPO.md).
