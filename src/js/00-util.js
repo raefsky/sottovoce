@@ -10,7 +10,7 @@ const cmpVersion = (a, b) => { const x = String(a).split('.').map(n => parseInt(
 // frase di chiarezza, testuale (verificata nel codice: nessuna richiesta di rete, nessun invio di dati, nessuna analisi esterna)
 const APP_DISCLAIMER = "Strumento gratuito, offerto così com'è, senza garanzie. L'audio non lascia il tuo computer.";
 // contatto per le segnalazioni: si scrive solo qui (indirizzo o pagina), compare nella finestra Informazioni
-const APP_CONTACT = '[CONTATTO DA INSERIRE]';
+const APP_CONTACT = 'kenoma.records@gmail.com';   // contatto per segnalazioni e suggerimenti
 const APP_SLUG = APP_NAME.toLowerCase().replace(/\s+/g, '-');   // per i nomi di file suggeriti: sottovoce-officina-sonora
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
